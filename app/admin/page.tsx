@@ -1,0 +1,4 @@
+'use client'
+import { useState } from 'react'
+import { SectionTitle } from '@/components/section-title'
+export default function AdminPage(){const [file,setFile]=useState<File|null>(null);const [msg,setMsg]=useState('');async function upload(){if(!file)return;const fd=new FormData();fd.append('file',file);const r=await fetch('/api/r2-upload',{method:'POST',body:fd});const data=await r.json();setMsg(data.url||data.error||'完成')}return <div><SectionTitle eyebrow="Admin" title="资源上传"/><div className="glass rounded-3xl p-6"><p className="text-sm text-slate-400">这里是 Cloudflare R2 上传示例。生产环境请在服务端增加管理员鉴权。</p><input className="mt-5 block text-sm" type="file" onChange={e=>setFile(e.target.files?.[0]||null)}/><button onClick={upload} className="mt-4 rounded-xl bg-violet-600 px-4 py-2.5 text-sm">上传到 R2</button>{msg&&<div className="mt-4 rounded-xl bg-white/[.03] p-3 text-xs text-slate-400 break-all">{msg}</div>}</div></div>}

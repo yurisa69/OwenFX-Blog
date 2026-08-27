@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigins": ["https://你的域名.com", "https://*.vercel.app"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
