@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 type LinkItem = { provider: string; label: string; share_url: string; access_code: string };
-type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; status: string; featured: boolean; software_download_links?: LinkItem[] };
+type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; featured_order?: number | null; status: string; featured: boolean; software_download_links?: LinkItem[] };
 
 const emptyLink = (): LinkItem => ({ provider: 'quark', label: '夸克网盘', share_url: '', access_code: '' });
 const providers = [{ value: 'baidu', label: '百度网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'aliyun', label: '阿里云盘' }, { value: 'tianyi', label: '天翼云盘' }, { value: '123pan', label: '123云盘' }, { value: 'other', label: '其他' }];
@@ -11,7 +11,7 @@ const providers = [{ value: 'baidu', label: '百度网盘' }, { value: 'quark', 
 export default function SoftwareManager() {
   const [rows, setRows] = useState<SoftwareRow[]>([]);
   const [editId, setEditId] = useState('');
-  const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', featured: false });
+  const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '', featured_order: 0, featured: false });
   const [links, setLinks] = useState<LinkItem[]>([emptyLink()]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -33,7 +33,7 @@ export default function SoftwareManager() {
   }
   async function save(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setError('');
-    const payload = { ...form, links: links.filter(link => link.share_url.trim()) };
+    const payload = { ...form, featured_order: Number(form.featured_order) || 0, screenshots: form.screenshots.split(/\r?\n/).map(url => url.trim()).filter(Boolean), links: links.filter(link => link.share_url.trim()) };
     const response = await fetch(editId ? '/api/admin/software/' + editId : '/api/admin/software', {
       method: editId ? 'PATCH' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
     });
@@ -43,7 +43,7 @@ export default function SoftwareManager() {
   }
   function edit(row: SoftwareRow) {
     setEditId(row.id);
-    setForm({ title: row.title, slug: row.slug, description: row.description || '', developer: row.developer || '', version: row.version || '', platform: row.platform || '', image_url: row.image_url || '', official_download_url: row.official_download_url || '', introduction_markdown: row.introduction_markdown || '', featured: row.featured });
+    setForm({ title: row.title, slug: row.slug, description: row.description || '', developer: row.developer || '', version: row.version || '', platform: row.platform || '', image_url: row.image_url || '', official_download_url: row.official_download_url || '', introduction_markdown: row.introduction_markdown || '', screenshots: (row.screenshots || []).join('\n'), featured_order: row.featured_order || 0, featured: row.featured });
     setLinks(row.software_download_links?.length ? row.software_download_links : [emptyLink()]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -65,7 +65,7 @@ export default function SoftwareManager() {
       <input className="rounded-lg border bg-transparent p-2" placeholder="平台，例如 Windows / Android" value={form.platform} onChange={e => change('platform', e.target.value)} />
       <input type="url" className="rounded-lg border bg-transparent p-2" placeholder="官方图标 HTTPS 图片地址" value={form.image_url} onChange={e => change('image_url', e.target.value)} />
       <input type="url" className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="官方官方下载页面 HTTPS 地址" value={form.official_download_url} onChange={e => change('official_download_url', e.target.value)} />
-      <textarea rows={6} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件详细介绍（支持 Markdown 文本）" value={form.introduction_markdown} onChange={e => change('introduction_markdown', e.target.value)} />
+      <textarea rows={6} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件详细介绍（支持 Markdown 文本）" value={form.introduction_markdown} onChange={e => change('introduction_markdown', e.target.value)} />\n      <textarea rows={3} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件截图 HTTPS 图片地址，每行一个（可选）" value={form.screenshots} onChange={e => change('screenshots', e.target.value)} />\n      <label className="block text-sm">精选排序<input type="number" min="0" className="admin-input mt-2 w-full" value={form.featured_order} onChange={e => change('featured_order', Number(e.target.value))} /></label>
       <div className="space-y-2 sm:col-span-2">
         <div className="flex items-center justify-between"><strong className="text-sm">网盘下载链接</strong><button type="button" className="admin-nav-link" onClick={() => setLinks(items => [...items, emptyLink()])}>添加链接</button></div>
         {links.map((link, index) => <div key={index} className="grid gap-2 rounded-lg border p-3 sm:grid-cols-2">
