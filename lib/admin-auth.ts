@@ -9,3 +9,12 @@ export async function requireContentEditor() {
   if (error || data !== true) redirect('/');
   return { supabase, user };
 }
+
+export async function requireAdmin() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/auth/login?next=/admin');
+  const { data, error } = await supabase.rpc('is_owenfx_admin');
+  if (error || data !== true) redirect('/');
+  return { supabase, user };
+}
