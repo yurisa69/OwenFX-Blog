@@ -5,8 +5,9 @@ export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   return (
     <button
+      type="button"
       onClick={toggleTheme}
-      className="grid h-9 w-9 place-items-center rounded-full bg-white/[.045] text-slate-300 transition hover:bg-white/[.08] hover:text-white"
+      className="nav-icon-btn"
       aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
     >
       {theme === 'dark' ? (
