@@ -28,7 +28,7 @@ export default function SoftwareManager() {
   }
   function reset() {
     setEditId('');
-    setForm({ title: '', slug: '', description: '', developer: '', version: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', featured: false });
+    setForm({ title: '', slug: '', description: '', developer: '', version: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '', featured_order: 0, featured: false });
     setLinks([emptyLink()]);
   }
   async function save(event: React.FormEvent) {
