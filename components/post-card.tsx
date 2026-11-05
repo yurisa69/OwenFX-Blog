@@ -1,5 +1,12 @@
 import Link from 'next/link'
 import type { Post } from '@/lib/data'
-import { CalendarDays, MessageCircle } from 'lucide-react'
-const tones={violet:'bg-violet-500/15 text-violet-200 border-violet-300/10',amber:'bg-amber-500/12 text-amber-100 border-amber-300/10',blue:'bg-sky-500/12 text-sky-100 border-sky-300/10',pink:'bg-fuchsia-500/12 text-fuchsia-100 border-fuchsia-300/10',green:'bg-emerald-500/12 text-emerald-100 border-emerald-300/10'}
-export function PostCard({post}:{post:Post}){return <Link href={`/posts/${post.slug}`} className="group glass block rounded-2xl p-4 transition duration-200 hover:-translate-y-0.5 hover:bg-white/[.045]"><div className="flex gap-4"><div className="h-24 w-36 shrink-0 overflow-hidden rounded-xl border border-white/[.06] bg-[#0b1120] max-sm:h-20 max-sm:w-28"><img src={post.cover} alt="" className="h-full w-full object-cover opacity-85 transition duration-300 group-hover:scale-[1.035]"/></div><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><span className={`rounded-md border px-2 py-1 text-[11px] ${tones[post.category.tone]}`}>{post.category.label}</span><div className="hidden text-right sm:block"><div className="text-xs text-slate-300">{post.minutes} 分钟阅读</div><div className="mt-2 flex items-center justify-end gap-2"><div className="h-1 w-20 overflow-hidden rounded-full bg-white/[.07]"><span className="block h-full rounded-full bg-violet-500" style={{width:`${post.progress}%`}}/></div><span className="text-xs text-slate-400">{post.progress}%</span></div></div></div><h3 className="mt-2 truncate text-lg font-medium tracking-[-.02em] text-slate-100 sm:text-xl">{post.title}</h3><p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-400">{post.excerpt}</p><div className="mt-2 flex items-center gap-4 text-xs text-slate-500"><span className="flex items-center gap-1"><CalendarDays size={13}/>{post.date}</span><span className="flex items-center gap-1"><MessageCircle size={13}/>{post.comments}</span></div></div></div></Link>}
+
+export function PostCard({ post }: { post: Post }) {
+  return (
+    <Link href={`/posts/${post.slug}`} className="block rounded-2xl border border-[var(--border-color)] p-4" style={{ background: 'var(--bg-glass)' }}>
+      <div className="text-xs text-[var(--accent)]">{post.category.label}</div>
+      <div className="mt-1 font-medium">{post.title}</div>
+      <div className="mt-1 text-sm text-[var(--text-secondary)]">{post.excerpt}</div>
+    </Link>
+  )
+}

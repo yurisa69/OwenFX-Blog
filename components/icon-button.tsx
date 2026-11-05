@@ -1,6 +1,7 @@
-'use client'
-import type { ReactNode } from 'react'
-
-export function IconButton({ label, onClick, children, className = '' }: { label: string; onClick?: () => void; children: ReactNode; className?: string }) {
-  return <button aria-label={label} onClick={onClick} className={`grid h-10 w-10 place-items-center rounded-full border border-white/[.06] bg-white/[.035] text-slate-300 transition hover:bg-white/[.08] hover:text-white ${className}`}>{children}</button>
+export function IconButton({ children, label, onClick }: { children: React.ReactNode; label: string; onClick?: () => void }) {
+  return (
+    <button type="button" aria-label={label} onClick={onClick} className="grid h-9 w-9 place-items-center rounded-full bg-white/5 text-[var(--text-secondary)] hover:bg-white/10">
+      {children}
+    </button>
+  )
 }
