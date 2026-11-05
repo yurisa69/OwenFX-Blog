@@ -1,25 +1,23 @@
-export type Software = {
-  id: string
-  title: string
-  description: string
-  category: string
-  tags: string[]
-  featured?: boolean
-  downloads?: number
-  size?: string
-  version?: string
-  platform?: string[]
-  downloadUrl?: string
+// Software data types for OwenFX
+
+export interface Software {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  downloadUrl: string;
+  updatedAt: string;
+  featured: boolean;
+  imageUrl?: string;
+  version?: string;
+  size?: string;
+  platform?: string;
 }
 
-export type Article = {
-  id: string
-  title: string
-  excerpt: string
-  content?: string
-  category: string
-  tags: string[]
-  readingTime?: number
-  commentsCount?: number
-  createdAt: string
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  count: number;
 }

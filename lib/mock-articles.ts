@@ -1,49 +1,49 @@
-export type Article = {
-  id: string
-  title: string
-  excerpt: string
-  content?: string
-  category: string
-  tags: string[]
-  readingTime?: number
-  commentsCount?: number
-  createdAt: string
+export interface Article {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  tags: string[];
+  author: string;
+  createdAt: string;
+  featured: boolean;
 }
 
 export const mockArticles: Article[] = [
   {
-    id: '1',
-    title: 'Linear 风格界面设计探索',
-    excerpt: '从色彩、间距到微交互，拆解 Linear 的设计语言，并给出可落地的实现建议。',
-    category: '设计',
-    tags: ['UI', 'Linear', '设计系统'],
-    readingTime: 10,
-    commentsCount: 12,
-    createdAt: '2024-12-10',
-    content: '## Linear 风格界面设计探索\n\nLinear 的界面以克制、清晰和高信息密度著称……',
+    id: 'a1',
+    title: '2026 必备：Windows 效率工具推荐',
+    description: '十大开源利器，提升你的 Windows 工作效率。',
+    content: '## 概述\nWindows 拥有众多优秀的免费工具。',
+    category: '工具评测',
+    tags: ['Windows', '效率', '开源'],
+    author: 'OwenFX',
+    createdAt: '2026-06-25',
+    featured: true,
   },
   {
-    id: '2',
-    title: '如何写出打动用户的文案',
-    excerpt: '好的文案不是堆砌辞藻，而是精准击中用户痛点与情绪。',
-    category: '运营',
-    tags: ['文案', '增长', '转化'],
-    readingTime: 8,
-    commentsCount: 5,
-    createdAt: '2024-12-05',
+    id: 'a2',
+    title: '开源软件指南：从入门到精通',
+    description: '教你正确选择和使用开源软件。',
+    content: '## 为什么选择开源？\n免费、透明、社区驱动。',
+    category: '教程',
+    tags: ['开源', '指南', '入门'],
+    author: 'OwenFX',
+    createdAt: '2026-06-22',
+    featured: false,
   },
   {
-    id: '3',
-    title: '前端性能优化的 10 个技巧',
-    excerpt: '从加载到交互，系统性提升 Web 应用性能的实用清单。',
-    category: '技术',
-    tags: ['性能', '前端', '优化'],
-    readingTime: 12,
-    commentsCount: 18,
-    createdAt: '2024-11-28',
+    id: 'a3',
+    title: '系统优化：完全指南',
+    description: '从启动优化到磁盘清理的完整指南。',
+    content: '## 启动优化\n减少开机自启程序。',
+    category: '系统技巧',
+    tags: ['Windows', '优化', '指南'],
+    author: 'OwenFX',
+    createdAt: '2026-06-18',
+    featured: false,
   },
-]
+];
 
-export function getArticle(id: string): Article | undefined {
-  return mockArticles.find((a) => a.id === id)
-}
+export const getArticle = (id: string) => mockArticles.find((a) => a.id === id);
