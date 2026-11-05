@@ -1,31 +1,32 @@
-import { mockSoftware, categoryOrder, categoryColors } from '@/lib/mock';
-import { sortTagsByLength } from '@/lib/tag-utils';
 import Link from 'next/link';
-export const metadata = { title: '软件库 — OwenFX' };
+import { createClient } from '@/lib/supabase/server';
+
+export const metadata = { title: '软件库 — OwenFX', description: '发现实用软件，查看介绍、官方渠道与网盘下载入口。' };
+
 export default async function SoftwarePage() {
-  const software = mockSoftware;
-  const cats = categoryOrder.filter(c => software.some(s => s.category === c));
-  return (
-    <div className="py-8">
-      <h1 className="text-2xl font-bold mb-2">软件库</h1>
-      <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>精选免费与开源软件</p>
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button className="rounded-full px-4 py-1.5 text-xs font-medium text-white" style={{background:'var(--accent)'}}>全部</button>
-        {cats.map(c => (<button key={c} className="rounded-full px-4 py-1.5 text-xs border border-[var(--border-color)]" style={{background:'var(--bg-glass)'}}><span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{backgroundColor: categoryColors[c]}}></span>{c}</button>))}
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {software.map((s) => (
-          <Link key={s.id} href={'/software/' + s.id} className="uiverse-card p-5">
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="font-semibold text-base truncate">{s.title}</h3>
-              <span className="shrink-0 ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-full" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>{s.category}</span>
-            </div>
-            <p className="text-sm mb-3 line-clamp-2" style={{color:'var(--text-secondary)'}}>{s.description}</p>
-            <div className="flex flex-wrap gap-1 mb-3">{sortTagsByLength(s.tags).slice(0,3).map(t => (<span key={t} className="px-1.5 py-[2px] text-[11px] rounded-full" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}>{t}</span>))}</div>
-            <span className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--accent-bg)',color:'var(--success)'}}>免费下载</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+  const supabase = await createClient();
+  const { data } = await supabase.from('software')
+    .select('id,title,slug,description,developer,version,platform,image_url,featured')
+    .eq('status', 'published')
+    .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
+    .order('featured', { ascending: false })
+    .order('featured_order', { ascending: true })
+    .order('updated_at', { ascending: false })
+    .limit(100);
+
+  return <main className="py-8">
+    <h1 className="mb-2 text-2xl font-bold">软件库</h1>
+    <p className="mb-6 text-sm opacity-70">软件介绍与下载入口汇总。安装包由软件官方或第三方网盘提供，OwenFX 不托管安装包。</p>
+    {!data?.length ? <div className="uiverse-card p-6 text-sm opacity-70">软件库正在整理中，敬请期待。</div> :
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {data.map((item) => <Link key={item.id} href={'/software/' + item.slug} className="uiverse-card flex flex-col items-center p-4 text-center transition hover:-translate-y-1">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl" style={{ background: 'var(--bg-tertiary)' }}>
+            {item.image_url ? <img src={item.image_url} alt={item.title + ' 图标'} className="h-full w-full object-cover" /> : <span className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>}
+          </div>
+          <h2 className="line-clamp-1 text-sm font-semibold">{item.title}</h2>
+          <p className="mt-1 line-clamp-2 text-xs opacity-60">{item.description || item.developer || item.platform || '软件详情'}</p>
+          {item.version && <span className="mt-2 text-[11px] opacity-50">{item.version}</span>}
+        </Link>)}
+      </div>}
+  </main>;
 }
