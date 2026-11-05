@@ -1,5 +1,3 @@
-import Link from 'next/link'
-import { tags, posts } from '@/lib/data'
-import { SectionTitle } from '@/components/section-title'
-export default function TagsPage({searchParams}:{searchParams:Promise<{tag?:string}>}){ return <Tags searchParams={searchParams}/> }
-async function Tags({searchParams}:{searchParams:Promise<{tag?:string}>}){const sp=await searchParams; const current=sp.tag; const list=current?posts.filter(p=>p.category.label.includes(current)||p.title.includes(current)||p.excerpt.includes(current)):posts;return <div><SectionTitle eyebrow="Topics" title="标签"/><div className="glass rounded-3xl p-5"><div className="flex flex-wrap gap-2">{tags.map(([name,count])=><Link key={name} href={`/tags?tag=${name}`} className={`rounded-xl px-4 py-2.5 text-sm ${current===name?'bg-violet-500 text-white':'bg-white/[.035] text-slate-300'}`}>#{name} <span className="text-slate-500">{count}</span></Link>)}</div></div><div className="mt-5 space-y-3">{list.map(p=><Link href={`/posts/${p.slug}`} key={p.slug} className="glass block rounded-2xl p-5"><div className="text-xs text-violet-300">{p.category.label}</div><h2 className="mt-2 font-medium">{p.title}</h2><p className="mt-1 text-sm text-slate-500">{p.excerpt}</p></Link>)}</div></div>}
+export default function TagsPage() {
+  return <div className="py-8"><h1 className="text-xl font-semibold">标签</h1></div>
+}

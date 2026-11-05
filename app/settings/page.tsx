@@ -1,4 +1,3 @@
-'use client'
-import { useState } from 'react'
-import { SectionTitle } from '@/components/section-title'
-export default function SettingsPage(){const [auto,setAuto]=useState(true); return <div><SectionTitle eyebrow="Preferences" title="设置"/><div className="glass rounded-3xl divide-y divide-white/[.06]"><div className="p-5"><div className="font-medium">阅读设置</div><div className="mt-4 flex items-center justify-between"><div><div className="text-sm">自动记录阅读进度</div><div className="mt-1 text-xs text-slate-500">在文章中保存滚动位置。</div></div><button onClick={()=>setAuto(!auto)} className={`h-6 w-12 rounded-full p-1 ${auto?'bg-violet-500':'bg-white/[.1]'}`}><span className={`block h-4 w-4 rounded-full bg-white transition ${auto?'ml-6':'ml-0'}`}/></button></div></div><div className="p-5"><div className="font-medium">账户</div><p className="mt-2 text-sm text-slate-500">Supabase Auth 可在这里接入邮箱登录、GitHub 登录与注销。</p></div></div></div>}
+export default function SettingsPage() {
+  return <div className="py-8"><h1 className="text-xl font-semibold">设置</h1><p className="mt-2 text-sm text-[var(--text-tertiary)]">主题可在右上角切换</p></div>
+}
