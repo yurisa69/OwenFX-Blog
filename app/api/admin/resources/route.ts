@@ -8,7 +8,7 @@ export async function GET() {
   const auth = await authorizeAdmin();
   if ('response' in auth) return auth.response;
   const { data, error } = await auth.supabase.from('cloud_resources')
-    .select('id,title,slug,summary,status,version_label,updated_at,cloud_resource_links(id,provider,share_url,access_code,label,active)')
+    .select('id,title,slug,summary,description_markdown,status,version_label,updated_at,cloud_resource_links(id,provider,share_url,access_code,label,active)')
     .order('updated_at', { ascending: false }).limit(300);
   if (error) return NextResponse.json({ error: '资源列表读取失败' }, { status: 500 });
   return NextResponse.json({ resources: data ?? [] });
