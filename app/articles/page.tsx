@@ -1,21 +1,13 @@
-import { mockArticles } from '@/lib/mock-articles';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/server';
+
 export const metadata = { title: '文章 — OwenFX' };
-export default function ArticlesPage() {
-  return (
-    <div className="animate-fade-in py-8">
-      <h1 className="text-2xl font-bold mb-2">文章</h1>
-      <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>软件推荐、使用教程与技术分享</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockArticles.map((a, i) => (
-          <Link key={a.id} href={'/articles/' + a.id} className="uiverse-card p-5" style={{ animationDelay: i * 80 + 'ms' }}>
-            <span className="text-xs font-medium rounded-full px-2 py-0.5 mb-3 inline-block" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>{a.category}</span>
-            <h2 className="font-semibold mb-2 line-clamp-2">{a.title}</h2>
-            <p className="text-sm mb-3 line-clamp-2" style={{color:'var(--text-secondary)'}}>{a.description}</p>
-            <div className="text-xs" style={{color:'var(--text-tertiary)'}}>{a.createdAt}</div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+export default async function ArticlesPage() {
+  const supabase = await createClient();
+  const { data } = await supabase.from('articles').select('id,title,slug,excerpt,published_at,created_at')
+    .eq('status', 'published').lte('published_at', new Date().toISOString()).order('published_at', { ascending: false }).limit(100);
+  return <main className="py-8"><h1 className="mb-2 text-2xl font-bold">文章</h1><p className="mb-6 text-sm opacity-70">软件介绍、使用教程与技术分享。</p>
+    {!data?.length ? <div className="uiverse-card p-6 text-sm opacity-70">文章正在整理中，敬请期待。</div> :
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{data.map(article => <Link key={article.id} href={'/articles/' + article.id} className="uiverse-card p-5"><h2 className="font-semibold">{article.title}</h2><p className="mt-3 line-clamp-3 text-sm opacity-70">{article.excerpt}</p><p className="mt-4 text-xs opacity-50">{new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN')}</p></Link>)}</div>}
+  </main>;
 }
