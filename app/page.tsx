@@ -1,13 +1,20 @@
-import { mockSoftware } from '@/lib/mock';
 import { mockArticles } from '@/lib/mock-articles';
 import ParticleBackground from '@/components/ParticleBackground';
 import Carousel from '@/components/Carousel';
 import HomeSections from '@/components/HomeSections';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function HomePage() {
-  const software = mockSoftware;
-  const featured = software.filter(s => s.featured);
-  const topArticles = mockArticles;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('software')
+    .select('id,title,slug,description,version,platform,image_url,developer')
+    .eq('status', 'published')
+    .eq('featured', true)
+    .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
+    .order('featured_order', { ascending: true })
+    .order('updated_at', { ascending: false })
+    .limit(18);
 
   return (
     <div>
@@ -16,8 +23,10 @@ export default async function HomePage() {
         <ParticleBackground />
       </div>
       <Carousel />
-      <HomeSections articles={topArticles} featured={featured} />
-      <footer className="text-center py-8 text-sm border-t" style={{color:'var(--text-tertiary)', borderColor:'var(--border-color)'}}><p>OwenFX © {new Date().getFullYear()}</p></footer>
+      <HomeSections articles={mockArticles} featured={data ?? []} />
+      <footer className="text-center py-8 text-sm border-t" style={{ color: 'var(--text-tertiary)', borderColor: 'var(--border-color)' }}>
+        <p>OwenFX © {new Date().getFullYear()}</p>
+      </footer>
     </div>
   );
 }
