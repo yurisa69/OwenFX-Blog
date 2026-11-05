@@ -1,5 +1,62 @@
 import Link from 'next/link'
-import { CalendarDays, Clock3 } from 'lucide-react'
-import { posts, tags } from '@/lib/data'
-import { PostCard } from '@/components/post-card'
-export default function HomePage(){return <div className="space-y-6"><section className="glass subtle-grid overflow-hidden rounded-3xl p-5 sm:p-7"><div className="max-w-3xl"><span className="inline-flex rounded-lg border border-violet-300/10 bg-violet-500/10 px-2.5 py-1 text-xs text-violet-200">个人博客 · OwenFX</span><h1 className="mt-4 text-4xl font-semibold tracking-[-.06em] sm:text-5xl">探索设计、技术与产品的无限可能。</h1><p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">记录界面设计、前端开发、新媒体运营与跨平台互联网实践。克制视觉、清晰结构、持续输出。</p></div><div className="mt-6 flex flex-wrap gap-2">{tags.slice(0,5).map(([tag,count])=><Link key={tag} href={`/tags?tag=${tag}`} className="rounded-lg bg-white/[.035] px-3 py-2 text-sm text-slate-300 hover:bg-white/[.07]">#{tag} <span className="text-slate-500">{count}</span></Link>)}</div></section><section id="articles" className="glass rounded-3xl p-4 sm:p-5"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">最新文章</h2><Link href="/articles" className="text-sm text-violet-300">查看全部 →</Link></div><div className="space-y-3">{posts.map(post=><PostCard post={post} key={post.slug}/>)}</div></section><section className="glass rounded-3xl p-5 sm:p-6"><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">阅读时间线</h2><span className="text-sm text-slate-500">2023 / 12</span></div><div className="mt-5 flex gap-2 overflow-x-auto hide-scrollbar">{['6','7','8','9','10','11','12'].map(day=><button key={day} className={`min-w-12 rounded-xl py-3 text-sm ${day==='10'?'bg-violet-500 text-white':'bg-white/[.035] text-slate-400'}`}>{day}</button>)}</div><div className="mt-4 rounded-2xl border border-white/[.05] bg-white/[.018] p-4"><div className="flex items-center gap-2 text-xs text-violet-300"><CalendarDays size={14}/>2023/12/10</div><div className="mt-2 font-medium">Linear 风格界面设计探索</div><div className="mt-2 flex items-center gap-2 text-xs text-slate-500"><Clock3 size={13}/>10 分钟阅读 · 12 条评论</div></div></section></div>}
+
+const articles = [
+  { id: '1', title: '2026 必备：Windows 效率工具推荐', excerpt: '十大开源利器，提升你的 Windows 工作效率。', category: '工具评测', date: '2026-06-25' },
+  { id: '2', title: '开源软件指南：从入门到精通', excerpt: '教你正确选择和使用开源软件。', category: '教程', date: '2026-06-22' },
+  { id: '3', title: 'Linear 风格界面设计探索', excerpt: '从色彩、间距到微交互的设计拆解。', category: '设计', date: '2026-06-18' },
+]
+
+const software = [
+  { id: '1', title: 'Cursor', desc: 'AI 驱动的代码编辑器', category: 'AI工具' },
+  { id: '2', title: 'Notion', desc: '全能笔记与协作工具', category: '效率办公' },
+  { id: '3', title: 'Figma', desc: '浏览器端专业设计工具', category: '设计创意' },
+]
+
+export default function HomePage() {
+  return (
+    <div className="py-6 space-y-10">
+      <section className="rounded-2xl border border-[var(--border-color)] p-6 sm:p-8" style={{ background: 'var(--bg-glass)' }}>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">精选软件</h1>
+        <p className="text-sm text-[var(--text-secondary)] mb-4">发现高效实用的开源免费工具</p>
+        <div className="flex flex-wrap gap-2">
+          {['免费开源', '精选推荐', '每日更新'].map(t => (
+            <span key={t} className="rounded-full px-3 py-1 text-xs" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{t}</span>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">最新文章</h2>
+          <Link href="/articles" className="text-sm text-[var(--accent)]">查看全部</Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {articles.map(a => (
+            <Link key={a.id} href={`/articles/${a.id}`} className="rounded-2xl border border-[var(--border-color)] p-5 transition hover:border-[var(--accent)]" style={{ background: 'var(--bg-glass)' }}>
+              <span className="text-xs rounded-full px-2 py-0.5" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>{a.category}</span>
+              <h3 className="mt-2 font-semibold line-clamp-2">{a.title}</h3>
+              <p className="mt-1 text-sm text-[var(--text-secondary)] line-clamp-2">{a.excerpt}</p>
+              <p className="mt-3 text-xs text-[var(--text-tertiary)]">{a.date}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">精选推荐</h2>
+          <Link href="/software" className="text-sm text-[var(--accent)]">查看全部</Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {software.map(s => (
+            <Link key={s.id} href={`/software/${s.id}`} className="rounded-2xl border border-[var(--border-color)] p-5" style={{ background: 'var(--bg-glass)' }}>
+              <h3 className="font-semibold">{s.title}</h3>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">{s.desc}</p>
+              <span className="mt-3 inline-block text-xs text-[var(--accent)]">{s.category}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}

@@ -1,3 +1,11 @@
-import { Bookmark } from 'lucide-react'
-import { SectionTitle } from '@/components/section-title'
-export default function BookmarksPage(){return <div><SectionTitle eyebrow="Library" title="我的收藏"/><div className="glass rounded-3xl p-8 text-center"><Bookmark className="mx-auto text-slate-600" size={34}/><h2 className="mt-4 font-medium">还没有收藏</h2><p className="mt-2 text-sm text-slate-500">登录后点击文章右上角的书签，可以将文章保存到这里。</p></div></div>}
+export default function BookmarksPage() {
+  return (
+    <div className="py-8">
+      <h1 className="text-2xl font-bold mb-6">我的收藏</h1>
+      <div className="rounded-2xl border border-[var(--border-color)] p-10 text-center" style={{ background: 'var(--bg-glass)' }}>
+        <p className="text-[var(--text-secondary)]">还没有收藏</p>
+        <p className="mt-2 text-sm text-[var(--text-tertiary)]">登录后可收藏文章和软件</p>
+      </div>
+    </div>
+  )
+}

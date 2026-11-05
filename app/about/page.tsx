@@ -1,3 +1,11 @@
-import { Github, Send, Mail } from 'lucide-react'
-import { SectionTitle } from '@/components/section-title'
-export default function AboutPage(){return <div><SectionTitle eyebrow="Profile" title="关于我"/><section className="glass rounded-3xl p-6 sm:p-8"><div className="flex flex-col gap-6 sm:flex-row sm:items-center"><img src="/avatar.svg" className="h-28 w-28 rounded-full border border-white/[.08]" alt="OwenFX"/><div><h2 className="text-2xl font-semibold">OwenFX</h2><p className="mt-2 max-w-xl text-sm leading-7 text-slate-400">探索设计、技术与产品的无限可能。记录前端、UI、产品、内容运营，以及跨境互联网实践中值得沉淀的方法。</p><div className="mt-4 flex gap-2"><a href="https://github.com" className="grid h-10 w-10 place-items-center rounded-xl bg-white/[.04]"><Github size={18}/></a><a href="https://t.me" className="grid h-10 w-10 place-items-center rounded-xl bg-white/[.04]"><Send size={18}/></a><a href="mailto:hello@example.com" className="grid h-10 w-10 place-items-center rounded-xl bg-white/[.04]"><Mail size={18}/></a></div></div></div><div className="mt-8 grid gap-4 sm:grid-cols-3">{[['文章','128+'],['项目','12'],['年份','2023—现在']].map(([a,b])=><div key={a} className="rounded-2xl bg-white/[.025] p-4"><div className="text-sm text-slate-500">{a}</div><div className="mt-2 text-xl font-semibold">{b}</div></div>)}</div></section></div>}
+export default function AboutPage() {
+  return (
+    <div className="py-8 max-w-2xl">
+      <h1 className="text-2xl font-bold mb-4">关于 OwenFX</h1>
+      <div className="rounded-2xl border border-[var(--border-color)] p-6 text-sm leading-relaxed text-[var(--text-secondary)]" style={{ background: 'var(--bg-glass)' }}>
+        <p className="mb-3">OwenFX 是一个精选软件资源分享站，致力于推荐优秀的免费、开源、实用软件与技术文章。</p>
+        <p>底部导航：首页 · 分类 · 收藏 · 我的</p>
+      </div>
+    </div>
+  )
+}
