@@ -1,33 +1,57 @@
-'use client'
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+'use client';
 
-type Theme = 'dark' | 'light'
-type Ctx = { theme: Theme; toggleTheme: () => void }
-const ThemeContext = createContext<Ctx>({ theme: 'dark', toggleTheme: () => {} })
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
+type Theme = 'dark' | 'light';
+
+const ThemeContext = createContext<{
+  theme: Theme;
+  toggleTheme: () => void;
+}>({ theme: 'dark', toggleTheme: () => {} });
+
+let themeSwitchTimeout: number | undefined;
+
+const getStoredTheme = (): Theme => {
+  if (typeof window === 'undefined') return 'dark';
+  return localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+};
+
+const applyTheme = (next: Theme) => {
+  const root = document.documentElement;
+  root.classList.add('theme-switching');
+  root.setAttribute('data-theme', next);
+  root.style.colorScheme = next;
+  if (themeSwitchTimeout) window.clearTimeout(themeSwitchTimeout);
+  themeSwitchTimeout = window.setTimeout(() => root.classList.remove('theme-switching'), 120);
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    const t = (localStorage.getItem('theme') as Theme) || 'dark'
-    setTheme(t)
-    document.documentElement.setAttribute('data-theme', t)
-  }, [])
+    const saved = getStoredTheme();
+    setTheme(saved);
+    if (document.documentElement.getAttribute('data-theme') === saved) {
+      document.documentElement.style.colorScheme = saved;
+    } else {
+      applyTheme(saved);
+    }
+  }, []);
 
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
-    localStorage.setItem('theme', next)
-    document.documentElement.setAttribute('data-theme', next)
-  }
+  const toggleTheme = useCallback(() => {
+    setTheme(current => {
+      const next = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+      return next;
+    });
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
-  )
+  );
 }
 
-export function useTheme() {
-  return useContext(ThemeContext)
-}
+export const useTheme = () => useContext(ThemeContext);
