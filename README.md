@@ -1,20 +1,18 @@
-# OwenFX Blog
+# OwenFX
 
-一个按参考 UI 实现的 Linear 风格个人博客模板，技术栈：**Next.js App Router + TypeScript + Tailwind CSS + Supabase + Cloudflare R2**。
+精选软件与文章分享站。技术栈：**Next.js App Router + TypeScript + Tailwind CSS + Supabase + Cloudflare R2**，部署于 Vercel。
 
-## 已包含
+## 功能概览
 
-- 深色渐变 / 低饱和紫色视觉体系、细描边、玻璃拟态
-- PC 三栏布局：左侧个人导航 / 中间文章 / 右侧关于与热门
-- 移动端抽屉菜单 + 底部 Tab 导航
-- 首页、文章列表、文章详情、标签、项目、归档、关于、收藏、设置、登录
-- 搜索浮层
-- 文章评论 UI；配置 Supabase 后可写入评论
-- Supabase Auth 邮箱 OTP 登录基础能力
-- Supabase 数据库 SQL schema
-- Cloudflare R2 服务端上传 API
-- 邮箱订阅 API
-- Vercel 部署友好
+- 首页轮播 + 精选软件 / 文章
+- 文章列表与详情、评论
+- 软件资源列表与下载
+- 分类浏览
+- 收藏（bookmarks）
+- 用户注册 / 登录（邮箱 OTP）
+- 个人资料与头像上传（R2）
+- 深色 / 浅色主题
+- **移动端底部导航**：首页 · 分类 · 收藏 · 我的
 
 ## 本地运行
 
@@ -24,47 +22,30 @@ npm install
 npm run dev
 ```
 
-打开 `http://localhost:3000`。
+打开 http://localhost:3000
 
-## Supabase
-
-1. 创建 Supabase Project。
-2. 在 SQL Editor 执行 `database/schema.sql`。
-3. 在 `.env.local` 配置：
+## 环境变量
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=xxxx
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# Cloudflare R2（头像等资源）
+R2_ENDPOINT=
+R2_ACCESS_KEY=
+R2_SECRET_KEY=
+R2_BUCKET_NAME=owenfx-avatars
+NEXT_PUBLIC_R2_PUBLIC_URL=https://your-public-domain
+
+# Site
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-4. Auth → URL Configuration 中把 Site URL 配置为你的 Vercel 域名。
+## 部署
 
-## Cloudflare R2
+推送到 GitHub 后，Vercel 自动构建部署。请在 Vercel Settings → Environment Variables 中配置上述变量。
 
-创建 Bucket 后，在 `.env.local` 配置：
+## 说明
 
-```env
-R2_ACCOUNT_ID=你的AccountID
-R2_ACCESS_KEY_ID=你的AccessKey
-R2_SECRET_ACCESS_KEY=你的Secret
-R2_BUCKET_NAME=owenfx-assets
-R2_PUBLIC_BASE_URL=https://你的R2公开域名
-```
-
-生产环境请进一步给 `/api/r2-upload` 增加管理员权限校验与 MIME 白名单。
-
-## Vercel + GitHub 自动部署
-
-将仓库推送到 GitHub，在 Vercel Import Project 中选择这个仓库。以后：
-
-`GitHub push → Vercel 自动构建 → 自动更新线上网站`
-
-在 Vercel 项目的 Settings → Environment Variables 添加 `.env.local` 中的变量，并分别开启 Production / Preview / Development 环境。
-
-## 文章数据
-
-当前项目为了开箱即用，首页文章使用 `lib/data.ts` 中的演示数据。正式上线时建议迁移到 Supabase `posts` 表，然后将文章编辑后台也建立在 Supabase 上。
-
-## 参考图
-
-`design-reference/` 中保留了本次提供的 UI 参考图，仅用于开发对照。
+当前文章与软件数据使用 `src/lib/mock*.ts` 演示数据。正式上线建议迁移到 Supabase 表，并完善后台管理。
