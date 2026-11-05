@@ -8,7 +8,7 @@ export async function GET() {
   const auth = await authorizeAdmin();
   if ('response' in auth) return auth.response;
   const { data, error } = await auth.supabase.from('software')
-    .select('id,title,slug,description,developer,version,platform,image_url,official_download_url,introduction_markdown,status,featured,software_download_links(id,provider,label,share_url,access_code)')
+    .select('id,title,slug,description,developer,version,platform,image_url,official_download_url,introduction_markdown,screenshots,featured_order,status,featured,software_download_links(id,provider,label,share_url,access_code)')
     .order('updated_at', { ascending: false }).limit(300);
   if (error) return NextResponse.json({ error: '软件列表读取失败，请确认数据库迁移已执行' }, { status: 500 });
   return NextResponse.json({ software: data ?? [] });
@@ -29,6 +29,8 @@ export async function POST(req: Request) {
   const { data, error } = await auth.supabase.from('software').insert({
     title, slug, description: String(body.description || '').slice(0, 500),
     introduction_markdown: String(body.introduction_markdown || '').slice(0, 30000),
+    screenshots: Array.isArray(body.screenshots) && body.screenshots.length <= 12 && body.screenshots.every((url: unknown) => typeof url === 'string' && /^https:\/\//i.test(url)) ? body.screenshots : [],
+    featured_order: Number.isFinite(Number(body.featured_order)) ? Math.max(0, Number(body.featured_order)) : 0,
     developer: String(body.developer || '').slice(0, 160) || null,
     version: String(body.version || '').slice(0, 80) || null,
     platform: String(body.platform || '').slice(0, 160) || null,
