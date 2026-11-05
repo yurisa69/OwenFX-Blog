@@ -1,4 +1,4 @@
-import { requireContentEditor } from '@/lib/admin-auth';
+import { requireAdmin } from '@/lib/admin-auth';
 import SupportSettingsManager from './support-settings-manager';
 
 export default async function SupportPage() {
