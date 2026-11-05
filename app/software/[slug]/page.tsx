@@ -7,7 +7,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const supabase = await createClient();
   const { data: software } = await supabase.from('software')
-    .select('id,title,slug,description,developer,version,platform,image_url,official_download_url,introduction_markdown,updated_at,software_download_links(id,provider,label,share_url,access_code,sort_order)')
+    .select('id,title,slug,description,developer,version,platform,image_url,official_download_url,introduction_markdown,screenshots,updated_at,software_download_links(id,provider,label,share_url,access_code,sort_order)')
     .eq('slug', slug).eq('status', 'published')
     .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`).maybeSingle();
   if (!software) notFound();
@@ -24,6 +24,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         <div className="min-w-0"><h1 className="text-2xl font-bold">{software.title}</h1><p className="mt-1 text-sm opacity-70">{[software.developer, software.version && `版本 ${software.version}`, software.platform].filter(Boolean).join(' · ')}</p></div>
       </div>
       {software.description && <p className="mt-5 text-sm leading-7 opacity-80">{software.description}</p>}
+      {Array.isArray(software.screenshots) && software.screenshots.length > 0 && <section className="mt-7"><h2 className="mb-3 font-semibold">软件截图</h2><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{software.screenshots.map((url: string, index: number) => <a key={url + index} href={url} target="_blank" rel="noopener noreferrer" className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--border-color)' }}><img src={url} alt={software.title + ' 截图 ' + (index + 1)} className="h-auto w-full object-cover" loading="lazy" /></a>)}</div></section>}
       <div className="my-6 border-t" style={{ borderColor: 'var(--border-color)' }} />
       <h2 className="mb-3 font-semibold">下载入口</h2>
       <div className="flex flex-wrap gap-3">{software.official_download_url && <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official" softwareId={software.id} className="uiverse-btn uiverse-btn-primary">官方下载</TrackLink>}</div>
