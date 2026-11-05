@@ -12,7 +12,9 @@ const links = [
   { label: '关于', href: '/about' },
 ]
 
-export default function Navbar() {
+type NavUser = { id: string; name: string; email?: string | null; avatar_url: string | null } | null
+
+export default function Navbar({ initialUser = null }: { initialUser?: NavUser }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -29,7 +31,11 @@ export default function Navbar() {
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link href="/login" className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white">登录</Link>
+          {initialUser ? (
+            <span className="text-sm text-[var(--text-secondary)]">{initialUser.name}</span>
+          ) : (
+            <Link href="/login" className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white">登录</Link>
+          )}
         </div>
       </div>
 
