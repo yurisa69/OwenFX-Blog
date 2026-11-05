@@ -1,24 +1,31 @@
-import Link from 'next/link'
-
-const list = [
-  { id: '1', title: 'Cursor', desc: 'AI 驱动的代码编辑器', category: 'AI工具' },
-  { id: '2', title: 'Notion', desc: '全能笔记与协作工具', category: '效率办公' },
-  { id: '3', title: 'Figma', desc: '浏览器端专业设计工具', category: '设计创意' },
-]
-
-export default function SoftwarePage() {
+import { mockSoftware, categoryOrder, categoryColors } from '@/lib/mock';
+import { sortTagsByLength } from '@/lib/tag-utils';
+import Link from 'next/link';
+export const metadata = { title: '软件库 — OwenFX' };
+export default async function SoftwarePage() {
+  const software = mockSoftware;
+  const cats = categoryOrder.filter(c => software.some(s => s.category === c));
   return (
     <div className="py-8">
-      <h1 className="text-2xl font-bold mb-6">软件库</h1>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map(s => (
-          <Link key={s.id} href={`/software/${s.id}`} className="rounded-2xl border border-[var(--border-color)] p-5" style={{ background: 'var(--bg-glass)' }}>
-            <h2 className="font-semibold">{s.title}</h2>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">{s.desc}</p>
-            <span className="mt-3 inline-block text-xs text-[var(--accent)]">{s.category}</span>
+      <h1 className="text-2xl font-bold mb-2">软件库</h1>
+      <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>精选免费与开源软件</p>
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button className="rounded-full px-4 py-1.5 text-xs font-medium text-white" style={{background:'var(--accent)'}}>全部</button>
+        {cats.map(c => (<button key={c} className="rounded-full px-4 py-1.5 text-xs border border-[var(--border-color)]" style={{background:'var(--bg-glass)'}}><span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{backgroundColor: categoryColors[c]}}></span>{c}</button>))}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {software.map((s) => (
+          <Link key={s.id} href={'/software/' + s.id} className="uiverse-card p-5">
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="font-semibold text-base truncate">{s.title}</h3>
+              <span className="shrink-0 ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-full" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>{s.category}</span>
+            </div>
+            <p className="text-sm mb-3 line-clamp-2" style={{color:'var(--text-secondary)'}}>{s.description}</p>
+            <div className="flex flex-wrap gap-1 mb-3">{sortTagsByLength(s.tags).slice(0,3).map(t => (<span key={t} className="px-1.5 py-[2px] text-[11px] rounded-full" style={{background:'var(--bg-tertiary)', color:'var(--text-secondary)'}}>{t}</span>))}</div>
+            <span className="px-2 py-0.5 text-xs rounded-full" style={{background:'var(--accent-bg)',color:'var(--success)'}}>免费下载</span>
           </Link>
         ))}
       </div>
     </div>
-  )
+  );
 }

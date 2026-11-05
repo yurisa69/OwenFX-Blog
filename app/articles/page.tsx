@@ -1,24 +1,21 @@
-import Link from 'next/link'
-
-const list = [
-  { id: '1', title: '2026 必备：Windows 效率工具推荐', category: '工具评测', date: '2026-06-25' },
-  { id: '2', title: '开源软件指南：从入门到精通', category: '教程', date: '2026-06-22' },
-  { id: '3', title: 'Linear 风格界面设计探索', category: '设计', date: '2026-06-18' },
-]
-
+import { mockArticles } from '@/lib/mock-articles';
+import Link from 'next/link';
+export const metadata = { title: '文章 — OwenFX' };
 export default function ArticlesPage() {
   return (
-    <div className="py-8">
-      <h1 className="text-2xl font-bold mb-6">文章</h1>
-      <div className="space-y-3">
-        {list.map(a => (
-          <Link key={a.id} href={`/articles/${a.id}`} className="block rounded-2xl border border-[var(--border-color)] p-5" style={{ background: 'var(--bg-glass)' }}>
-            <span className="text-xs text-[var(--accent)]">{a.category}</span>
-            <h2 className="mt-1 font-semibold">{a.title}</h2>
-            <p className="mt-1 text-xs text-[var(--text-tertiary)]">{a.date}</p>
+    <div className="animate-fade-in py-8">
+      <h1 className="text-2xl font-bold mb-2">文章</h1>
+      <p className="text-sm mb-6" style={{color:'var(--text-secondary)'}}>软件推荐、使用教程与技术分享</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {mockArticles.map((a, i) => (
+          <Link key={a.id} href={'/articles/' + a.id} className="uiverse-card p-5" style={{ animationDelay: i * 80 + 'ms' }}>
+            <span className="text-xs font-medium rounded-full px-2 py-0.5 mb-3 inline-block" style={{background:'var(--accent-bg)', color:'var(--accent)'}}>{a.category}</span>
+            <h2 className="font-semibold mb-2 line-clamp-2">{a.title}</h2>
+            <p className="text-sm mb-3 line-clamp-2" style={{color:'var(--text-secondary)'}}>{a.description}</p>
+            <div className="text-xs" style={{color:'var(--text-tertiary)'}}>{a.createdAt}</div>
           </Link>
         ))}
       </div>
     </div>
-  )
+  );
 }
