@@ -1,4 +1,4 @@
-import { requireContentEditor } from '@/lib/admin-auth';
+import { requireAdmin } from '@/lib/admin-auth';
 import ResourceManager from './resource-manager';
 
 export default async function ResourcesAdminPage() {
