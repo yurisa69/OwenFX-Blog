@@ -200,3 +200,8 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .profile-logout-action{margin-top:12px;width:100%;min-height:42px;border:1px solid rgba(248,113,113,.22);border-radius:999px;background:rgba(248,113,113,.07);color:#fca5a5;font-size:13px;transition:all .2s}
 .profile-logout-action:hover{border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.13)}
 @media(max-width:767px){.nav-actions{gap:7px}.nav-icon-btn,.nav-theme-slot{width:36px;height:36px;flex-basis:36px}.mobile-menu-list{grid-template-columns:1fr}.mobile-menu-link{min-height:46px}.profile-drawer-panel{width:min(94vw,410px);padding:20px 18px 16px}}
+
+/* Keep the mobile hamburger hidden wherever the desktop navigation is active. */
+@media (min-width: 768px) {
+  .mobile-menu-toggle { display: none !important; }
+}
