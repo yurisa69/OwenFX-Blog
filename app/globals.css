@@ -172,7 +172,7 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .nav-profile-trigger{padding:2px}
 .nav-search-slot{min-width:38px;justify-content:flex-end}
 .nav-theme-slot{display:flex;width:38px;height:38px;flex:0 0 38px;align-items:center;justify-content:center}
-.nav-search-capsule{display:flex;width:clamp(150px,32vw,240px);height:38px;align-items:center;gap:8px;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);padding:0 8px 0 14px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+.nav-search-capsule{display:flex;width:128px;min-width:128px;height:38px;align-items:center;gap:4px;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);padding:0 6px 0 10px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
 .nav-search-submit{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;color:var(--text-secondary)}
 .nav-search-submit:hover{color:var(--accent)}
 .profile-drawer-layer{position:fixed;inset:0;z-index:70;overflow:hidden}
