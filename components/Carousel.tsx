@@ -56,8 +56,8 @@ export default function Carousel() {
       style={{
         borderColor: 'var(--border-color)',
         background: 'var(--bg-glass)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
       }}
     >
       <ParticleBackground />
@@ -109,7 +109,7 @@ export default function Carousel() {
       </div>
       <style>{`
         .home-feature { box-shadow:0 12px 44px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); animation:home-breathe 6s ease-in-out infinite; }
-        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(48px); pointer-events:none; opacity:.2; transform:translate(-50%,-50%); transition:left 3.8s cubic-bezier(.2,.7,.2,1),top 3.8s cubic-bezier(.2,.7,.2,1),background-color 1.8s ease; animation:home-glow-pulse 5.5s ease-in-out infinite; }
+        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(58px); pointer-events:none; opacity:.2; transform:translate(-50%,-50%); transition:left 3.8s cubic-bezier(.2,.7,.2,1),top 3.8s cubic-bezier(.2,.7,.2,1),background-color 1.8s ease; animation:home-glow-pulse 5.5s ease-in-out infinite; }
         .home-feature-copy { animation:home-copy-in .45s ease both; }
         @keyframes home-breathe { 0%,100% { box-shadow:0 12px 44px rgba(0,0,0,.12),0 0 18px rgba(129,140,248,.07),inset 0 1px 0 rgba(255,255,255,.07); } 50% { box-shadow:0 16px 52px rgba(0,0,0,.16),0 0 34px rgba(129,140,248,.13),inset 0 1px 0 rgba(255,255,255,.12); } }
         @keyframes home-glow-pulse { 0%,100% { opacity:.12; scale:.88; } 50% { opacity:.28; scale:1.18; } }
