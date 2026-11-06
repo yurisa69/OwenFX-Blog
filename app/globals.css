@@ -230,34 +230,38 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .nav-search-submit:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
 
-/* Original ZIP behavior: expand search as an overlay on narrow phones, not by shrinking nav actions. */
-@media (max-width: 420px) {
-  .nav-actions { gap: 6px; }
+/* Mobile search is an overlay: opening it must never resize or shift the nav controls. */
+@media (max-width: 767px) {
+  .nav-actions { gap: 7px; }
+  .nav-actions > * { flex-shrink: 0; }
   .nav-actions-search-open .nav-search-slot {
     position: absolute;
     right: 84px;
     z-index: 80;
-    width: min(176px, calc(100vw - 150px));
-    min-width: min(176px, calc(100vw - 150px));
+    width: 120px;
+    min-width: 120px;
+    pointer-events: auto;
   }
   .nav-actions-search-open .nav-theme-slot {
     visibility: hidden;
     pointer-events: none;
   }
   .nav-actions-search-open .nav-search-capsule {
-    width: min(176px, calc(100vw - 150px));
-    min-width: min(176px, calc(100vw - 150px));
-    gap: 5px;
+    width: 120px;
+    min-width: 120px;
+    height: 36px;
+    gap: 4px;
     padding-left: 10px;
     padding-right: 6px;
   }
   .nav-actions-search-open .nav-search-capsule input {
+    min-width: 0;
     font-size: 12px;
     letter-spacing: -0.02em;
   }
-  .nav-actions-search-open .nav-profile-trigger {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
+  .nav-actions-search-open .nav-profile-trigger,
+  .nav-actions-search-open .mobile-menu-toggle {
+    flex: 0 0 36px;
+    width: 36px;
   }
 }
