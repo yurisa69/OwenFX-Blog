@@ -1,51 +1,299 @@
 # OwenFX
 
-精选软件与文章分享站。技术栈：**Next.js App Router + TypeScript + Tailwind CSS + Supabase + Cloudflare R2**，部署于 Vercel。
+**OwenFX 是一个以软件发现、软件介绍和技术文章为核心的内容分享站。**  
+网站通过软件官方图标卡片展示精选应用，用户可以进入软件详情页阅读介绍，并跳转至软件官方渠道或站长整理的第三方网盘链接。文章系统用于发布软件评测、使用教程、技术经验和其他原创内容。
 
-## 功能概览
+> 本站不托管、不分发软件安装包。软件详情页只保存软件资料及外部下载入口；文件实际下载由软件官方或对应网盘服务提供。
 
-- 首页轮播 + 精选软件 / 文章
-- 文章列表与详情、评论
-- 软件资源列表与下载
-- 分类浏览
-- 收藏（bookmarks）
-- 用户注册 / 登录（邮箱 OTP）
-- 个人资料与头像上传（R2）
-- 深色 / 浅色主题
-- **移动端底部导航**：首页 · 分类 · 收藏 · 我的
+## 项目概览
 
-## 本地运行
+| 项目 | 当前配置 |
+| --- | --- |
+| Web 框架 | Next.js 15.5.7（App Router） |
+| 开发语言 | TypeScript |
+| UI | React 19 + Tailwind CSS 4 |
+| 用户认证 / 数据库 | Supabase |
+| 对象存储 | Cloudflare R2（S3 兼容 API） |
+| 邮件发送 | Nodemailer + SMTP |
+| 部署 | Vercel |
+| 代码仓库 | [yurisa69/OwenFX-Blog](https://github.com/yurisa69/OwenFX-Blog) |
+
+## 功能说明
+
+以下内容以仓库当前源码为准。依赖 Supabase、R2、SMTP 或数据库结构的功能，只有完成对应服务配置后才能正常使用。
+
+### 网站前台
+
+- 首页轮播与精选内容区域。
+- 精选软件展示，点击软件卡片进入对应详情页。
+- 文章列表、文章详情与分类内容展示。
+- 软件详情页展示介绍、版本、平台、图标 / 图片及外部下载入口。
+- 深色 / 浅色主题切换。
+- 桌面导航与移动端底部导航。
+- 页面访问及下载相关事件统计接口。
+
+### 文章管理
+
+- 管理后台提供文章列表、新建和编辑入口。
+- 支持文章草稿与发布状态。
+- 文章内容以 Markdown 文本保存，后台提供 Markdown / 富文本编辑入口。
+- 支持文章摘要、标题、Slug、发布时间等内容字段。
+- 文章创建、编辑和发布接口会校验内容管理权限。
+
+### 软件库管理
+
+- 独立维护软件资料，不把软件列表当作网盘文件列表。
+- 软件资料包含名称、英文 Slug、开发者、版本、平台、图标、介绍和截图等字段。
+- 支持设置首页精选及精选排序。
+- 每个软件可配置官方 HTTPS 下载入口，以及百度网盘、夸克网盘、阿里云盘、天翼云盘、123 云盘等外部分享链接。
+- 支持软件草稿、发布和撤回。
+- 支持为文章和软件详情分别配置赞赏方式。
+- 软件安装包由官方或外部网盘托管，OwenFX 不负责保存安装包。
+
+### 管理与安全
+
+- 管理接口会检查登录状态及站长 / 内容编辑权限。
+- 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2。
+- 图片上传限制为 JPG、PNG、WebP、GIF、AVIF，单张不超过 10 MB。
+- 注册验证码通过 SMTP 邮件发送；验证码有效期为 10 分钟，并有发送频率限制。
+- Supabase Service Role、R2 密钥和 SMTP 密码只允许放在服务端环境变量中。
+
+## 技术架构
+
+```text
+访客 / 管理员
+      |
+      v
+Next.js App Router（Vercel）
+      |
+      +---- Supabase Auth
+      |       用户登录、会话与权限校验
+      |
+      +---- Supabase Database
+      |       文章、软件、网盘链接、赞赏配置、统计等业务数据
+      |
+      +---- Cloudflare R2
+      |       头像及管理端上传的图片资源
+      |
+      +---- SMTP
+              注册验证码邮件
+```
+
+- **Vercel**：运行 Next.js 网站和服务端 API。
+- **Supabase**：提供身份认证、PostgreSQL 数据库及权限相关能力。
+- **Cloudflare R2**：通过 S3 兼容接口保存图片等对象；公开访问地址由 R2 自定义域名或公开访问域名提供。
+- **SMTP**：发送注册验证码邮件。
+
+## 目录结构
+
+仓库当前实际使用的主要目录如下：
+
+```text
+.
+├── app/                    # 当前 Next.js App Router 页面与 API
+│   ├── admin/              # 管理后台
+│   ├── api/                # 服务端 API
+│   ├── articles/           # 文章页面
+│   ├── software/           # 软件列表与详情
+│   └── layout.tsx          # 全局布局
+├── components/             # 页面与交互组件
+├── database/               # SQL 文件及数据库相关配置
+├── lib/                    # Supabase、R2、权限和业务工具
+├── public/                 # 静态资源
+├── .env.example            # 环境变量模板
+├── next.config.ts
+├── package.json
+└── tsconfig.json
+```
+
+> 仓库中还保留有 `src/app/` 和 `src/lib/` 的旧版 / 备用代码。当前 `tsconfig.json` 的编译范围包含根目录的 `app/`、`components/`、`lib/`，并明确排除了 `src/`；新增页面和业务代码应优先放在根目录对应位置，不要误把 `src/app/` 当成当前路由入口。
+
+## 环境变量配置
+
+先复制模板：
 
 ```bash
+cp .env.example .env.local
+```
+
+然后根据下表填写真实服务配置。下方所有示例值均为**虚构演示值**，不能用于连接真实服务；不要把示例值当成真实密钥提交或部署。
+
+### Supabase
+
+| 变量 | 是否需要 | 用途 |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | 必填 | Supabase 项目 URL，浏览器和服务端 Supabase 客户端都会使用。 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 必填 | Supabase 客户端使用的公开 API Key；数据库访问仍必须由 RLS / 权限策略保护。 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 服务端必填 | 服务端管理客户端使用，用于注册账号管理、验证码及需要管理员权限的操作。绝不能添加 `NEXT_PUBLIC_` 前缀。 |
+
+演示格式（非真实项目、非有效密钥）：
+
+- `NEXT_PUBLIC_SUPABASE_URL`：<code><font color="#f85149">"</font>https://example-project-ref.supabase.co<font color="#f85149">"</font></code>
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_SUPABASE_ANON_KEY<font color="#f85149">"</font></code>
+- `SUPABASE_SERVICE_ROLE_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_SERVICE_ROLE_KEY<font color="#f85149">"</font></code>
+
+### Cloudflare R2
+
+| 变量 | 是否需要 | 用途 |
+| --- | --- | --- |
+| `R2_ACCOUNT_ID` | 模板中提供 | Cloudflare 账户 ID，可用于拼接 R2 S3 API Endpoint；当前上传代码直接读取的是 `R2_ENDPOINT`。 |
+| `R2_ENDPOINT` | 必填 | R2 S3 API Endpoint，格式为 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`。 |
+| `R2_BUCKET_NAME` | 必填 | R2 存储桶名称。 |
+| `R2_ACCESS_KEY_ID` | 必填 | R2 S3 API 访问密钥 ID。 |
+| `R2_SECRET_ACCESS_KEY` | 必填 | R2 S3 API Secret Access Key。 |
+| `R2_PUBLIC_BASE_URL` | 必填 | 存储桶图片的公开访问域名 / 自定义域名，不要在末尾添加斜杠。 |
+
+演示格式（非真实账户或密钥）：
+
+- `R2_ACCOUNT_ID`：<code><font color="#f85149">"</font>00000000000000000000000000000000<font color="#f85149">"</font></code>
+- `R2_ENDPOINT`：<code><font color="#f85149">"</font>https://00000000000000000000000000000000.r2.cloudflarestorage.com<font color="#f85149">"</font></code>
+- `R2_BUCKET_NAME`：<code><font color="#f85149">"</font>owenfx-demo-bucket<font color="#f85149">"</font></code>
+- `R2_ACCESS_KEY_ID`：<code><font color="#f85149">"</font>DEMO_ONLY_R2_ACCESS_KEY_ID<font color="#f85149">"</font></code>
+- `R2_SECRET_ACCESS_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_R2_SECRET_ACCESS_KEY<font color="#f85149">"</font></code>
+- `R2_PUBLIC_BASE_URL`：<code><font color="#f85149">"</font>https://images.example.com<font color="#f85149">"</font></code>
+
+### SMTP 邮件服务
+
+以下变量会被注册验证码接口读取。它们目前需要在本地 `.env.local` 和 Vercel 环境变量中单独添加；当前 `.env.example` 尚未列出这些 SMTP 项。
+
+| 变量 | 是否需要 | 用途 |
+| --- | --- | --- |
+| `SMTP_HOST` | 可选 | SMTP 服务器地址；未填写时代码默认使用 `smtp.gmail.com`。 |
+| `SMTP_PORT` | 可选 | SMTP 端口；未填写时默认使用 `587`。 |
+| `SMTP_USER` | 必填 | SMTP 登录账号 / 发件邮箱。 |
+| `SMTP_PASS` | 必填 | SMTP 授权码或应用专用密码，不一定是邮箱网页登录密码。 |
+| `SMTP_FROM` | 可选 | 邮件发件人；未填写时使用 `SMTP_USER`。 |
+
+演示格式（不可用于发送邮件）：
+
+- `SMTP_HOST`：<code><font color="#f85149">"</font>smtp.example.com<font color="#f85149">"</font></code>
+- `SMTP_PORT`：<code><font color="#f85149">"</font>587<font color="#f85149">"</font></code>
+- `SMTP_USER`：<code><font color="#f85149">"</font>demo@example.com<font color="#f85149">"</font></code>
+- `SMTP_PASS`：<code><font color="#f85149">"</font>DEMO_ONLY_SMTP_APP_PASSWORD<font color="#f85149">"</font></code>
+- `SMTP_FROM`：<code><font color="#f85149">"</font>OwenFX Demo<font color="#f85149">"</font></code>
+
+### 站点配置
+
+| 变量 | 是否需要 | 用途 |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | 建议填写 | 站点公开访问地址。本地开发使用 localhost，部署后填写正式网站域名。 |
+
+- 本地：`http://localhost:3000`
+- 生产环境：填写自己的 HTTPS 域名，例如 <code><font color="#f85149">"</font>https://www.example.com<font color="#f85149">"</font></code>。
+
+### 环境变量安全规则
+
+1. `NEXT_PUBLIC_` 前缀表示变量可能被打包到浏览器端，只能放公开信息。
+2. `SUPABASE_SERVICE_ROLE_KEY`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY`、`SMTP_PASS` 必须保持服务端私密。
+3. 不要把真实的 `.env.local` 上传到 GitHub，也不要把真实密钥写进 README、源码、截图或 Issue。
+4. 如果密钥曾经提交到公开仓库，应立即在对应服务控制台轮换，而不是只删除 GitHub 文件。
+5. Vercel 中应分别为 Development、Preview、Production 配置对应环境变量；修改变量后需要重新部署才能让新部署读取新值。
+
+## 本地开发
+
+### 环境要求
+
+- Node.js：建议使用 Node.js 20 LTS。
+- npm：随 Node.js 安装。
+- Git：用于克隆和同步仓库。
+
+### 启动项目
+
+```bash
+git clone https://github.com/yurisa69/OwenFX-Blog.git
+cd OwenFX-Blog
+
 cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-打开 http://localhost:3000
+打开 [http://localhost:3000](http://localhost:3000)。
 
-## 环境变量
+常用命令：
 
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+| 命令 | 作用 |
+| --- | --- |
+| `npm run dev` | 启动本地开发服务器。 |
+| `npm run build` | 执行 Next.js 生产构建。 |
+| `npm run start` | 启动生产构建后的服务。 |
+| `npm run lint` | 执行 ESLint 检查。 |
 
-# Cloudflare R2（头像等资源）
-R2_ENDPOINT=
-R2_ACCESS_KEY=
-R2_SECRET_KEY=
-R2_BUCKET_NAME=owenfx-avatars
-NEXT_PUBLIC_R2_PUBLIC_URL=https://your-public-domain
+## Supabase 数据库说明
 
-# Site
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
+项目运行依赖 Supabase Auth 和多组业务数据表，例如用户资料、文章、分类、软件、软件网盘链接、云资源、赞赏设置、验证码、文章修订记录、审计日志和统计事件等。
 
-## 部署
+**数据库结构必须与当前 `app/` 下的 API 查询字段保持一致。** 仓库中的 `database/schema.sql` 是早期基础结构，包含旧版 `posts`、`comments`、`bookmarks` 等表，并不等同于当前管理后台所需的完整数据库迁移；不要把它当作当前生产数据库的一键完整初始化脚本。正式部署前应先准备并核对当前版本所需的数据库迁移、表结构、索引、RLS 策略和权限函数（例如管理员 / 内容编辑权限检查函数）。
 
-推送到 GitHub 后，Vercel 自动构建部署。请在 Vercel Settings → Environment Variables 中配置上述变量。
+不要为了让页面显示数据而关闭 RLS，也不要把 Service Role Key 放进浏览器端。
 
-## 说明
+## Cloudflare R2 配置说明
 
-当前文章与软件数据使用 `src/lib/mock*.ts` 演示数据。正式上线建议迁移到 Supabase 表，并完善后台管理。
+1. 在 Cloudflare 创建 R2 存储桶。
+2. 创建用于 S3 API 的访问密钥，并按最小权限原则授予目标存储桶所需权限。
+3. 将账户对应的 S3 API Endpoint、Bucket、Access Key ID 和 Secret Access Key 配置到服务端环境变量。
+4. 为存储桶配置公开访问域名或自定义域名，并将域名填写到 `R2_PUBLIC_BASE_URL`。
+5. 上传接口只接受图片类型，单个文件最大 10 MB。
+
+R2 密钥只用于服务端上传。公开图片 URL 可以展示在网页中，但不能因此公开 R2 的访问密钥。
+
+## Vercel 部署
+
+1. 将 GitHub 仓库导入 Vercel，框架选择 Next.js，Root Directory 使用仓库根目录。
+2. 在 Vercel 项目设置的 Environment Variables 中填写 Supabase、R2、SMTP 和站点变量。
+3. 确认生产环境数据库结构、RLS、权限函数及 SMTP 发信配置均已准备完成。
+4. 将正式域名配置到 Vercel，并把 `NEXT_PUBLIC_SITE_URL` 设置为对应 HTTPS 地址。
+5. 推送到 GitHub 默认分支后，Vercel 会按项目 Git 集成设置自动触发部署。
+6. 部署后检查首页、文章、软件详情、登录注册、图片上传及管理后台功能。
+
+如果构建失败，先查看 Vercel Deployment 的 Build Logs，定位具体文件和错误信息；不要通过删除功能代码或关闭安全策略来掩盖问题。
+
+## 内容发布工作流
+
+### 发布文章
+
+1. 使用具备内容编辑权限的账号进入管理后台。
+2. 新建文章，填写标题、Slug、摘要和正文。
+3. 保存为草稿，检查排版、链接和内容。
+4. 确认无误后发布；发布后的文章由前台文章页面展示。
+
+### 发布软件
+
+1. 在软件管理中创建软件条目。
+2. 填写软件名称、Slug、简介、开发者、版本、平台及官方图标地址。
+3. 填写软件详细介绍、截图和官方 HTTPS 下载入口。
+4. 按需添加网盘分享链接及提取码。
+5. 设置是否首页精选及排序，先保存草稿。
+6. 检查详情内容和外部链接后再发布。
+
+软件详情页应优先提供软件官方渠道。第三方网盘链接作为补充下载方式，并应确保分享内容来源合法、链接有效。
+
+## 常见问题
+
+**1. 本地启动后 Supabase 报错怎么办？**  
+检查 `.env.local` 是否存在，确认 Supabase URL 和公开 API Key 是否正确；修改环境变量后重新启动开发服务器。
+
+**2. 注册验证码无法发送怎么办？**  
+确认 Service Role Key、SMTP_USER、SMTP_PASS 等服务端变量已配置，并检查 SMTP 服务商是否允许应用密码 / SMTP 登录。也要检查验证码相关数据库表是否已创建。
+
+**3. 图片上传失败怎么办？**  
+检查 R2 Endpoint、Bucket、Access Key ID、Secret Access Key 和公开访问域名；同时确认密钥有目标 Bucket 的写入权限，以及图片格式和大小符合限制。
+
+**4. 管理后台提示没有权限怎么办？**  
+确认当前账号已登录，并在数据库中正确配置管理员或内容编辑权限及对应的权限检查函数。
+
+**5. 为什么文章或软件没有显示？**  
+检查内容是否已发布、发布时间是否已到、Slug 是否正确，以及 Supabase 表结构和 RLS 策略是否与当前代码匹配。
+
+## 项目原则
+
+- 软件介绍与文章内容是网站的核心，不以网盘链接列表替代软件详情。
+- 首页精选使用软件图标 / 应用卡片作为内容入口。
+- 软件详情页提供官方入口，网盘链接作为可选补充。
+- 不在 OwenFX 服务器或 R2 中托管软件安装包。
+- 所有服务端密钥只保存在环境变量或受控的密钥管理系统中。
+- 新功能应优先沿用当前 Next.js App Router、Supabase 和 Cloudflare R2 架构。
+
+---
+
+© OwenFX
