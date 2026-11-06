@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import ArticleContent from '@/components/ArticleContent';
 import ArticleSupport from '@/components/ArticleSupport';
+import ArticleInteractions from '@/components/ArticleInteractions';
 
 export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,6 +15,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     <p className="mb-6 mt-3 text-xs opacity-60">{new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN')}</p>
     {article.excerpt && <p className="mb-6 text-sm leading-7 opacity-75">{article.excerpt}</p>}
     <div className="border-t pt-6" style={{ borderColor: 'var(--border-color)' }}><ArticleContent content={article.content_markdown || ''} /></div>
+    <ArticleInteractions articleId={article.id} />
     <ArticleSupport className="mt-8" />
   </div></article>;
 }
