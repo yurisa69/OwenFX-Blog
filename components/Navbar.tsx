@@ -168,7 +168,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               <div className="nav-theme-slot"><ThemeToggle/></div>
               {user ? (
                 <button type="button" aria-label="打开个人详情" aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setNotice(''); }}>
-                  {user.avatar_url ? <img src={user.avatar_url} alt="" className="h-full w-full rounded-full object-cover"/> : <StarIcon/>}
+                  <StarIcon/>
                 </button>
               ) : <Link href="/login" aria-label="登录" className="nav-icon-btn"><StarIcon/></Link>}
               <button type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} className="nav-icon-btn mobile-menu-toggle md:hidden" onClick={() => setMenuOpen(value => !value)}>
