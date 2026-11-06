@@ -80,7 +80,6 @@ export default function ProfileCenter() {
         <p className="mt-1 break-all text-sm opacity-60">{user.email}</p>
         <p className="mt-3 text-sm leading-6 opacity-75">{user.bio || '还没有填写个人简介。'}</p>
       </div>
-      <button type="button" onClick={()=>router.push('/?openProfile=1')} className="rounded-xl border px-4 py-2 text-sm" style={{borderColor:'var(--border-color)'}}>编辑资料</button>
     </section>}
 
     {tab === 'comments' && <div className="space-y-3">
