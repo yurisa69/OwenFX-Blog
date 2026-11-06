@@ -218,7 +218,16 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   background: var(--bg-glass);
   box-shadow: 0 10px 28px rgba(15,23,42,0.16);
 }
-.nav-search-capsule-inline { position: static; }
+/* Keep the search slot in the navbar flow; the expanded field floats over it. */
+.nav-search-slot { position: static; width: 38px; min-width: 38px; flex: 0 0 38px; }
+.nav-search-capsule-inline {
+  position: absolute;
+  top: 0;
+  right: 92px;
+  z-index: 90;
+  width: 176px;
+  min-width: 176px;
+}
 .nav-search-capsule input { color: var(--text-primary); }
 .nav-search-submit {
   display: flex;
@@ -236,10 +245,8 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 @media (max-width: 767px) {
   .nav-actions { gap: 7px; }
   .nav-actions > * { flex-shrink: 0; }
-  .nav-actions-search-open .nav-search-slot {
-    position: absolute;
+  .nav-actions-search-open .nav-search-capsule-inline {
     right: 84px;
-    z-index: 80;
     width: 120px;
     min-width: 120px;
     pointer-events: auto;
