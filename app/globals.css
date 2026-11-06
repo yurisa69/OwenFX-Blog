@@ -209,10 +209,10 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 
 /* Match the original ZIP search capsule sizing and inline behavior. */
 .nav-search-capsule {
-  width: 128px;
-  min-width: 128px;
+  width: 176px;
+  min-width: 176px;
   height: 36px;
-  gap: 4px;
+  gap: 24px;
   border-radius: 999px;
   padding: 0 6px 0 10px;
   background: var(--bg-glass);
