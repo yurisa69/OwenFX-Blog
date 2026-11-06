@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ParticleBackground from '@/components/ParticleBackground';
 
 const slides = [
   { title: '精选软件', desc: '发现高效实用的开源免费工具', tags: ['免费开源', '精选推荐', '每日更新'] },
@@ -39,10 +38,10 @@ export default function Carousel() {
       setGlowPositions(
         Array.from({ length: 3 }, () => ({
           x: 8 + Math.random() * 84,
-          y: 10 + Math.random() * 80,
+          y: 12 + Math.random() * 76,
         }))
       );
-    }, 4600);
+    }, 6500);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -56,20 +55,19 @@ export default function Carousel() {
       style={{
         borderColor: 'var(--border-color)',
         background: 'var(--bg-glass)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
       }}
     >
-      <ParticleBackground />
       {glowPositions.map((position, index) => (
         <div
           key={index}
           className="home-feature-glow"
           style={{
-            left: `${position.x}%`,
-            top: `${position.y}%`,
+            left: 0,
+            top: 0,
             background: activePalette[index],
-            animationDelay: `${index * -1.7}s`,
+            transform: `translate3d(${position.x}vw, ${position.y}%, 0) translate(-50%, -50%)`,
           }}
         />
       ))}
@@ -109,13 +107,18 @@ export default function Carousel() {
         </div>
       </div>
       <style>{`
-        .home-feature { box-shadow:0 12px 44px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); animation:home-breathe 6s ease-in-out infinite; }
-        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(58px); pointer-events:none; opacity:.2; transform:translate(-50%,-50%); transition:left 3.8s cubic-bezier(.2,.7,.2,1),top 3.8s cubic-bezier(.2,.7,.2,1),background 1.8s ease; animation:home-glow-pulse 5.5s ease-in-out infinite; }
-        .home-feature-copy { animation:home-copy-in .55s ease both; }
-        @keyframes home-breathe { 0%,100% { box-shadow:0 12px 44px rgba(0,0,0,.12),0 0 18px rgba(129,140,248,.07),inset 0 1px 0 rgba(255,255,255,.07); } 50% { box-shadow:0 16px 52px rgba(0,0,0,.16),0 0 34px rgba(129,140,248,.13),inset 0 1px 0 rgba(255,255,255,.12); } }
-        @keyframes home-glow-pulse { 0%,100% { opacity:.12; scale:.88; } 50% { opacity:.28; scale:1.18; } }
-        @keyframes home-copy-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-        @media (prefers-reduced-motion: reduce) { .home-feature,.home-feature-glow,.home-feature-copy { animation:none !important; transition:none !important; } }
+        .home-feature { box-shadow:0 12px 36px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); }
+        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(48px); pointer-events:none; opacity:.19; will-change:transform; transition:transform 5.8s cubic-bezier(.22,.61,.36,1),background-color 1.4s ease; }
+        .home-feature-copy { animation:home-copy-in .45s ease both; }
+        @keyframes home-copy-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+        @media (max-width: 640px) {
+          .home-feature { backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+          .home-feature-glow { width:145px; height:115px; filter:blur(32px); opacity:.16; transition:transform 6.5s ease-in-out,background-color 1.8s ease; }
+          .home-feature-copy { animation:none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .home-feature-glow,.home-feature-copy { animation:none !important; transition:none !important; }
+        }
       `}</style>
     </section>
   );
