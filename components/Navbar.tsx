@@ -34,6 +34,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isMobileSearch, setIsMobileSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [profile, setProfile] = useState<Profile>({ display_name: initialUser?.name || '', bio: '', avatar_url: initialUser?.avatar_url || null });
   const [editing, setEditing] = useState(false);
@@ -44,6 +45,13 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => setUser(initialUser), [initialUser]);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobileSearch(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
   useEffect(() => {
     if (!searchOpen) return;
     searchRef.current?.focus();
@@ -152,7 +160,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               <div className="nav-search-slot flex items-center">
                 {searchOpen ? (
                   <form onSubmit={handleSearch} className="nav-search-capsule nav-search-capsule-inline animate-fade-in">
-                    <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder="搜索文章 » 软件" aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/>
+                    <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder={isMobileSearch ? "搜索文章 »" : "搜索文章 » 软件"} aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/>
                     <button type="submit" aria-label="提交搜索" className="nav-search-submit"><SearchIcon/></button>
                   </form>
                 ) : <button type="button" aria-label="搜索" className="nav-icon-btn" onClick={() => setSearchOpen(true)}><SearchIcon/></button>}
