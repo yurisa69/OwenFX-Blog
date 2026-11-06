@@ -148,7 +148,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
             <nav className="hidden md:flex items-center gap-1">
               {navLinks.map(link => <Link key={link.href} href={link.href} className="nav-link-pill">{link.label}</Link>)}
             </nav>
-            <div className="nav-actions relative flex items-center gap-2">
+            <div className={`nav-actions relative flex items-center gap-2 ${searchOpen ? "nav-actions-search-open" : ""}`}>
               <div className="nav-search-slot flex items-center">
                 {searchOpen ? (
                   <form onSubmit={handleSearch} className="nav-search-capsule nav-search-capsule-inline animate-fade-in">
