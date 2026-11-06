@@ -163,7 +163,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   {user.avatar_url ? <img src={user.avatar_url} alt="" className="h-full w-full rounded-full object-cover"/> : <StarIcon/>}
                 </button>
               ) : <Link href="/login" aria-label="登录" className="nav-icon-btn"><StarIcon/></Link>}
-              <button type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} className="nav-icon-btn md:hidden" onClick={() => setMenuOpen(value => !value)}>
+              <button type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} className="nav-icon-btn mobile-menu-toggle md:hidden" onClick={() => setMenuOpen(value => !value)}>
                 {menuOpen ? <CloseIcon/> : <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>}
               </button>
             </div>
