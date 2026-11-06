@@ -237,18 +237,23 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
     position: absolute;
     right: 84px;
     z-index: 80;
-    width: 120px;
-    min-width: 120px;
+    width: min(176px, calc(100vw - 150px));
+    min-width: min(176px, calc(100vw - 150px));
   }
   .nav-actions-search-open .nav-theme-slot {
     visibility: hidden;
     pointer-events: none;
   }
   .nav-actions-search-open .nav-search-capsule {
-    width: 120px;
-    min-width: 120px;
-    padding-left: 12px;
-    padding-right: 8px;
+    width: min(176px, calc(100vw - 150px));
+    min-width: min(176px, calc(100vw - 150px));
+    gap: 5px;
+    padding-left: 10px;
+    padding-right: 6px;
+  }
+  .nav-actions-search-open .nav-search-capsule input {
+    font-size: 12px;
+    letter-spacing: -0.02em;
   }
   .nav-actions-search-open .nav-profile-trigger {
     width: 34px;
