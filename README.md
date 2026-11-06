@@ -128,7 +128,7 @@ cp .env.example .env.local
 
 演示格式（非真实项目、非有效密钥）：
 
-- `NEXT_PUBLIC_SUPABASE_URL`：<code> <font color="#f85149">"</font>https://example-project-ref.supabase.co<font color="#f85149">"</font></code>
+- `NEXT_PUBLIC_SUPABASE_URL`：<code><font color="#f85149">"</font>https://example-project-ref.supabase.co<font color="#f85149">"</font></code>
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_SUPABASE_ANON_KEY<font color="#f85149">"</font></code>
 - `SUPABASE_SERVICE_ROLE_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_SERVICE_ROLE_KEY<font color="#f85149">"</font></code>
 
@@ -170,7 +170,7 @@ cp .env.example .env.local
 - `SMTP_PORT`：<code><font color="#f85149">"</font>587<font color="#f85149">"</font></code>
 - `SMTP_USER`：<code><font color="#f85149">"</font>demo@example.com<font color="#f85149">"</font></code>
 - `SMTP_PASS`：<code><font color="#f85149">"</font>DEMO_ONLY_SMTP_APP_PASSWORD<font color="#f85149">"</font></code>
-- `SMTP_FROM`：<code><font color="#f85149">"</font>OwenFX <demo@example.com><font color="#f85149">"</font></code>
+- `SMTP_FROM`：<code><font color="#f85149">"</font>OwenFX Demo<font color="#f85149">"</font></code>
 
 ### 站点配置
 
