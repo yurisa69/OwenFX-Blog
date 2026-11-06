@@ -64,10 +64,9 @@ export default function Carousel() {
           key={index}
           className="home-feature-glow"
           style={{
-            left: 0,
-            top: 0,
+            left: `${position.x}%`,
+            top: `${position.y}%`,
             background: activePalette[index],
-            transform: `translate3d(${position.x}vw, ${position.y}%, 0) translate(-50%, -50%)`,
           }}
         />
       ))}
@@ -108,12 +107,12 @@ export default function Carousel() {
       </div>
       <style>{`
         .home-feature { box-shadow:0 12px 36px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); }
-        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(48px); pointer-events:none; opacity:.19; will-change:transform; transition:transform 5.8s cubic-bezier(.22,.61,.36,1),background-color 1.4s ease; }
+        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(48px); pointer-events:none; opacity:.19; transform:translate(-50%,-50%); transition:left 5.8s cubic-bezier(.22,.61,.36,1),top 5.8s cubic-bezier(.22,.61,.36,1),background-color 1.4s ease; }
         .home-feature-copy { animation:home-copy-in .45s ease both; }
         @keyframes home-copy-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         @media (max-width: 640px) {
           .home-feature { backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
-          .home-feature-glow { width:145px; height:115px; filter:blur(32px); opacity:.16; transition:transform 6.5s ease-in-out,background-color 1.8s ease; }
+          .home-feature-glow { width:145px; height:115px; filter:blur(32px); opacity:.15; transition:left 6.5s ease-in-out,top 6.5s ease-in-out,background-color 1.8s ease; }
           .home-feature-copy { animation:none; }
         }
         @media (prefers-reduced-motion: reduce) {
