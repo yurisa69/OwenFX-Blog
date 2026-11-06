@@ -15,7 +15,7 @@ export default async function SoftwarePage() {
     .limit(100);
 
   return <main className="py-8">
-    <h1 className="mb-2 text-2xl font-bold">软件库</h1>
+    <h1 className="mb-2 text-2xl font-bold">应用</h1>
     <p className="mb-6 text-sm opacity-70">软件介绍与下载入口汇总。安装包由软件官方或第三方网盘提供，OwenFX 不托管安装包。</p>
     {!data?.length ? <div className="uiverse-card p-6 text-sm opacity-70">软件库正在整理中，敬请期待。</div> :
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
