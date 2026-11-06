@@ -83,10 +83,6 @@ export default function Carousel() {
       ))}
       <div className="relative z-10 flex min-h-[190px] flex-col justify-center px-6 py-8 sm:min-h-[220px] sm:px-10 sm:py-10">
         <div key={idx} className="home-feature-copy">
-          <span className="mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-medium"
-            style={{ borderColor: 'var(--border-color)', background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-            OWENFX · 精选推荐
-          </span>
           <h2 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">{slide.title}</h2>
           <p className="mb-5 max-w-xl text-sm sm:text-base" style={{ color: 'var(--text-secondary)' }}>{slide.desc}</p>
           <div className="flex flex-wrap gap-2">
