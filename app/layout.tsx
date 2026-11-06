@@ -63,7 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeProvider>
           <Navbar initialUser={initialUser} />
           <main style={{ paddingTop: '56px', overflowX: 'hidden' }}>
-            <div className="max-w-6xl mx-auto min-h-[calc(100vh-3.5rem)]" style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '5.5rem' }}>
+            <div className="max-w-6xl mx-auto min-h-[calc(100vh-3.5rem)] pb-[5.5rem] md:pb-0" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
               {children}
             </div>
           </main>
