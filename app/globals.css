@@ -274,3 +274,10 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
     width: 36px;
   }
 }
+
+
+/* The bottom tab bar is strictly phone-only. Do not rely on framework breakpoints. */
+.mobile-bottom-nav { display: block; }
+@media screen and (min-width: 768px) {
+  .mobile-bottom-nav { display: none !important; }
+}
