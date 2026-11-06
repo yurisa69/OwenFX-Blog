@@ -1,4 +1,3 @@
-import ParticleBackground from '@/components/ParticleBackground';
 import Carousel from '@/components/Carousel';
 import HomeSections from '@/components/HomeSections';
 import { createClient } from '@/lib/supabase/server';
@@ -28,7 +27,6 @@ export default async function HomePage() {
   }));
 
   return <div>
-    <div className="particle-wrap"><style>{`.particle-wrap{width:100%;height:112px;border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:transparent;position:relative}@media(min-width:768px){.particle-wrap{height:144px}}`}</style><ParticleBackground /></div>
     <Carousel />
     <HomeSections articles={articles} featured={software ?? []} />
     <footer className="text-center py-8 text-sm border-t" style={{ color: 'var(--text-tertiary)', borderColor: 'var(--border-color)' }}><p>OwenFX © {new Date().getFullYear()}</p></footer>
