@@ -152,7 +152,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               <div className="nav-search-slot flex items-center">
                 {searchOpen ? (
                   <form onSubmit={handleSearch} className="nav-search-capsule nav-search-capsule-inline animate-fade-in">
-                    <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder="搜索文章»软件" aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/>
+                    <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder="搜索文章 » 软件" aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/>
                     <button type="submit" aria-label="提交搜索" className="nav-search-submit"><SearchIcon/></button>
                   </form>
                 ) : <button type="button" aria-label="搜索" className="nav-icon-btn" onClick={() => setSearchOpen(true)}><SearchIcon/></button>}
