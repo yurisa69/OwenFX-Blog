@@ -15,6 +15,16 @@ const tabs = [
     ),
   },
   {
+    href: '/software',
+    label: '应用',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <path d="M8 7h8M8 11h8M8 15h4" />
+      </svg>
+    ),
+  },
+  {
     href: '/categories',
     label: '分类',
     icon: (
@@ -27,16 +37,7 @@ const tabs = [
     ),
   },
   {
-    href: '/bookmarks',
-    label: '收藏',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/about',
+    href: '/profile',
     label: '我的',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
