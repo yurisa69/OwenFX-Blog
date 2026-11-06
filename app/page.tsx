@@ -1,23 +1,36 @@
-import { mockSoftware } from '@/lib/mock';
-import { mockArticles } from '@/lib/mock-articles';
 import ParticleBackground from '@/components/ParticleBackground';
 import Carousel from '@/components/Carousel';
 import HomeSections from '@/components/HomeSections';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function HomePage() {
-  const software = mockSoftware;
-  const featured = software.filter(s => s.featured);
-  const topArticles = mockArticles;
+  const supabase = await createClient();
+  const [{ data: software }, { data: articleRows }] = await Promise.all([
+    supabase.from('software')
+      .select('id,title,slug,description,version,platform,image_url,developer')
+      .eq('status', 'published')
+      .eq('featured', true)
+      .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
+      .order('featured_order', { ascending: true })
+      .order('updated_at', { ascending: false }).limit(18),
+    supabase.from('articles')
+      .select('id,title,excerpt,published_at,created_at,categories(name)')
+      .eq('status', 'published')
+      .lte('published_at', new Date().toISOString())
+      .order('published_at', { ascending: false }).limit(8),
+  ]);
+  const articles = (articleRows || []).map((article: any) => ({
+    id: article.id,
+    title: article.title,
+    category: article.categories?.name || '文章',
+    description: article.excerpt || '',
+    createdAt: new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN'),
+  }));
 
-  return (
-    <div>
-      <div className="particle-wrap">
-        <style>{`.particle-wrap{width:100%;height:112px;border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:transparent;position:relative}@media(min-width:768px){.particle-wrap{height:144px}}`}</style>
-        <ParticleBackground />
-      </div>
-      <Carousel />
-      <HomeSections articles={topArticles} featured={featured} />
-      <footer className="text-center py-8 text-sm border-t" style={{color:'var(--text-tertiary)', borderColor:'var(--border-color)'}}><p>OwenFX © {new Date().getFullYear()}</p></footer>
-    </div>
-  );
+  return <div>
+    <div className="particle-wrap"><style>{`.particle-wrap{width:100%;height:112px;border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:transparent;position:relative}@media(min-width:768px){.particle-wrap{height:144px}}`}</style><ParticleBackground /></div>
+    <Carousel />
+    <HomeSections articles={articles} featured={software ?? []} />
+    <footer className="text-center py-8 text-sm border-t" style={{ color: 'var(--text-tertiary)', borderColor: 'var(--border-color)' }}><p>OwenFX © {new Date().getFullYear()}</p></footer>
+  </div>;
 }
