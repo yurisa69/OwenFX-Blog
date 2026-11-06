@@ -9,8 +9,22 @@ const slides = [
   { title: '分类浏览', desc: '按分类快速找到你需要的工具', tags: ['工具', '开发', '多媒体'] },
 ];
 
+const glowPalettes = [
+  ['#818cf8', '#22d3ee', '#a78bfa'],
+  ['#f472b6', '#60a5fa', '#c084fc'],
+  ['#34d399', '#fbbf24', '#fb7185'],
+];
+
+type Glow = { x: number; y: number };
+
 export default function Carousel() {
   const [idx, setIdx] = useState(0);
+  const [glowRound, setGlowRound] = useState(0);
+  const [glowPositions, setGlowPositions] = useState<Glow[]>([
+    { x: 18, y: 28 },
+    { x: 78, y: 34 },
+    { x: 52, y: 82 },
+  ]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -19,7 +33,21 @@ export default function Carousel() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setGlowRound(current => (current + 1) % glowPalettes.length);
+      setGlowPositions(
+        Array.from({ length: 3 }, () => ({
+          x: 8 + Math.random() * 84,
+          y: 10 + Math.random() * 80,
+        }))
+      );
+    }, 4600);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const slide = slides[idx];
+  const activePalette = glowPalettes[glowRound];
 
   return (
     <section
@@ -33,8 +61,18 @@ export default function Carousel() {
       }}
     >
       <ParticleBackground />
-      <div className="home-feature-glow home-feature-glow-one" />
-      <div className="home-feature-glow home-feature-glow-two" />
+      {glowPositions.map((position, index) => (
+        <div
+          key={index}
+          className="home-feature-glow"
+          style={{
+            left: `${position.x}%`,
+            top: `${position.y}%`,
+            background: activePalette[index],
+            animationDelay: `${index * -1.7}s`,
+          }}
+        />
+      ))}
       <div className="relative z-10 flex min-h-[190px] flex-col justify-center px-6 py-8 sm:min-h-[220px] sm:px-10 sm:py-10">
         <div key={idx} className="home-feature-copy">
           <span className="mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-medium"
@@ -71,16 +109,13 @@ export default function Carousel() {
         </div>
       </div>
       <style>{`
-        .home-feature { box-shadow: 0 12px 44px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.07); animation: home-breathe 6s ease-in-out infinite; }
-        .home-feature-glow { position:absolute; z-index:0; width:240px; height:180px; border-radius:999px; filter:blur(58px); pointer-events:none; opacity:.2; }
-        .home-feature-glow-one { top:-90px; left:12%; background:#818cf8; animation: home-glow-one 7s ease-in-out infinite; }
-        .home-feature-glow-two { right:8%; bottom:-110px; background:#06b6d4; animation: home-glow-two 8s ease-in-out infinite; }
-        .home-feature-copy { animation: home-copy-in .55s ease both; }
-        @keyframes home-breathe { 0%,100% { box-shadow:0 12px 44px rgba(0,0,0,.12),0 0 18px rgba(129,140,248,.07),inset 0 1px 0 rgba(255,255,255,.07); } 50% { box-shadow:0 16px 52px rgba(0,0,0,.16),0 0 34px rgba(129,140,248,.17),inset 0 1px 0 rgba(255,255,255,.12); } }
-        @keyframes home-glow-one { 0%,100% { transform:translate3d(0,0,0) scale(1); opacity:.16; } 50% { transform:translate3d(35px,22px,0) scale(1.18); opacity:.3; } }
-        @keyframes home-glow-two { 0%,100% { transform:translate3d(0,0,0) scale(1); opacity:.13; } 50% { transform:translate3d(-28px,-18px,0) scale(1.2); opacity:.26; } }
+        .home-feature { box-shadow:0 12px 44px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); animation:home-breathe 6s ease-in-out infinite; }
+        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(58px); pointer-events:none; opacity:.2; transform:translate(-50%,-50%); transition:left 3.8s cubic-bezier(.2,.7,.2,1),top 3.8s cubic-bezier(.2,.7,.2,1),background 1.8s ease; animation:home-glow-pulse 5.5s ease-in-out infinite; }
+        .home-feature-copy { animation:home-copy-in .55s ease both; }
+        @keyframes home-breathe { 0%,100% { box-shadow:0 12px 44px rgba(0,0,0,.12),0 0 18px rgba(129,140,248,.07),inset 0 1px 0 rgba(255,255,255,.07); } 50% { box-shadow:0 16px 52px rgba(0,0,0,.16),0 0 34px rgba(129,140,248,.13),inset 0 1px 0 rgba(255,255,255,.12); } }
+        @keyframes home-glow-pulse { 0%,100% { opacity:.12; scale:.88; } 50% { opacity:.28; scale:1.18; } }
         @keyframes home-copy-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-        @media (prefers-reduced-motion: reduce) { .home-feature,.home-feature-glow,.home-feature-copy { animation:none !important; } }
+        @media (prefers-reduced-motion: reduce) { .home-feature,.home-feature-glow,.home-feature-copy { animation:none !important; transition:none !important; } }
       `}</style>
     </section>
   );
