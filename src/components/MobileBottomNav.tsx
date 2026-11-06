@@ -52,7 +52,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 md:hidden pointer-events-none">
+    <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 md:hidden pointer-events-none">
       <nav className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-2xl border border-[var(--border-color)] bg-[var(--bg-glass)] px-1 py-2 shadow-[0_8px_32px_rgba(0,0,0,.35)] backdrop-blur-xl">
         {tabs.map(({ href, label, icon }) => {
           const active =
