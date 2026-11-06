@@ -170,9 +170,18 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
           </div>
         </header>
         {menuOpen && (
-          <div className="mobile-menu-glass md:hidden">
-            <nav className="mobile-menu-list">
-              {navLinks.map(link => <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="mobile-menu-link">{link.label}<span aria-hidden="true">↗</span></Link>)}
+          <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg">
+            <nav className="flex flex-col p-4 gap-1">
+              {navLinks.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
           </div>
         )}
