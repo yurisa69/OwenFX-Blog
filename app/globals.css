@@ -205,3 +205,26 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 @media (min-width: 768px) {
   .mobile-menu-toggle { display: none !important; }
 }
+
+
+/* Match the original ZIP search capsule sizing and inline behavior. */
+.nav-search-capsule {
+  width: clamp(128px, 32vw, 240px);
+  height: 36px;
+  border-radius: 999px;
+  padding: 0 8px 0 14px;
+  background: var(--bg-glass);
+  box-shadow: 0 10px 28px rgba(15,23,42,0.16);
+}
+.nav-search-capsule-inline { position: static; }
+.nav-search-capsule input { color: var(--text-primary); }
+.nav-search-submit {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+}
+.nav-search-submit:hover { background: var(--bg-tertiary); color: var(--text-primary); }
