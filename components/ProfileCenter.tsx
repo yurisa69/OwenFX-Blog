@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 
 type Tab = 'profile' | 'bookmarks' | 'comments' | 'likes';
-type ArticleRef = { title: string; slug: string } | null;
+type ArticleRef = { id: string; title: string; slug: string } | null;
 type Interaction = { id: string; created_at: string; article: ArticleRef };
 type CommentItem = { id: string; body: string; status: string; created_at: string; article: ArticleRef };
 
@@ -30,7 +30,7 @@ export default function ProfileCenter() {
       const meta = authUser.user_metadata || {};
       const { data: profile } = await supabase.from('profiles').select('display_name,avatar_url,bio').eq('id', authUser.id).maybeSingle();
       const [interactionResult, commentResult] = await Promise.all([
-        supabase.from('article_interactions').select('id,interaction_type,created_at,article:articles(title,slug)')
+        supabase.from('article_interactions').select('id,interaction_type,created_at,article:articles(id,title,slug)')
           .eq('user_id', authUser.id).order('created_at', {ascending:false}),
         supabase.from('comments').select('id,body,status,created_at,article:articles(title,slug)')
           .eq('author_id', authUser.id).order('created_at', {ascending:false}),
@@ -86,7 +86,7 @@ export default function ProfileCenter() {
       {!comments.length ? <Empty text="你还没有发表过评论"/> : comments.map(item=><div key={item.id} className="uiverse-card p-4">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs opacity-55"><span>{new Date(item.created_at).toLocaleString('zh-CN')}</span><span>{item.status==='approved'?'已通过':item.status==='rejected'?'未通过':'审核中'}</span></div>
         <p className="whitespace-pre-wrap text-sm leading-6">{item.body}</p>
-        {item.article && <Link className="mt-3 inline-block text-sm" style={{color:'var(--accent)'}} href={'/articles/'+item.article.slug}>文章：{item.article.title} →</Link>}
+        {item.article && <Link className="mt-3 inline-block text-sm" style={{color:'var(--accent)'}} href={'/articles/'+item.article.id}>文章：{item.article.title} →</Link>}
       </div>)}
     </div>}
 
