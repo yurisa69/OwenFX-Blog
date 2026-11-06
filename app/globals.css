@@ -129,6 +129,8 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .six-star-spin {
   animation: six-star-spin 8s linear infinite;
 }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.animate-fade-in { animation: fade-in 0.5s ease-out both; }
 @keyframes six-star-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -173,12 +175,6 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .nav-search-capsule{display:flex;width:clamp(150px,32vw,240px);height:38px;align-items:center;gap:8px;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);padding:0 8px 0 14px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
 .nav-search-submit{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;color:var(--text-secondary)}
 .nav-search-submit:hover{color:var(--accent)}
-.mobile-menu-glass{border-top:1px solid var(--border-color);background:rgba(10,14,27,.84);-webkit-backdrop-filter:blur(28px) saturate(145%);backdrop-filter:blur(28px) saturate(145%);box-shadow:0 18px 42px rgba(0,0,0,.28);padding:10px 16px 16px}
-[data-theme="light"] .mobile-menu-glass{background:rgba(248,250,252,.86)}
-.mobile-menu-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.mobile-menu-link{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 15px;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);color:var(--text-secondary);font-size:14px;transition:all .2s}
-.mobile-menu-link:hover{border-color:rgba(129,140,248,.35);background:var(--accent-bg);color:var(--text-primary)}
-.mobile-menu-link span{opacity:.45;font-size:12px}
 .profile-drawer-layer{position:fixed;inset:0;z-index:70;overflow:hidden}
 .profile-drawer-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(2,6,23,.62);backdrop-filter:blur(8px)}
 .profile-drawer-panel{position:absolute;right:0;top:0;display:flex;height:100dvh;width:min(92vw,410px);flex-direction:column;overflow-y:auto;border-left:1px solid rgba(255,255,255,.13);background:linear-gradient(160deg,rgba(15,20,39,.98),rgba(5,9,20,.97));padding:26px 22px 20px;box-shadow:-24px 0 70px rgba(2,6,23,.58);animation:profile-drawer-in .28s cubic-bezier(.2,.75,.25,1)}
