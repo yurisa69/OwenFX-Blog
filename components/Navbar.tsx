@@ -14,8 +14,8 @@ const navLinks = [
   { label: '文章', href: '/articles' },
   { label: '软件', href: '/software' },
   { label: '分类', href: '/categories' },
-  { label: '关于', href: '/about' },
   { label: '联系', href: '/contact' },
+  { label: '关于', href: '/about' },
 ];
 
 function SearchIcon() {
@@ -180,7 +180,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
         {menuOpen && (
           <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg">
             <nav className="flex flex-col p-4 gap-1">
-              {navLinks.filter(link => link.label !== '软件').map(link => (
+              {navLinks.map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
