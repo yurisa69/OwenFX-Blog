@@ -26,6 +26,8 @@ export async function POST(req: Request) {
   if (links.length > 12 || links.some((link: any) => !providers.includes(link.provider) || !/^https:\/\//i.test(link.share_url || ''))) return NextResponse.json({ error: '网盘链接无效，最多 12 个且必须使用 HTTPS' }, { status: 400 });
   const official = typeof body.official_download_url === 'string' ? body.official_download_url.trim() : '';
   if (official && !/^https:\/\//i.test(official)) return NextResponse.json({ error: '官方下载地址必须使用 HTTPS' }, { status: 400 });
+  const iconUrl = typeof body.image_url === 'string' ? body.image_url.trim() : '';
+  if (iconUrl && (!/^https:\/\//i.test(iconUrl) || iconUrl.length > 2048)) return NextResponse.json({ error: '软件图标地址必须是有效的 HTTPS 地址' }, { status: 400 });
   const { data, error } = await auth.supabase.from('software').insert({
     title, slug, description: String(body.description || '').slice(0, 500),
     introduction_markdown: String(body.introduction_markdown || '').slice(0, 30000),
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
     developer: String(body.developer || '').slice(0, 160) || null,
     version: String(body.version || '').slice(0, 80) || null,
     platform: String(body.platform || '').slice(0, 160) || null,
-    image_url: String(body.image_url || '').slice(0, 2048) || null,
+    image_url: iconUrl || null,
     official_download_url: official || null, download_url: official || null,
     status: 'draft', featured: body.featured === true,
   }).select('id').single();

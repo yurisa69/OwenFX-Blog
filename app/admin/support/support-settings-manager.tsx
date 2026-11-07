@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import R2ImageUploader from '@/components/admin/R2ImageUploader';
 
 type Method = { enabled: boolean; qr_url: string; address: string; network: string };
 type Methods = Record<'alipay' | 'wechat' | 'usdc' | 'usdt', Method>;
@@ -40,7 +41,7 @@ export default function SupportSettingsManager() {
       {(Object.keys(labels) as Array<keyof Methods>).map(key => <div key={key} className="space-y-2 rounded-xl border p-3" style={{ borderColor: 'var(--border-color)' }}>
         <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={setting.methods[key].enabled} onChange={event => update(setting.placement, item => ({ ...item, methods: { ...item.methods, [key]: { ...item.methods[key], enabled: event.target.checked } } }))} />{labels[key]}</label>
         {key === 'alipay' || key === 'wechat' ?
-          <input type="url" className="w-full rounded-lg border bg-transparent p-2 text-sm" placeholder="收款二维码图片 HTTPS 地址" value={setting.methods[key].qr_url} onChange={event => update(setting.placement, item => ({ ...item, methods: { ...item.methods, [key]: { ...item.methods[key], qr_url: event.target.value } } }))} /> :
+          <R2ImageUploader kind="image" label={labels[key] + "收款二维码"} alt={labels[key] + "收款二维码"} value={setting.methods[key].qr_url} onChange={value => update(setting.placement, item => ({ ...item, methods: { ...item.methods, [key]: { ...item.methods[key], qr_url: value } } }))} /> :
           <><input className="w-full rounded-lg border bg-transparent p-2 text-sm" placeholder="钱包收款地址" value={setting.methods[key].address} onChange={event => update(setting.placement, item => ({ ...item, methods: { ...item.methods, [key]: { ...item.methods[key], address: event.target.value } } }))} /><input className="w-full rounded-lg border bg-transparent p-2 text-sm" placeholder="网络，例如 Ethereum / Arbitrum / TRON" value={setting.methods[key].network} onChange={event => update(setting.placement, item => ({ ...item, methods: { ...item.methods, [key]: { ...item.methods[key], network: event.target.value } } }))} /></>}
       </div>)}
       <button className="uiverse-btn uiverse-btn-primary w-full" onClick={() => void save(setting)}>保存{setting.placement === 'article' ? '文章' : '软件详情'}赞赏配置</button>

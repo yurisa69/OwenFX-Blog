@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import R2ImageUploader from '@/components/admin/R2ImageUploader';
 
 type LinkItem = { provider: string; label: string; share_url: string; access_code: string };
 type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; featured_order?: number | null; status: string; featured: boolean; software_download_links?: LinkItem[] };
@@ -63,7 +64,7 @@ export default function SoftwareManager() {
       <input className="rounded-lg border bg-transparent p-2" placeholder="开发者 / 厂商" value={form.developer} onChange={e => change('developer', e.target.value)} />
       <input className="rounded-lg border bg-transparent p-2" placeholder="版本号" value={form.version} onChange={e => change('version', e.target.value)} />
       <input className="rounded-lg border bg-transparent p-2" placeholder="平台，例如 Windows / Android" value={form.platform} onChange={e => change('platform', e.target.value)} />
-      <input type="url" className="rounded-lg border bg-transparent p-2" placeholder="官方图标 HTTPS 图片地址" value={form.image_url} onChange={e => change('image_url', e.target.value)} />
+      <R2ImageUploader kind="software_icon" label="软件官方图标" alt={(form.title || "软件") + " 官方图标"} value={form.image_url} onChange={value => change('image_url', value)} />
       <input type="url" className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="官方官方下载页面 HTTPS 地址" value={form.official_download_url} onChange={e => change('official_download_url', e.target.value)} />
       <textarea rows={6} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件详细介绍（支持 Markdown 文本）" value={form.introduction_markdown} onChange={e => change('introduction_markdown', e.target.value)} />\n      <textarea rows={3} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件截图 HTTPS 图片地址，每行一个（可选）" value={form.screenshots} onChange={e => change('screenshots', e.target.value)} />\n      <label className="block text-sm">精选排序<input type="number" min="0" className="admin-input mt-2 w-full" value={form.featured_order} onChange={e => change('featured_order', Number(e.target.value))} /></label>
       <div className="space-y-2 sm:col-span-2">

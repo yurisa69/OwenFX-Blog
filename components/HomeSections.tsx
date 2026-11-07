@@ -20,11 +20,15 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
       </Link>)}</div> : <div className="uiverse-card p-5 text-sm opacity-60">暂无已发布文章。</div>}
     </section>
     {featured.length > 0 && <section className="pb-10">
-      <div className="mb-5 flex items-center justify-between"><h2 className="flex items-center gap-2 text-lg font-semibold md:text-xl">精选软件<span className="h-3 w-3 rounded-full" style={{ background: '#a855f7' }} /></h2><Link href="/software" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link></div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">{featured.slice(fp * PAGE_SIZE, (fp + 1) * PAGE_SIZE).map((item, index) => <Link key={item.id} href={'/software/' + item.slug} className="uiverse-card animate-fade-in flex flex-col items-center p-4 text-center" style={{ animationDelay: index * 80 + 'ms' }}>
-        <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl" style={{ background: 'var(--bg-tertiary)' }}>{item.image_url ? <img src={item.image_url} alt={item.title + ' 图标'} className="h-full w-full object-cover" /> : <span className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>}</div>
-        <h3 className="truncate text-sm font-semibold">{item.title}</h3><p className="mt-1 line-clamp-2 text-xs" style={{ color: 'var(--text-secondary)' }}>{item.description || item.developer || item.platform || '查看软件详情'}</p>{item.version && <span className="mt-2 text-[11px] opacity-60">{item.version}</span>}
-      </Link>)}</div>
+      <div className="mb-5 flex items-center justify-between"><h2 className="flex items-center gap-2 text-lg font-semibold md:text-xl">精选推荐<span className="h-3 w-3 rounded-full" style={{ background: '#a855f7' }} /></h2><Link href="/software" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link></div>
+      <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+        {featured.slice(fp * PAGE_SIZE, (fp + 1) * PAGE_SIZE).map((item, index) => <Link key={item.id} href={'/software/' + item.slug} aria-label={'查看' + item.title + '软件详情'} className="uiverse-card animate-fade-in flex min-h-36 flex-col items-center justify-center gap-3 p-4 text-center transition hover:-translate-y-1" style={{ animationDelay: index * 80 + 'ms' }}>
+          <div className="flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-[22px] shadow-sm" style={{ background: 'var(--bg-tertiary)' }}>
+            {item.image_url ? <img src={item.image_url} alt={item.title + ' 官方图标'} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="h-full w-full object-cover" /> : <span className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>}
+          </div>
+          <h3 className="w-full truncate text-sm font-semibold">{item.title}</h3>
+        </Link>)}
+      </div>
       {totalPages > 1 && <div className="mt-6 flex items-center justify-center gap-2"><button aria-label="上一页" disabled={fp === 0} onClick={() => setFp(page => Math.max(0, page - 1))}>«</button>{Array.from({ length: totalPages }, (_, index) => <button key={index} onClick={() => setFp(index)} className="h-8 w-8 rounded-full text-xs" style={fp === index ? { background: 'var(--accent-bg)', color: 'var(--accent)' } : { color: 'var(--text-tertiary)' }}>{index + 1}</button>)}<button aria-label="下一页" disabled={fp === totalPages - 1} onClick={() => setFp(page => Math.min(totalPages - 1, page + 1))}>»</button></div>}
     </section>}
   </>;

@@ -13,6 +13,7 @@ const navLinks = [
   { label: '首页', href: '/' },
   { label: '文章', href: '/articles' },
   { label: '软件', href: '/software' },
+  { label: '网盘资源', href: '/resources' },
   { label: '分类', href: '/categories' },
   { label: '关于', href: '/about' },
   { label: '联系', href: '/contact' },
