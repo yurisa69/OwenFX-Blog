@@ -30,9 +30,9 @@ const tabs = [
     label: '分类',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6.5 3 10 10H3L6.5 3Z" />
+        <circle cx="6.5" cy="6.5" r="3.5" />
         <path d="M17.5 10.2 14.2 7.1a2.2 2.2 0 0 1 3.3-2.9 2.2 2.2 0 0 1 3.3 2.9l-3.3 3.1Z" />
-        <circle cx="6.5" cy="17.5" r="3.5" />
+        <path d="M6.5 14 10 21H3L6.5 14Z" />
         <rect x="14" y="14" width="7" height="7" rx="1.5" />
       </svg>
     ),
