@@ -45,7 +45,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     .filter(Boolean));
   const publishedDate = new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN', {
     year: 'numeric',
-    month: 'long',
+    month: '2-digit',
     day: 'numeric',
   });
 

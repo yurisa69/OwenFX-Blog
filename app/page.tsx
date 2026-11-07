@@ -23,7 +23,7 @@ export default async function HomePage() {
     title: article.title,
     category: article.categories?.name || '文章',
     description: article.excerpt || '',
-    createdAt: new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN'),
+    createdAt: new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
   }));
 
   return <div className="pt-6 md:pt-9">
