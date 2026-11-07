@@ -27,7 +27,8 @@ export async function POST(request: Request) {
     token_hash: tokenHash,
     scopes: ['articles:import'],
     active: true,
-  }).select('id,name,scopes,created_at').single();
+    expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+  }).select('id,name,scopes,expires_at,created_at').single();
 
   if (error || !data) return NextResponse.json({ error: '创建授权失败，请检查 api_devices 数据表权限' }, { status: 500 });
   await auth.supabase.from('audit_logs').insert({
