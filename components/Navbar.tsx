@@ -167,10 +167,10 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               </div>
               <div className="nav-theme-slot"><ThemeToggle/></div>
               {user ? (
-                <button type="button" aria-label="打开个人详情" aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setNotice(''); }}>
+                <button type="button" aria-label="我的" aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setNotice(''); }}>
                   <StarIcon/>
                 </button>
-              ) : <Link href="/login" aria-label="登录" className="nav-icon-btn"><StarIcon/></Link>}
+              ) : <Link href="/login" aria-label="我的（登录）" className="nav-icon-btn"><StarIcon/></Link>}
               <button type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} className="nav-icon-btn mobile-menu-toggle md:hidden" onClick={() => setMenuOpen(value => !value)}>
                 {menuOpen ? <CloseIcon/> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>}
               </button>

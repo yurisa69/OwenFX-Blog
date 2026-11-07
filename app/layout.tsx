@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import ScrollToTop from '@/components/ScrollToTop';
-import MobileBottomNav from '@/components/MobileBottomNav';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -66,7 +65,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {children}
             </div>
           </main>
-          <MobileBottomNav />
           <BackToTop />
           <ScrollToTop />
         </ThemeProvider>
