@@ -164,9 +164,6 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           </section>
         )}
 
-        <p className="mt-6 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-          最后更新：{new Date(software.updated_at).toLocaleDateString('zh-CN')}
-        </p>
         <SoftwareSupport className="mt-8" />
       </section>
 

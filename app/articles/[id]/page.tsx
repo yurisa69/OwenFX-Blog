@@ -52,7 +52,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-4 flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        <span className="site-owner-flow font-semibold">{article.legacy_author || 'OWEN'}</span>
+        <span className="gradient-text font-semibold">{article.legacy_author || 'OWEN'}</span>
         <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>站长</span>
       </div>
 
