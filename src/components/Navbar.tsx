@@ -105,6 +105,11 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const router = useRouter();
   const [user, setUser] = useState<NavUser | null>(initialUser);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchWrapRef = useRef<HTMLDivElement>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
@@ -150,6 +155,19 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
       document.documentElement.style.removeProperty('--drawer-scrollbar-width');
     };
   }, [drawerOpen, profileOpen, loginOpen, registerOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    searchInputRef.current?.focus();
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setSearchOpen(false); };
+    const outside = (e: PointerEvent) => { if (e.target instanceof Node && !searchWrapRef.current?.contains(e.target)) setSearchOpen(false); };
+    window.addEventListener('keydown', key); document.addEventListener('pointerdown', outside);
+    return () => { window.removeEventListener('keydown', key); document.removeEventListener('pointerdown', outside); };
+  }, [searchOpen]);
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); const q = searchQuery.trim(); if (!q) return;
+    setSearchOpen(false); setMenuOpen(false); router.push('/software?search=' + encodeURIComponent(q));
+  };
 
   const closeAll = () => {
     setDrawerOpen(false);
@@ -306,59 +324,18 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   return (
     <>
-      <header className="glass-nav fixed top-0 left-0 right-0 z-50 h-14 flex items-center">
-        <div className="max-w-6xl mx-auto w-full px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              className="lg:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-white/5"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="打开菜单"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
-            <Link href="/" className="font-semibold text-lg tracking-tight">
-              <span className="gradient-text">OwenFX</span>
-            </Link>
-          </div>
-
-          <nav className="hidden lg:flex items-center gap-6">
-            {navLinks.map(link => (
-              <Link key={link.href} href={link.href} className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            {user ? (
-              <button
-                onClick={() => setProfileOpen(true)}
-                className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-white/5 transition"
-              >
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-sm font-medium text-white">
-                    {user.name?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                )}
-                <span className="hidden sm:inline text-sm text-[var(--text-secondary)]">{user.name}</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="rounded-lg bg-[var(--accent)] px-3.5 py-1.5 text-sm font-medium text-white hover:opacity-90 transition"
-              >
-                登录
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
+      <div className="glass-nav fixed top-0 left-0 right-0 z-50 flex flex-col">
+        <header className="h-14 flex items-center"><div className="w-full max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 shrink-0"><span className="text-lg font-bold tracking-tight text-[var(--accent)]">OwenFX</span></Link>
+          <nav className="hidden md:flex items-center gap-1">{navLinks.map(link => <Link key={link.href} href={link.href} className="px-3 py-1.5 text-sm rounded-full transition-all duration-200 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">{link.label}</Link>)}</nav>
+          <div className={"nav-actions relative flex items-center gap-2 " + (searchOpen ? "nav-actions-search-open" : "")}>
+            <div ref={searchWrapRef} className="nav-search-slot flex items-center">{!searchOpen ? <button type="button" aria-label="搜索" aria-expanded={searchOpen} onClick={() => setSearchOpen(true)} className="nav-icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></button> : <form onSubmit={handleSearch} className="nav-search-capsule nav-search-capsule-inline animate-fade-in"><input ref={searchInputRef} value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} type="search" placeholder="搜索文章 » 软件" aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/><button type="submit" aria-label="提交搜索" className="nav-search-submit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></button></form>}</div>
+            <div className="nav-theme-slot"><ThemeToggle/></div>
+            {user ? <button type="button" aria-label="打开用户卡片" aria-expanded={profileOpen} onClick={()=>setProfileOpen(true)} className="nav-star-btn"><svg className="six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M12 3 20 17H4L12 3Z"/><path d="M12 21 4 7h16l-8 14Z"/></svg></button> : <button type="button" aria-label="登录" onClick={()=>setLoginOpen(true)} className="nav-star-btn"><svg className="six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M12 3 20 17H4L12 3Z"/><path d="M12 21 4 7h16l-8 14Z"/></svg></button>}
+            <button type="button" aria-label={menuOpen ? "关闭菜单" : "打开菜单"} aria-expanded={menuOpen} className={"md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-all " + (menuOpen ? "bg-[var(--bg-tertiary)]" : "")} style={{color:"var(--text-secondary)"}} onClick={()=>setMenuOpen(!menuOpen)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{menuOpen ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></> : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>}</svg></button>
+          </div></div></header>
+        {menuOpen && <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg"><nav className="flex flex-col p-4 gap-1">{navLinks.map(link=><Link key={link.href} href={link.href} onClick={()=>setMenuOpen(false)} className="px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">{link.label}</Link>)}</nav></div>}
+      </div>
       {/* Mobile Drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden">
