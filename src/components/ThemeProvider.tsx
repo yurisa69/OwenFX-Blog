@@ -12,10 +12,18 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
+let themeSwitchTimeout: number | undefined
+
 const applyTheme = (next: Theme) => {
   const root = document.documentElement
+  root.classList.add('theme-switching')
   root.setAttribute('data-theme', next)
   root.style.colorScheme = next
+  if (themeSwitchTimeout !== undefined) window.clearTimeout(themeSwitchTimeout)
+  themeSwitchTimeout = window.setTimeout(() => {
+    root.classList.remove('theme-switching')
+    themeSwitchTimeout = undefined
+  }, 120)
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
