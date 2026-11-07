@@ -8,7 +8,6 @@ function escapeHtml(value: string) {
 
 function inlineMarkdown(value: string) {
   return value
-    .replace(/(?:\*\*官方下载：?\*\*|官方下载：?)\s*(https:\/\/[^\s<]+)/g, '<a class="article-download-link" href="$1" target="_blank" rel="noopener noreferrer" aria-label="下载"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14" /></svg><span>下载</span></a>')
     .replace(/!\[([^\]]*)\]\((https?:\/\/[^ )]+)\)/g, '<img src="$2" alt="$1" loading="lazy" />')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^ )]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')

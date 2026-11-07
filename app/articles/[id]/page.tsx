@@ -92,9 +92,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </div>
         )}
 
-        <ArticleInteractions articleId={article.id} />
         <ArticleSupport className="mt-8" />
       </article>
+      <ArticleInteractions articleId={article.id} />
     </div>
   );
 }

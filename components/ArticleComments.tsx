@@ -7,6 +7,7 @@ import { getSupabaseBrowser } from '@/lib/supabase';
 type CommentAuthor = { display_name?: string | null; avatar_url?: string | null } | null;
 type CommentRow = {
   id: string;
+  author_id: string;
   body: string;
   status: 'approved' | 'pending' | 'rejected';
   created_at: string;
@@ -57,7 +58,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         });
       }
 
-      const selection = 'id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)';
+      const selection = 'id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)';
       const approvedQuery = supabase.from('comments').select(selection)
         .eq('article_id', articleId).eq('status', 'approved')
         .order('created_at', { ascending: false }).limit(100);
@@ -85,6 +86,10 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const submitComment = async () => {
     const body = commentText.trim();
     if (!body || submitting) return;
+    if (Array.from(body).length > 600) {
+      setNotice('每条评论最多 600 字。');
+      return;
+    }
 
     const supabase = getSupabaseBrowser();
     if (!supabase) {
@@ -104,7 +109,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       article_id: articleId,
       author_id: session.user.id,
       body,
-    }).select('id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)').single();
+    }).select('id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)').single();
     setSubmitting(false);
 
     if (error || !data) {
@@ -121,24 +126,24 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
   return (
     <section id="article-comments-card" className="uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-medium"
+      <div className="mb-5 flex flex-col items-center text-center">
+        <div className="flex h-[45px] w-[45px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
           style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
           {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
         </div>
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold">评论区</h2>
-          <p className="mt-1 truncate text-xs" style={{ color: 'var(--text-secondary)' }}>{user?.name || '欢迎留下你的想法'}</p>
-        </div>
+        <p className={user ? "mt-2 max-w-full truncate text-sm font-semibold monet-waterlily-flow" : "mt-2 max-w-full truncate text-sm font-semibold"}
+          style={!user ? { color: 'var(--text-secondary)' } : undefined}>
+          {user?.name || '登录后发表评论'}
+        </p>
       </div>
 
       <div className="mb-5 space-y-2">
-        <textarea value={commentText} onChange={event => setCommentText(event.target.value)}
-          placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={5000}
+        <textarea value={commentText} onChange={event => setCommentText(Array.from(event.target.value).slice(0, 600).join(''))}
+          placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{commentText.length}/5000</span>
+          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{Array.from(commentText).length}/600</span>
           {user ? (
             <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
               className="uiverse-btn uiverse-btn-primary rounded-xl !px-5 !py-2.5 text-sm">
@@ -176,7 +181,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{name}</span>
+                      <span className={comment.author_id === user?.id ? "text-sm font-medium monet-waterlily-flow" : "text-sm font-medium"}>{name}</span>
                       <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{formatDate(comment.created_at)}</span>
                       {comment.status === 'pending' && <span className="rounded-full px-2 py-0.5 text-[10px]" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>审核中</span>}
                     </div>
