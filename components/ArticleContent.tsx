@@ -116,15 +116,6 @@ export default async function ArticleContent({ content }: { content: string }) {
       if (!piece.trim()) return null;
       return <div key={index} className="prose-block" dangerouslySetInnerHTML={{ __html: markdownToHtml(piece) }} />;
     })}
-    <style jsx global>{`
-      .article-content img{max-width:100%;height:auto;border-radius:12px;margin:1rem auto}
-      .article-content pre{overflow-x:auto;padding:1rem;border-radius:12px;background:var(--bg-secondary)}
-      .article-content blockquote{border-left:3px solid var(--accent);padding-left:1rem;color:var(--text-secondary)}
-      .article-content table{width:100%;border-collapse:collapse;min-width:520px}
-      .article-content th,.article-content td{border:1px solid var(--border-color);padding:9px 12px;text-align:left}
-      .article-table-wrap{max-width:100%;overflow-x:auto}
-      .article-content ul,.article-content ol{padding-left:1.5rem;list-style:revert}
-      .article-content a{color:var(--accent);text-decoration:underline}
-    `}</style>
+
   </div>;
 }
