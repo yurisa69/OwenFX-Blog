@@ -21,6 +21,16 @@ create index if not exists media_assets_entity_idx
   on public.media_assets(entity_type, entity_id)
   where entity_id is not null;
 
+drop policy if exists "Owners add own media assets" on public.media_assets;
+create policy "Owners add own media assets"
+  on public.media_assets for insert to authenticated
+  with check (owner_id = (select auth.uid()));
+
+drop policy if exists "Owners read own media assets" on public.media_assets;
+create policy "Owners read own media assets"
+  on public.media_assets for select to authenticated
+  using (owner_id = (select auth.uid()));
+
 drop policy if exists "Owners update own media assets" on public.media_assets;
 create policy "Owners update own media assets"
   on public.media_assets for update to authenticated
