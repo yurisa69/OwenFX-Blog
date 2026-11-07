@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: Import an AI-generated Markdown article as an unpublished OwenFX draft.
 servers:
-  - url: https://YOUR_OWENFX_DOMAIN
-    description: Replace with the OwenFX production domain.
+  - url: https://owenfx-blog.vercel.app
+    description: OwenFX production domain.
 security:
   - OwenFXBearer: []
 paths:
