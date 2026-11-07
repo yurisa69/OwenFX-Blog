@@ -166,7 +166,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
 
   useEffect(() => {
     if (mode === 'rich' && richRef.current) richRef.current.innerHTML = markdownToHtml(content);
-  }, [mode]);
+  }, [mode, preview]);
 
   function switchMode(next: 'markdown' | 'rich') {
     if (mode === 'rich' && richRef.current) setContent(htmlToMarkdown(richRef.current.innerHTML));
