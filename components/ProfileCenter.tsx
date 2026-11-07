@@ -129,8 +129,6 @@ export default function ProfileCenter() {
     { id: 'likes', label: '我的喜欢', ...(loadedTabs.includes('likes') ? { count: likes.length } : {}) },
   ];
 
-  if (loading) return <div className="py-16 text-center text-sm opacity-60">正在加载个人中心…</div>;
-
   const list = tab === 'bookmarks' ? bookmarks : likes;
   return <div className="mx-auto max-w-4xl py-8">
     <div className="mb-7">
@@ -150,12 +148,14 @@ export default function ProfileCenter() {
 
     {tab === 'profile' && <section className="uiverse-card flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-tertiary)' }}>
-        {user.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : <span className="text-3xl font-semibold">{user.name.slice(0, 1).toUpperCase()}</span>}
+        {loading ? <span className="h-full w-full animate-pulse rounded-full" style={{ background: 'var(--bg-tertiary)' }} /> : user.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : <span className="text-3xl font-semibold">{user.name.slice(0, 1).toUpperCase() || 'U'}</span>}
       </div>
       <div className="min-w-0 flex-1">
-        <h2 className="text-xl font-semibold">{user.name}</h2>
-        <p className="mt-1 break-all text-sm opacity-60">{user.email}</p>
-        <p className="mt-3 text-sm leading-6 opacity-75">{user.bio || '还没有填写个人简介。'}</p>
+        {loading ? <div className="space-y-3"><div className="h-5 w-32 animate-pulse rounded" style={{ background: 'var(--bg-tertiary)' }} /><div className="h-3 w-48 max-w-full animate-pulse rounded" style={{ background: 'var(--bg-tertiary)' }} /></div> : <>
+          <h2 className="text-xl font-semibold">{user.name}</h2>
+          <p className="mt-1 break-all text-sm opacity-60">{user.email}</p>
+          <p className="mt-3 text-sm leading-6 opacity-75">{user.bio || '还没有填写个人简介。'}</p>
+        </>}
       </div>
     </section>}
 
