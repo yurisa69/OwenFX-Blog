@@ -8,7 +8,29 @@ type Config = { enabled: boolean; methods: Record<string, Method> };
 export default function SoftwareSupport({ className = '', placement = 'software' }: { className?: string; placement?: 'article' | 'software' }) {
   const [config, setConfig] = useState<Config | null>(null);
   const [open, setOpen] = useState(false);
-  useEffect(() => { fetch('/api/support?placement=' + placement).then(r => r.json()).then(setConfig).catch(() => setConfig({ enabled: false, methods: {} })); }, [placement]);
+  useEffect(() => {
+    let cancelled = false;
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/support?placement=' + placement);
+        const primary = await response.json() as Config;
+        const hasEnabledMethod = (value: Config | null) =>
+          !!value && Object.values(value.methods || {}).some(method => method.enabled);
+
+        if (placement === 'article' && (!primary?.enabled || !hasEnabledMethod(primary))) {
+          const fallbackResponse = await fetch('/api/support?placement=software');
+          const fallback = await fallbackResponse.json() as Config;
+          if (!cancelled) setConfig(fallback);
+          return;
+        }
+        if (!cancelled) setConfig(primary);
+      } catch {
+        if (!cancelled) setConfig({ enabled: false, methods: {} });
+      }
+    };
+    void loadConfig();
+    return () => { cancelled = true; };
+  }, [placement]);
   const methods = ['alipay', 'wechat', 'usdc', 'usdt'].filter(key => config?.methods?.[key]?.enabled);
   const labels: Record<string, string> = { alipay: '支付宝', wechat: '微信支付', usdc: 'USDC', usdt: 'USDT' };
   useEffect(() => {
