@@ -165,13 +165,13 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 
 
 /* Rounded Linear-style navigation and profile drawer */
-.nav-link-pill{display:inline-flex;align-items:center;justify-content:center;padding:7px 13px;border-radius:999px;font-size:13px;color:var(--text-secondary);transition:background .2s,color .2s,box-shadow .2s}
+.nav-link-pill{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:999px;font-size:14px;color:var(--text-secondary);transition:background .2s,color .2s,box-shadow .2s}
 .nav-link-pill:hover{background:rgba(129,140,248,.11);color:var(--text-primary)}
-.nav-icon-btn{width:38px;height:38px;flex:0 0 38px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);color:var(--text-secondary);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);transition:background .2s,border-color .2s,color .2s,transform .2s}
+.nav-icon-btn{width:36px;height:36px;flex:0 0 36px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);color:var(--text-secondary);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);transition:background .2s,border-color .2s,color .2s,transform .2s}
 .nav-icon-btn:hover{border-color:rgba(129,140,248,.42);background:rgba(129,140,248,.12);color:var(--text-primary)}
 .nav-profile-trigger{padding:2px}
-.nav-search-slot{min-width:38px;justify-content:flex-end}
-.nav-theme-slot{display:flex;width:38px;height:38px;flex:0 0 38px;align-items:center;justify-content:center}
+.nav-search-slot{min-width:36px;justify-content:flex-end}
+.nav-theme-slot{display:flex;width:36px;height:36px;flex:0 0 36px;align-items:center;justify-content:center}
 .nav-search-capsule{display:flex;width:128px;min-width:128px;height:38px;align-items:center;gap:4px;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-glass);padding:0 6px 0 10px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
 .nav-search-submit{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:999px;background:transparent;color:var(--text-secondary)}
 .nav-search-submit:hover{color:var(--accent)}
@@ -199,7 +199,7 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .profile-drawer-footer{border-top:1px solid var(--border-color);padding-top:16px}
 .profile-logout-action{margin-top:12px;width:100%;min-height:42px;border:1px solid rgba(248,113,113,.22);border-radius:999px;background:rgba(248,113,113,.07);color:#fca5a5;font-size:13px;transition:all .2s}
 .profile-logout-action:hover{border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.13)}
-@media(max-width:767px){.nav-actions{gap:7px}.nav-icon-btn,.nav-theme-slot{width:36px;height:36px;flex-basis:36px}.mobile-menu-list{grid-template-columns:1fr}.mobile-menu-link{min-height:46px}.profile-drawer-panel{width:min(94vw,410px);padding:20px 18px 16px}}
+@media(max-width:767px){.nav-actions{gap:8px}.nav-icon-btn,.nav-theme-slot{width:36px;height:36px;flex-basis:36px}.mobile-menu-list{grid-template-columns:1fr}.mobile-menu-link{min-height:46px}.profile-drawer-panel{width:min(94vw,410px);padding:20px 18px 16px}}
 
 /* Keep the mobile hamburger hidden wherever the desktop navigation is active. */
 @media (min-width: 768px) {
@@ -219,7 +219,7 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   box-shadow: 0 10px 28px rgba(15,23,42,0.16);
 }
 /* Keep the search slot in the navbar flow; the expanded field floats over it. */
-.nav-search-slot { position: static; width: 38px; min-width: 38px; flex: 0 0 38px; }
+.nav-search-slot { position: static; width: 36px; min-width: 36px; flex: 0 0 36px; }
 .nav-search-capsule-inline {
   position: absolute;
   top: 0;
