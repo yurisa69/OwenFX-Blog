@@ -152,6 +152,14 @@ cp .env.example .env.local
 | `GITHUB_REPOSITORY` | 建议填写 | GitHub 仓库，格式为 `owner/repository`。 |
 | `GITHUB_BRANCH` | 建议填写 | 文章提交分支，当前使用 `main`。 |
 
+配置步骤：
+
+1. 在 GitHub 的 Settings → Developer settings → Fine-grained personal access tokens 中创建令牌。
+2. Repository access 只选择 `yurisa69/OwenFX-Blog`。
+3. Repository permissions 只需给 Contents 设为 Read and write；Metadata 保持只读默认权限。
+4. 将令牌添加到 Vercel 项目 `owenfx-blog` 的 Environment Variables，变量名为 `GITHUB_TOKEN`，至少选择 Production；如需 Preview / Development 编辑，也分别勾选对应环境。
+5. 保存后重新部署 Vercel。令牌不要发送到聊天，也不要写入 `.env.example` 或 GitHub 源码。
+
 演示格式（非真实 Token）：
 
 - `GITHUB_TOKEN`：<code><font color="#f85149">"</font>github_pat_DEMO_ONLY_REPLACE_WITH_REAL_TOKEN<font color="#f85149">"</font></code>
