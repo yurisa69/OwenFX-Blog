@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
 
 type Theme = 'dark' | 'light'
 
@@ -12,6 +12,17 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
+let themeSwitchTimeout: number | undefined
+
+const applyTheme = (next: Theme) => {
+  const root = document.documentElement
+  root.classList.add('theme-switching')
+  root.setAttribute('data-theme', next)
+  root.style.colorScheme = next
+  if (themeSwitchTimeout) window.clearTimeout(themeSwitchTimeout)
+  themeSwitchTimeout = window.setTimeout(() => root.classList.remove('theme-switching'), 120)
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark')
   const [mounted, setMounted] = useState(false)
@@ -20,19 +31,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('theme') as Theme | null
     const initial = stored === 'light' ? 'light' : 'dark'
     setThemeState(initial)
-    document.documentElement.setAttribute('data-theme', initial)
-    document.documentElement.style.colorScheme = initial
+    applyTheme(initial)
     setMounted(true)
   }, [])
 
-  const setTheme = (t: Theme) => {
+  const setTheme = useCallback((t: Theme) => {
     setThemeState(t)
     localStorage.setItem('theme', t)
-    document.documentElement.setAttribute('data-theme', t)
-    document.documentElement.style.colorScheme = t
-  }
+    applyTheme(t)
+  }, [])
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
+  const toggleTheme = useCallback(() => {
+    setThemeState(current => {
+      const next = current === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('theme', next)
+      applyTheme(next)
+      return next
+    })
+  }, [])
 
   if (!mounted) {
     return <>{children}</>
