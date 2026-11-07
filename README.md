@@ -36,7 +36,8 @@
 
 - 管理后台提供文章列表、新建和编辑入口。
 - 支持文章草稿与发布状态。
-- 文章内容以 Markdown 文本保存，后台提供 Markdown / 富文本编辑入口。
+- 文章正文以独立 Markdown 文件保存在 GitHub 的 `content/articles/`，Supabase 只保存文章元数据与 GitHub 版本索引。
+- 后台提供 Markdown / 富文本双模式编辑器，两种模式共用同一份 Markdown 正文。
 - 支持文章摘要、标题、Slug、发布时间等内容字段。
 - 文章创建、编辑和发布接口会校验内容管理权限。
 
@@ -53,7 +54,8 @@
 ### 管理与安全
 
 - 管理接口会检查登录状态及站长 / 内容编辑权限。
-- 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2。
+- 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2，并将媒体元数据写入 `media_assets`。
+- ChatGPT 等外部工具可通过受控 API 设备令牌导入文章草稿；令牌可在「管理后台 → AI 导入」创建和撤销。
 - 图片上传限制为 JPG、PNG、WebP、GIF、AVIF，单张不超过 10 MB。
 - 注册验证码通过 SMTP 邮件发送；验证码有效期为 10 分钟，并有发送频率限制。
 - Supabase Service Role、R2 密钥和 SMTP 密码只允许放在服务端环境变量中。
@@ -70,18 +72,19 @@ Next.js App Router（Vercel）
       |       用户登录、会话与权限校验
       |
       +---- Supabase Database
-      |       文章、软件、网盘链接、赞赏配置、统计等业务数据
+      |       文章元数据、GitHub 版本索引、软件、网盘链接、赞赏配置、统计等业务数据
       |
       +---- Cloudflare R2
-      |       头像及管理端上传的图片资源
+      |       文章封面、正文图片、头像及其他媒体文件
       |
       +---- SMTP
               注册验证码邮件
 ```
 
 - **Vercel**：运行 Next.js 网站和服务端 API。
-- **Supabase**：提供身份认证、PostgreSQL 数据库及权限相关能力。
-- **Cloudflare R2**：通过 S3 兼容接口保存图片等对象；公开访问地址由 R2 自定义域名或公开访问域名提供。
+- **Supabase**：提供身份认证、文章 / 软件等业务元数据、文章修订索引、API 设备授权和权限相关能力；不保存新文章正文。
+- **GitHub**：保存文章 Markdown 正文文件，默认路径为 `content/articles/{slug}.md`。
+- **Cloudflare R2**：通过 S3 兼容接口保存文章图片、封面、头像和其他媒体对象；Supabase `media_assets` 仅保存文件元数据和 R2 对象引用。
 - **SMTP**：发送注册验证码邮件。
 
 ## 目录结构
@@ -98,7 +101,9 @@ Next.js App Router（Vercel）
 │   └── layout.tsx          # 全局布局
 ├── components/             # 页面与交互组件
 ├── database/               # SQL 文件及数据库相关配置
-├── lib/                    # Supabase、R2、权限和业务工具
+├── content/articles/       # GitHub 管理的 Markdown 正文文件
+├── docs/openapi/           # 外部文章导入 API Schema
+├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
 ├── public/                 # 静态资源
 ├── .env.example            # 环境变量模板
 ├── next.config.ts
@@ -131,6 +136,32 @@ cp .env.example .env.local
 - `NEXT_PUBLIC_SUPABASE_URL`：<code><font color="#f85149">"</font>https://example-project-ref.supabase.co<font color="#f85149">"</font></code>
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_SUPABASE_ANON_KEY<font color="#f85149">"</font></code>
 - `SUPABASE_SERVICE_ROLE_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_SERVICE_ROLE_KEY<font color="#f85149">"</font></code>
+
+### GitHub Markdown 文章存储
+
+- 正文文件位于 `content/articles/{slug}.md`，由 GitHub 仓库管理。
+- Supabase `articles` 保存标题、摘要、Slug、分类、状态、作者、发布时间和 GitHub 文件路径 / Commit SHA / 内容哈希等元数据。
+- Supabase `article_revisions` 保存 GitHub Commit SHA、文件路径和内容哈希，不复制 Markdown 正文。
+- 文章编辑器保存时先提交 Markdown 文件到 GitHub，再同步 Supabase 元数据。
+- 正式环境需要配置服务端 `GITHUB_TOKEN`，建议使用仅对本仓库授予 Contents Read and write 权限的 Fine-grained Personal Access Token。
+- `GITHUB_REPOSITORY` 默认是 `yurisa69/OwenFX-Blog`，`GITHUB_BRANCH` 默认是 `main`。文章内容提交到 main 会按现有 Git 集成触发 Vercel 部署。
+
+演示格式（非真实 Token）：
+
+- `GITHUB_TOKEN`：<code><font color="#f85149">"</font>github_pat_DEMO_ONLY_REPLACE_WITH_REAL_TOKEN<font color="#f85149">"</font></code>
+- `GITHUB_REPOSITORY`：<code><font color="#f85149">"</font>yurisa69/OwenFX-Blog<font color="#f85149">"</font></code>
+- `GITHUB_BRANCH`：<code><font color="#f85149">"</font>main<font color="#f85149">"</font></code>
+
+### ChatGPT / AI 文章导入
+
+1. 进入 OwenFX 管理后台的「AI 导入」页面，创建一个仅具有 `articles:import` 权限的 API 设备令牌。
+2. 创建后立即复制令牌；数据库只保存 SHA-256 哈希，页面不会再次显示明文。
+3. 在支持 OpenAPI / Bearer Token 的 ChatGPT 外部连接器中导入 `docs/openapi/owenfx-article-import.yaml`，将服务器地址替换为 OwenFX 正式域名，并配置该令牌。
+4. 调用 `POST /api/integrations/v1/articles/import`，传入标题、Slug、摘要、Markdown 正文、已有分类 / 标签 Slug 和唯一 `request_id`。
+5. API 将正文提交至 GitHub，Supabase 创建草稿元数据和版本索引，并返回后台编辑地址。
+6. 导入只会创建草稿；管理员进入编辑器检查后，才可保存或正式发布。重复请求必须复用相同 `request_id`。
+
+API 设备可在「AI 导入」页面撤销。接口要求 Bearer Token，并检查设备状态、有效期和 `articles:import` 权限。不要把授权令牌提交到 GitHub 或放进前端代码。
 
 ### Cloudflare R2
 
