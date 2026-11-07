@@ -89,24 +89,17 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-@media (hover: hover) and (pointer: fine) {
-  .nav-icon-btn:hover,
-  .nav-star-btn:hover {
-    color: var(--text-primary);
-    border-color: rgba(129,140,248,0.42);
-    background: rgba(129,140,248,0.12);
-    box-shadow: 0 0 28px rgba(129,140,248,0.22);
-  }
-}
+/* Navbar icon buttons have no hover or persistent focus glow.
+   Only the button being physically pressed gets a brief active response. */
 .nav-icon-btn:active,
 .nav-star-btn:active {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
-.nav-icon-btn:focus-visible,
-.nav-star-btn:focus-visible {
+.nav-icon-btn:focus,
+.nav-star-btn:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow: none;
 }
 .nav-profile-trigger { padding: 2px; }
 
