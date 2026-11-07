@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const entityType = typeof body?.entityType === 'string' ? body.entityType.slice(0, 40) : null;
   const entityId = typeof body?.entityId === 'string' && /^[0-9a-f-]{36}$/i.test(body.entityId) ? body.entityId : null;
 
-  if (!kind || !(kind in PREFIX)) return NextResponse.json({ error: '媒体类型无效' }, { status: 400 });
+  if (!kind || !Object.prototype.hasOwnProperty.call(PREFIX, kind)) return NextResponse.json({ error: '媒体类型无效' }, { status: 400 });
   if (EDITOR_KINDS.includes(kind)) {
     const { data: allowed, error } = await supabase.rpc('is_owenfx_content_editor');
     if (error || allowed !== true) return NextResponse.json({ error: '没有媒体管理权限' }, { status: 403 });
