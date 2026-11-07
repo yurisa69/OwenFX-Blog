@@ -45,11 +45,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const toggleTheme = useCallback(() => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    setThemeState(next)
-    localStorage.setItem('theme', next)
-    applyTheme(next)
-  }, [theme])
+    setThemeState(current => {
+      const next = current === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('theme', next)
+      applyTheme(next)
+      return next
+    })
+  }, [])
 
   if (!mounted) {
     return <>{children}</>
