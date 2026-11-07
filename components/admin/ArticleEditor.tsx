@@ -133,7 +133,7 @@ function htmlToMarkdown(html: string) {
       case 'EM': case 'I': return `*${content}*`;
       case 'CODE': return '`' + content + '`';
       case 'PRE': return '```\n' + (node.textContent || '') + '\n```\n\n';
-      case 'LI': return `- ${content}\n`;
+      case 'LI': { const parent = node.parentElement; const number = parent?.tagName === 'OL' ? Array.from(parent.children).indexOf(node) + 1 : 0; return parent?.tagName === 'OL' ? String(number) + '. ' + content + '\n' : '- ' + content + '\n'; }
       case 'UL': case 'OL': return `${content}\n`;
       case 'BLOCKQUOTE': return content.split('\n').filter(Boolean).map(line => `> ${line}`).join('\n') + '\n\n';
       case 'BR': return '\n';
