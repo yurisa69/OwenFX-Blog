@@ -6,16 +6,20 @@ type GitHubContentResponse = {
   encoding: string;
 };
 
-function getConfig() {
-  const token = process.env.GITHUB_TOKEN;
+function getRepositoryConfig() {
   const repository = process.env.GITHUB_REPOSITORY || 'yurisa69/OwenFX-Blog';
   const branch = process.env.GITHUB_BRANCH || 'main';
-  if (!token) throw new Error('缺少 GITHUB_TOKEN，暂时无法保存文章正文');
   const [owner, repo] = repository.split('/');
   if (!owner || !repo || repository.split('/').length !== 2) {
     throw new Error('GITHUB_REPOSITORY 必须采用 owner/repository 格式');
   }
-  return { token, owner, repo, branch };
+  return { owner, repo, branch };
+}
+
+function getConfig() {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) throw new Error('缺少 GITHUB_TOKEN，暂时无法保存文章正文');
+  return { ...getRepositoryConfig(), token };
 }
 
 function apiUrl(path: string) {
@@ -40,14 +44,28 @@ async function githubRequest(url: string, init: RequestInit = {}) {
 }
 
 export async function readMarkdownFile(path: string, ref?: string): Promise<{ content: string; sha: string } | null> {
-  const response = await githubRequest(`${apiUrl(path)}?ref=${encodeURIComponent(ref || getConfig().branch)}`);
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`读取 GitHub 文章失败（HTTP ${response.status}）`);
-  const file = await response.json() as GitHubContentResponse;
-  if (file.encoding !== 'base64' || typeof file.content !== 'string') {
-    throw new Error('GitHub 返回的文章文件格式不受支持');
+  const { owner, repo, branch } = getRepositoryConfig();
+  const targetRef = ref || branch;
+
+  if (process.env.GITHUB_TOKEN) {
+    const response = await githubRequest(`${apiUrl(path)}?ref=${encodeURIComponent(targetRef)}`);
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`读取 GitHub 文章失败（HTTP ${response.status}）`);
+    const file = await response.json() as GitHubContentResponse;
+    if (file.encoding !== 'base64' || typeof file.content !== 'string') {
+      throw new Error('GitHub 返回的文章文件格式不受支持');
+    }
+    return { content: Buffer.from(file.content.replace(/\n/g, ''), 'base64').toString('utf8'), sha: file.sha };
   }
-  return { content: Buffer.from(file.content.replace(/\n/g, ''), 'base64').toString('utf8'), sha: file.sha };
+
+  // The OwenFX repository is public, so public article rendering can read raw
+  // Markdown without a write token. Writes and revision deletes still require GITHUB_TOKEN.
+  const rawPath = path.split('/').map(encodeURIComponent).join('/');
+  const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(targetRef)}/${rawPath}`;
+  const response = await fetch(rawUrl, { cache: 'no-store' });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`读取公开 GitHub 文章失败（HTTP ${response.status}）`);
+  return { content: await response.text(), sha: '' };
 }
 
 export async function writeMarkdownFile(path: string, content: string, message: string) {
