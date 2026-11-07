@@ -18,5 +18,5 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
     content = file.content;
   }
 
-  return <div className="space-y-4"><h2 className="text-xl font-semibold">编辑文章</h2><ArticleEditor initial={{ ...data, content_markdown: content }} /></div>;
+  return <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-semibold">编辑文章</h2><a className="admin-nav-link" href={`/admin/articles/${id}/history`}>版本历史</a></div><ArticleEditor initial={{ ...data, content_markdown: content }} /></div>;
 }
