@@ -17,7 +17,6 @@ export default function ProfileCenter({ initialProfile = null }: { initialProfil
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('profile');
   const [loading, setLoading] = useState(!initialProfile);
-  const [tabLoading, setTabLoading] = useState<Tab | null>(null);
   const [error, setError] = useState('');
   const [user, setUser] = useState<UserProfile>(initialProfile || EMPTY_USER);
   const [bookmarks, setBookmarks] = useState<Interaction[]>([]);
@@ -55,11 +54,8 @@ export default function ProfileCenter({ initialProfile = null }: { initialProfil
           ? meta.picture
           : null;
 
-      // Render the account immediately from the local session; do not wait for
-      // the profile-table request before showing the user's avatar.
       // Keep the server-rendered profile (especially its database avatar) as the
-      // first source of truth. Session metadata is only a fallback when no SSR
-      // profile was available, preventing an avatar swap after navigation.
+      // first source of truth. Session metadata is only a fallback.
       setUser(current => ({
         id: authUser.id,
         email: authUser.email,
@@ -96,56 +92,73 @@ export default function ProfileCenter({ initialProfile = null }: { initialProfil
     return () => { active = false; };
   }, [router]);
 
+  // Prefetch all interaction lists as soon as the signed-in profile is ready.
+  // Switching tabs therefore displays cached results immediately without a
+  // blocking loading panel or a per-click request.
   useEffect(() => {
-    if (loading || !user.id || tab === 'profile' || loadedTabs.includes(tab)) return;
+    if (loading || !user.id) return;
 
     let active = true;
-    const loadTab = async () => {
+    const preloadTabs = async () => {
       const supabase = getSupabaseBrowser();
       if (!supabase) return;
-      setTabLoading(tab);
-      setError('');
 
-      try {
-        if (tab === 'bookmarks' || tab === 'likes') {
-          const interactionType = tab === 'bookmarks' ? 'bookmark' : 'like';
-          const { data, error: queryError } = await supabase
-            .from('article_interactions')
-            .select('id,created_at,article:articles(id,title,slug)')
-            .eq('user_id', user.id)
-            .eq('interaction_type', interactionType)
-            .order('created_at', { ascending: false })
-            .limit(50);
+      const [bookmarkResult, commentResult, likeResult] = await Promise.all([
+        supabase
+          .from('article_interactions')
+          .select('id,created_at,article:articles(id,title,slug)')
+          .eq('user_id', user.id)
+          .eq('interaction_type', 'bookmark')
+          .order('created_at', { ascending: false })
+          .limit(50),
+        supabase
+          .from('comments')
+          .select('id,body,status,created_at,article:articles(title,slug)')
+          .eq('author_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        supabase
+          .from('article_interactions')
+          .select('id,created_at,article:articles(id,title,slug)')
+          .eq('user_id', user.id)
+          .eq('interaction_type', 'like')
+          .order('created_at', { ascending: false })
+          .limit(50),
+      ]);
 
-          if (queryError) throw queryError;
-          if (!active) return;
-          const rows = (data || []) as unknown as Interaction[];
-          if (tab === 'bookmarks') setBookmarks(rows);
-          else setLikes(rows);
-        } else {
-          const { data, error: queryError } = await supabase
-            .from('comments')
-            .select('id,body,status,created_at,article:articles(title,slug)')
-            .eq('author_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(50);
+      if (!active) return;
 
-          if (queryError) throw queryError;
-          if (!active) return;
-          setComments((data || []) as unknown as CommentItem[]);
-        }
+      const completedTabs: Tab[] = ['profile'];
+      const errors: string[] = [];
 
-        if (active) setLoadedTabs(current => [...current, tab]);
-      } catch {
-        if (active) setError('数据加载失败，请检查网络后重试。');
-      } finally {
-        if (active) setTabLoading(null);
+      if (bookmarkResult.error) {
+        errors.push('收藏');
+      } else {
+        setBookmarks((bookmarkResult.data || []) as unknown as Interaction[]);
+        completedTabs.push('bookmarks');
       }
+
+      if (commentResult.error) {
+        errors.push('评论');
+      } else {
+        setComments((commentResult.data || []) as unknown as CommentItem[]);
+        completedTabs.push('comments');
+      }
+
+      if (likeResult.error) {
+        errors.push('喜欢');
+      } else {
+        setLikes((likeResult.data || []) as unknown as Interaction[]);
+        completedTabs.push('likes');
+      }
+
+      setLoadedTabs(current => Array.from(new Set([...current, ...completedTabs])));
+      if (errors.length) setError(`${errors.join('、')}数据暂时无法获取，请稍后重试。`);
     };
 
-    void loadTab();
+    void preloadTabs();
     return () => { active = false; };
-  }, [loading, user.id, tab, loadedTabs]);
+  }, [loading, user.id]);
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'profile', label: '个人信息' },
@@ -184,9 +197,7 @@ export default function ProfileCenter({ initialProfile = null }: { initialProfil
       </div>
     </section>}
 
-    {tabLoading === tab && <div className="uiverse-card p-8 text-center text-sm opacity-60">正在加载数据…</div>}
-
-    {tab === 'comments' && tabLoading !== tab && <div className="space-y-3">
+    {tab === 'comments' && <div className="space-y-3">
       {!comments.length ? <Empty text="你还没有发表过评论" /> : comments.map(item => <div key={item.id} className="uiverse-card p-4">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs opacity-55"><span>{new Date(item.created_at).toLocaleString('zh-CN')}</span><span>{item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '未通过' : '审核中'}</span></div>
         <p className="whitespace-pre-wrap text-sm leading-6">{item.body}</p>
@@ -194,7 +205,7 @@ export default function ProfileCenter({ initialProfile = null }: { initialProfil
       </div>)}
     </div>}
 
-    {(tab === 'bookmarks' || tab === 'likes') && tabLoading !== tab && <div className="space-y-3">
+    {(tab === 'bookmarks' || tab === 'likes') && <div className="space-y-3">
       {!list.length ? <Empty text={tab === 'bookmarks' ? '你还没有收藏文章' : '你还没有点赞文章'} /> : list.map(item => <div key={item.id} className="uiverse-card flex items-center justify-between gap-3 p-4">
         <div className="min-w-0"><p className="truncate text-sm font-medium">{item.article?.title || '文章'}</p><p className="mt-1 text-xs opacity-50">{new Date(item.created_at).toLocaleDateString('zh-CN')}</p></div>
         {item.article && <Link href={'/articles/' + item.article.slug} className="shrink-0 text-sm" style={{ color: 'var(--accent)' }}>查看 →</Link>}
