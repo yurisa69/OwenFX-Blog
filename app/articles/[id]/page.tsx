@@ -8,7 +8,7 @@ import ArticleInteractions from '@/components/ArticleInteractions';
 export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const columns = 'id,title,slug,excerpt,github_path,content_markdown,published_at,created_at';
+  const columns = 'id,title,slug,excerpt,github_path,published_at,created_at';
   const { data: articleById } = await supabase.from('articles').select(columns)
     .eq('id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
   const { data: articleByLegacyId } = articleById
@@ -18,12 +18,10 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const article = articleById || articleByLegacyId;
   if (!article) notFound();
 
-  let content = article.content_markdown || '';
-  if (article.github_path) {
-    const file = await readMarkdownFile(article.github_path);
-    if (!file) notFound();
-    content = file.content;
-  }
+  if (!article.github_path) notFound();
+  const file = await readMarkdownFile(article.github_path);
+  if (!file) notFound();
+  const content = file.content;
 
   return <article className="mx-auto max-w-3xl py-8"><div className="uiverse-card p-5 sm:p-7">
     <h1 className="text-2xl font-bold sm:text-3xl">{article.title}</h1>
