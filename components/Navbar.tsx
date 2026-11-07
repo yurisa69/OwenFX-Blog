@@ -8,6 +8,10 @@ import { getSupabaseBrowser } from '@/lib/supabase';
 
 type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null };
 type Profile = { display_name: string; bio: string; avatar_url: string | null };
+type ProfileTab = 'profile' | 'likes' | 'bookmarks' | 'comments';
+type ProfileArticle = { id?: string; title?: string; slug?: string } | null;
+type ProfileInteraction = { id: string; created_at: string; article: ProfileArticle };
+type ProfileComment = { id: string; body: string; status: string; created_at: string; article: ProfileArticle };
 
 const navLinks = [
   { label: '首页', href: '/' },
@@ -41,6 +45,12 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [notice, setNotice] = useState('');
+  const [profileTab, setProfileTab] = useState<ProfileTab>('profile');
+  const [profileLikes, setProfileLikes] = useState<ProfileInteraction[]>([]);
+  const [profileBookmarks, setProfileBookmarks] = useState<ProfileInteraction[]>([]);
+  const [profileComments, setProfileComments] = useState<ProfileComment[]>([]);
+  const [profileListsLoading, setProfileListsLoading] = useState(false);
+  const [profileListsError, setProfileListsError] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -87,6 +97,41 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     void load();
     return () => { active = false; };
   }, [drawerOpen, user]);
+
+  useEffect(() => {
+    if (!drawerOpen || !user?.id) return;
+    let active = true;
+    const loadActivity = async () => {
+      const supabase = getSupabaseBrowser();
+      if (!supabase) return;
+      setProfileListsLoading(true);
+      setProfileListsError('');
+      const [likes, bookmarks, comments] = await Promise.all([
+        supabase.from('article_interactions')
+          .select('id,created_at,article:articles(id,title,slug)')
+          .eq('user_id', user.id).eq('interaction_type', 'like')
+          .order('created_at', { ascending: false }).limit(50),
+        supabase.from('article_interactions')
+          .select('id,created_at,article:articles(id,title,slug)')
+          .eq('user_id', user.id).eq('interaction_type', 'bookmark')
+          .order('created_at', { ascending: false }).limit(50),
+        supabase.from('comments')
+          .select('id,body,status,created_at,article:articles(id,title,slug)')
+          .eq('author_id', user.id)
+          .order('created_at', { ascending: false }).limit(50),
+      ]);
+      if (!active) return;
+      if (likes.error || bookmarks.error || comments.error) {
+        setProfileListsError('部分记录暂时无法加载，请稍后重试。');
+      }
+      if (!likes.error) setProfileLikes((likes.data || []) as unknown as ProfileInteraction[]);
+      if (!bookmarks.error) setProfileBookmarks((bookmarks.data || []) as unknown as ProfileInteraction[]);
+      if (!comments.error) setProfileComments((comments.data || []) as unknown as ProfileComment[]);
+      setProfileListsLoading(false);
+    };
+    void loadActivity();
+    return () => { active = false; };
+  }, [drawerOpen, user?.id]);
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -167,7 +212,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               </div>
               <div className="nav-theme-slot"><ThemeToggle/></div>
               {user ? (
-                <button type="button" aria-label="我的" aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setNotice(''); }}>
+                <button type="button" aria-label="我的" aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setProfileTab('profile'); setNotice(''); }}>
                   <StarIcon/>
                 </button>
               ) : <Link href="/login" aria-label="我的（登录）" className="nav-icon-btn"><StarIcon/></Link>}
@@ -203,17 +248,21 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               <span className="text-xs font-semibold tracking-[.18em] uppercase text-[var(--text-tertiary)]">OWENFX ACCOUNT</span>
               <button type="button" className="profile-round-action" aria-label="关闭" onClick={() => setDrawerOpen(false)}><CloseIcon/></button>
             </div>
-            <div className="profile-overview">
-              <div className="profile-avatar-ring">
-                <div className="profile-avatar-inner">
-                  {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
-                </div>
-              </div>
+            <div className="profile-drawer-content">
               {editing ? (
-                <div className="mt-4 w-full text-center">
-                  <h2 className="text-2xl font-bold drawer-avatar-flow">编辑个人资料</h2>
-                  <button type="button" className="profile-secondary-action mt-3" onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? '上传中…' : '更换头像'}</button>
-                  <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={handleAvatarUpload}/>
+                <section className="profile-edit-card">
+                  <div className="profile-edit-heading">
+                    <div className="profile-avatar-ring profile-avatar-ring-edit">
+                      <div className="profile-avatar-inner">
+                        {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg font-semibold">编辑个人资料</h2>
+                      <button type="button" className="profile-secondary-action mt-2" onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? '上传中…' : '更换头像'}</button>
+                      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={handleAvatarUpload}/>
+                    </div>
+                  </div>
                   <label className="profile-field-label">昵称</label>
                   <input className="profile-input" maxLength={40} value={profile.display_name} onChange={event => setProfile(value => ({...value, display_name:event.target.value}))} placeholder="输入昵称"/>
                   <label className="profile-field-label">个人简介</label>
@@ -222,23 +271,66 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     <button type="button" className="profile-secondary-action" onClick={() => {setEditing(false);setNotice('');}}>取消</button>
                     <button type="button" className="profile-primary-action" disabled={saving || uploading} onClick={handleProfileSave}>{saving ? '保存中…' : '保存资料'}</button>
                   </div>
-                </div>
+                </section>
               ) : (
                 <>
-                  <h2 className="mt-4 max-w-full truncate text-3xl font-bold drawer-avatar-flow">{user.name || '用户'}</h2>
-                  <p className="mt-2 max-w-full break-all text-sm text-[var(--text-secondary)]">{user.email || 'OwenFX 用户'}</p>
-                  <p className="mt-4 w-full rounded-2xl border border-white/10 bg-white/[.035] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]">{profile.bio || '还没有填写个人简介。点击下方按钮完善你的个人资料。'}</p>
-                  <div className="profile-account-meta">
-                    <span><i className="profile-status-dot"/>账号已登录</span>
-                    <span>OwenFX Member</span>
-                  </div>
-                  <div className="mt-5 grid w-full grid-cols-2 gap-3">
-                    <button type="button" className="profile-primary-action" onClick={() => {setEditing(true);setNotice('');}}>编辑资料</button>
-                    <Link href="/settings" className="profile-secondary-action" onClick={() => setDrawerOpen(false)}>账号设置</Link>
-                  </div>
+                  <section className="profile-identity-card">
+                    <div className="profile-identity-main">
+                      <div className="profile-avatar-ring profile-avatar-ring-compact">
+                        <div className="profile-avatar-inner">
+                          {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
+                        </div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="truncate text-xl font-bold">{user.name || '用户'}</h2>
+                        <p className="mt-1 truncate text-xs text-[var(--text-secondary)]">{user.email || 'OwenFX 用户'}</p>
+                        <span className="profile-member-state"><i className="profile-status-dot"/>账号已登录</span>
+                      </div>
+                    </div>
+                    <p className="profile-identity-bio">{profile.bio || '还没有填写个人简介。'}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" className="profile-primary-action" onClick={() => {setEditing(true);setNotice('');}}>编辑资料</button>
+                      <Link href="/settings" className="profile-secondary-action" onClick={() => setDrawerOpen(false)}>账号设置</Link>
+                    </div>
+                  </section>
+                  <nav className="profile-activity-tabs" aria-label="个人活动">
+                    <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('likes')}>
+                      <span className="profile-activity-symbol">♡</span><span>喜欢</span><b>{profileLikes.length}</b>
+                    </button>
+                    <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('bookmarks')}>
+                      <span className="profile-activity-symbol">▣</span><span>收藏</span><b>{profileBookmarks.length}</b>
+                    </button>
+                    <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('comments')}>
+                      <span className="profile-activity-symbol">▤</span><span>评论</span><b>{profileComments.length}</b>
+                    </button>
+                  </nav>
+                  {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
+                  <section className="profile-activity-list" aria-live="polite">
+                    {profileListsLoading ? (
+                      <div className="profile-list-empty">正在加载记录…</div>
+                    ) : profileTab === 'likes' || profileTab === 'bookmarks' ? (
+                      (profileTab === 'likes' ? profileLikes : profileBookmarks).length === 0 ? (
+                        <div className="profile-list-empty">{profileTab === 'likes' ? '还没有喜欢的文章' : '还没有收藏的文章'}</div>
+                      ) : (profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
+                        <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
+                          <span className="profile-activity-item-mark">{profileTab === 'likes' ? '♡' : '▣'}</span>
+                          <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span>
+                          <span className="profile-activity-arrow">›</span>
+                        </Link>
+                      ))
+                    ) : profileComments.length === 0 ? (
+                      <div className="profile-list-empty">还没有发表过评论</div>
+                    ) : profileComments.map(item => (
+                      <article key={item.id} className="profile-comment-item">
+                        <div className="profile-comment-meta"><span>{new Date(item.created_at).toLocaleDateString('zh-CN')}</span><span>{item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '未通过' : '审核中'}</span></div>
+                        <p>{item.body}</p>
+                        {item.article?.slug && <Link href={'/articles/' + item.article.slug} onClick={() => setDrawerOpen(false)}>查看文章 ›</Link>}
+                      </article>
+                    ))}
+                  </section>
                 </>
               )}
-              {notice && <p role="status" className="mt-4 w-full rounded-xl border border-indigo-300/20 bg-indigo-400/10 px-3 py-2 text-center text-xs text-indigo-200">{notice}</p>}
+              {notice && <p role="status" className="profile-list-notice">{notice}</p>}
             </div>
             <div className="profile-drawer-footer">
               <div className="text-xs text-[var(--text-tertiary)]">个人资料由你的 OwenFX 账号管理</div>
