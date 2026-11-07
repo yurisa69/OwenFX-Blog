@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readMarkdownFile, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readMarkdownFile, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -33,6 +33,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!title || title.length > 160 || !slugPattern.test(slug) || slug.length > 180) return NextResponse.json({ error: '请检查标题和 Slug 格式' }, { status: 400 });
   if (status === 'published' && !content.trim()) return NextResponse.json({ error: '发布前请先填写文章正文' }, { status: 400 });
   if (content.length > 500000) return NextResponse.json({ error: '文章内容过大' }, { status: 413 });
+  const imageError = validateMarkdownImageUrls(content);
+  if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
   const { data: previous, error: readError } = await auth.supabase.from('articles')
     .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at')
