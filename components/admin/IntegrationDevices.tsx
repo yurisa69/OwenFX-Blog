@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 type Device = {
   id: string;
@@ -30,7 +30,7 @@ export default function IntegrationDevices() {
     void load().catch(error => setMessage(error instanceof Error ? error.message : '读取失败'));
   }, []);
 
-  async function createDevice(event: React.FormEvent<HTMLFormElement>) {
+  async function createDevice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setMessage('');
@@ -74,7 +74,7 @@ export default function IntegrationDevices() {
     setMessage('授权密钥已复制');
   }
 
-  const endpoint = typeof window === 'undefined' ? '/api/integrations/v1/articles/import' : `${window.location.origin}/api/integrations/v1/articles/import`;
+  const endpoint = '/api/integrations/v1/articles/import';
 
   return <div className="space-y-5">
     <section className="admin-panel space-y-3">
