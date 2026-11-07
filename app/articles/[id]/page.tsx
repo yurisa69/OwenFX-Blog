@@ -7,8 +7,13 @@ import ArticleInteractions from '@/components/ArticleInteractions';
 export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: article } = await supabase.from('articles').select('id,title,excerpt,content_markdown,published_at,created_at')
+  const columns = 'id,title,excerpt,content_markdown,published_at,created_at';
+  const visibilityQuery = (query: ReturnType<typeof supabase.from>) => query;
+  const { data: articleById } = await supabase.from('articles').select(columns)
     .eq('id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
+  const { data: articleByLegacyId } = articleById ? { data: null } : await supabase.from('articles').select(columns)
+    .eq('legacy_id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
+  const article = articleById || articleByLegacyId;
   if (!article) notFound();
   return <article className="mx-auto max-w-3xl py-8"><div className="uiverse-card p-5 sm:p-7">
     <h1 className="text-2xl font-bold sm:text-3xl">{article.title}</h1>
