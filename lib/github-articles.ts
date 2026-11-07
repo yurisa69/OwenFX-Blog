@@ -26,7 +26,7 @@ function apiUrl(path: string) {
 
 async function githubRequest(url: string, init: RequestInit = {}) {
   const { token } = getConfig();
-  const response = await fetch(url, {
+  return fetch(url, {
     ...init,
     cache: 'no-store',
     headers: {
@@ -37,7 +37,6 @@ async function githubRequest(url: string, init: RequestInit = {}) {
       ...init.headers,
     },
   });
-  return response;
 }
 
 export async function readMarkdownFile(path: string): Promise<{ content: string; sha: string } | null> {
@@ -68,10 +67,20 @@ export async function writeMarkdownFile(path: string, content: string, message: 
     throw new Error(details.message || `写入 GitHub 文章失败（HTTP ${response.status}）`);
   }
   const result = await response.json() as { content?: { sha?: string }; commit?: { sha?: string } };
-  const sha = result.content?.sha;
+  const blobSha = result.content?.sha;
   const commitSha = result.commit?.sha;
-  if (!sha || !commitSha) throw new Error('GitHub 已响应，但没有返回文件或提交 SHA');
-  return { path, blobSha: sha, commitSha, previousContent: existing?.content ?? null };
+  if (!blobSha || !commitSha) throw new Error('GitHub 已响应，但没有返回文件或提交 SHA');
+  return { path, blobSha, commitSha, previousContent: existing?.content ?? null };
+}
+
+export async function deleteMarkdownFile(path: string, sha: string, message: string) {
+  const response = await githubRequest(apiUrl(path), {
+    method: 'DELETE',
+    body: JSON.stringify({ message, sha, branch: getConfig().branch }),
+  });
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`删除旧 GitHub 文章文件失败（HTTP ${response.status}）`);
+  }
 }
 
 export function hashMarkdown(content: string) {
