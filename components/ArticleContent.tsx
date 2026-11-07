@@ -17,8 +17,8 @@ function inlineMarkdown(value: string) {
 
 function markdownToHtml(source: string) {
   const cleanedSource = source
-    .replace(/^\s*\[(?:官方下载|下载)\]\(https?:\/\/[^)\s]+\)\s*$/gim, '')
-    .replace(/^\s*(?:\*\*)?(?:官方下载|下载)(?:\*\*)?\s*[:：]\s*(?:https?:\/\/\S+|\[[^\]]+\]\(https?:\/\/[^)]+\))\s*$/gim, '');
+    .replace(/^\s*\*{0,2}\s*(?:官方下载|下载)[^\r\n]*https?:\/\/\S+[^\r\n]*$/gim, '')
+    .replace(/^\s*\[(?:官方下载|下载)\]\(https?:\/\/[^)\s]+\)\s*$/gim, '');
   const lines = cleanedSource.replace(/\r\n/g, '\n').split('\n');
   const output: string[] = [];
   let index = 0;

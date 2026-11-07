@@ -39,7 +39,7 @@ export default function SoftwareSupport({ className = '', placement = 'software'
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
-  if (!config?.enabled || methods.length === 0) return null;
+  if (!config?.enabled) return null;
   return <div className={className + ' flex justify-center'}>
     <button type="button" className="support-trigger" onClick={() => setOpen(true)}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -51,13 +51,13 @@ export default function SoftwareSupport({ className = '', placement = 'software'
       <div className="support-modal-card" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
         <button type="button" className="support-modal-close" onClick={() => setOpen(false)} aria-label="关闭">×</button>
         <h2 className="support-modal-title">感谢您的支持</h2>
-        <div className="support-method-grid">{methods.map(key => {
+        {methods.length > 0 ? <div className="support-method-grid">{methods.map(key => {
           const method = config.methods[key] || {};
           return <div key={key} className="support-method-card"><strong>{labels[key]}</strong>
             {key === 'alipay' || key === 'wechat' ? method.qr_url ? <img src={method.qr_url} alt={labels[key] + '收款二维码'} className="mx-auto mt-2 h-36 w-36 rounded-lg object-contain" /> : <p className="mt-2 text-xs opacity-60">暂未配置二维码</p> :
               <><p className="mt-2 break-all text-xs">{method.address || '暂未配置钱包地址'}</p>{method.network && <p className="text-[11px] opacity-60">网络：{method.network}</p>}{method.address && <button type="button" onClick={() => navigator.clipboard.writeText(method.address || '')} className="mt-2 text-xs">复制地址</button>}</>}
           </div>;
-        })}</div>
+        })}</div> : <p className="py-6 text-center text-sm" style={{ color: "var(--text-secondary)" }}>暂未配置可用的赞赏方式，敬请期待。</p>}
       </div>
     </div>}
   </div>;

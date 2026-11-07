@@ -127,7 +127,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   return (
     <section id="article-comments-card" className="uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
       <div className="mb-5 flex flex-col items-center text-center">
-        <div className="flex h-[45px] w-[45px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
+        <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
           style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
           {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
         </div>
