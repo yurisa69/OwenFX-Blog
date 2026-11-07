@@ -49,6 +49,23 @@ export default function ProfileCenter() {
 
       const authUser = session.user;
       const meta = authUser.user_metadata || {};
+      const sessionAvatar = typeof meta.avatar_url === 'string'
+        ? meta.avatar_url
+        : typeof meta.picture === 'string'
+          ? meta.picture
+          : null;
+
+      // Render the account immediately from the local session; do not wait for
+      // the profile-table request before showing the user's avatar.
+      setUser({
+        id: authUser.id,
+        email: authUser.email,
+        name: String(meta.display_name || meta.name || authUser.email?.split('@')[0] || '用户'),
+        avatar: sessionAvatar,
+        bio: '',
+      });
+      setLoading(false);
+
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('display_name,avatar_url,bio')
@@ -56,15 +73,18 @@ export default function ProfileCenter() {
         .maybeSingle();
 
       if (!active) return;
-      if (profileError) setError('个人资料暂时无法完整加载，请稍后重试。');
-      setUser({
-        id: authUser.id,
-        email: authUser.email,
-        name: profile?.display_name || String(meta.display_name || meta.name || authUser.email?.split('@')[0] || '用户'),
-        avatar: profile?.avatar_url || (typeof meta.avatar_url === 'string' ? meta.avatar_url : null),
-        bio: profile?.bio || '',
-      });
-      setLoading(false);
+      if (profileError) {
+        setError('个人资料暂时无法完整加载，请稍后重试。');
+        return;
+      }
+      if (profile) {
+        setUser(current => ({
+          ...current,
+          name: profile.display_name || current.name,
+          avatar: profile.avatar_url || current.avatar,
+          bio: profile.bio || '',
+        }));
+      }
     };
 
     void loadProfile();
@@ -148,7 +168,7 @@ export default function ProfileCenter() {
 
     {tab === 'profile' && <section className="uiverse-card flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-tertiary)' }}>
-        {loading ? <span className="h-full w-full animate-pulse rounded-full" style={{ background: 'var(--bg-tertiary)' }} /> : user.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : <span className="text-3xl font-semibold">{user.name.slice(0, 1).toUpperCase() || 'U'}</span>}
+        {loading ? <span className="h-full w-full animate-pulse rounded-full" style={{ background: 'var(--bg-tertiary)' }} /> : user.avatar ? <img src={user.avatar} alt="头像" loading="eager" decoding="async" fetchPriority="high" className="h-full w-full object-cover" /> : <span className="text-3xl font-semibold">{user.name.slice(0, 1).toUpperCase() || 'U'}</span>}
       </div>
       <div className="min-w-0 flex-1">
         {loading ? <div className="space-y-3"><div className="h-5 w-32 animate-pulse rounded" style={{ background: 'var(--bg-tertiary)' }} /><div className="h-3 w-48 max-w-full animate-pulse rounded" style={{ background: 'var(--bg-tertiary)' }} /></div> : <>
