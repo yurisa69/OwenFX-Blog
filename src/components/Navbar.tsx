@@ -397,7 +397,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
       {menuOpen && (
         <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg">
           <nav className="flex flex-col p-4 gap-1">
-            {navLinks.map(l => (
+            {navLinks.filter(l => l.label !== '软件').map(l => (
               <Link key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
                 className="px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">
                 {l.label}
@@ -419,7 +419,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               </button>
             </div>
             <nav className="space-y-1">
-              {navLinks.map(link => (
+              {navLinks.filter(link => link.label !== '软件').map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
