@@ -197,25 +197,56 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   async function uploadImage(file?: File) {
     if (!file) return;
     setUploadBusy(true);
-    setMessage('正在上传图片到 Cloudflare R2…');
+    const isVideo = file.type.startsWith('video/');
+    setMessage(isVideo ? '正在安全直传视频到 Cloudflare R2…' : '正在安全直传图片到 Cloudflare R2…');
     try {
-      const alt = window.prompt('图片替代文字（可选）', file.name) || file.name;
-      const form = new FormData();
-      form.append('file', file);
-      form.append('alt', alt);
-      const response = await fetch('/api/r2-upload', { method: 'POST', body: form });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || '图片上传失败');
-      if (mode === 'markdown') {
-        setContent(value => `${value}${value ? '\n\n' : ''}![${result.alt || alt}](${result.url})`);
-      } else if (richRef.current) {
-        richRef.current.focus();
-        document.execCommand('insertHTML', false, `<img src="${escapeHtml(result.url)}" alt="${escapeHtml(result.alt || alt)}" />`);
-        setContent(htmlToMarkdown(richRef.current.innerHTML));
+      const alt = isVideo ? file.name : (window.prompt('图片替代文字（可选）', file.name) || file.name);
+      const kind = isVideo ? 'video' : 'image';
+      const signedResponse = await fetch('/api/r2-upload/presign', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind, fileName: file.name, contentType: file.type, size: file.size }),
+      });
+      const signed = await signedResponse.json();
+      if (!signedResponse.ok) throw new Error(signed.error || '无法创建 R2 上传地址');
+
+      const putResponse = await fetch(signed.uploadUrl, {
+        method: 'PUT',
+        headers: signed.headers,
+        body: file,
+      });
+      if (!putResponse.ok) throw new Error('R2 文件上传失败，请检查存储桶 CORS 配置');
+
+      const completeResponse = await fetch('/api/r2-upload/complete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ key: signed.key, kind, fileName: file.name, alt }),
+      });
+      const completed = await completeResponse.json();
+      if (!completeResponse.ok) throw new Error(completed.error || 'R2 文件登记失败');
+      const url = completed.asset.public_url;
+
+      if (isVideo) {
+        const link = `[视频：${file.name.replace(/[\[\]]/g, '')}](${url})`;
+        if (mode === 'markdown') setContent(value => `${value}${value ? '\n\n' : ''}${link}`);
+        else if (richRef.current) {
+          richRef.current.focus();
+          document.execCommand('insertHTML', false, `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(file.name)}</a>`);
+          setContent(htmlToMarkdown(richRef.current.innerHTML));
+        }
+        setMessage('视频已直传 R2，媒体元数据已登记');
+      } else {
+        if (mode === 'markdown') {
+          setContent(value => `${value}${value ? '\n\n' : ''}![${alt}](${url})`);
+        } else if (richRef.current) {
+          richRef.current.focus();
+          document.execCommand('insertHTML', false, `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" />`);
+          setContent(htmlToMarkdown(richRef.current.innerHTML));
+        }
+        setMessage('图片已直传 R2，并插入文章');
       }
-      setMessage('图片已上传到 R2，并插入文章');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '图片上传失败');
+      setMessage(error instanceof Error ? error.message : '媒体上传失败');
     } finally {
       setUploadBusy(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -273,8 +304,8 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
         <button type="button" className={`admin-tab ${mode === 'rich' ? 'active' : ''}`} onClick={() => switchMode('rich')}>富文本</button>
       </div>
       <div className="flex flex-wrap gap-2">
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="hidden" onChange={event => void uploadImage(event.target.files?.[0])} />
-        <button type="button" className="admin-tab" disabled={uploadBusy} onClick={() => fileRef.current?.click()}>{uploadBusy ? '上传中…' : '上传 R2 图片'}</button>
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm,video/quicktime" className="hidden" onChange={event => void uploadImage(event.target.files?.[0])} />
+        <button type="button" className="admin-tab" disabled={uploadBusy} onClick={() => fileRef.current?.click()}>{uploadBusy ? '上传中…' : '上传 R2 媒体'}</button>
         <button type="button" className="admin-tab" onClick={() => setPreview(!preview)}>{preview ? '返回编辑' : '预览文章'}</button>
       </div>
     </div>
