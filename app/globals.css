@@ -386,7 +386,6 @@ html.theme-switching .six-star-spin {
 .profile-activity-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .profile-activity-tab{display:flex;min-width:0;min-height:58px;align-items:center;justify-content:center;gap:5px;border:1px solid var(--border-color);border-radius:14px;background:var(--bg-glass);color:var(--text-secondary);font-size:12px;transition:background .18s,border-color .18s,color .18s}
 .profile-activity-tab.active{border-color:rgba(129,140,248,.48);background:var(--accent-bg);color:var(--accent)}
-.profile-activity-symbol{font-size:17px;line-height:1}
 .profile-activity-tab b{font-size:10px;font-weight:600;opacity:.7}
 .profile-activity-list{display:flex;min-height:110px;flex-direction:column;gap:8px}
 .profile-list-empty{display:grid;min-height:118px;place-items:center;border:1px dashed var(--border-color);border-radius:16px;color:var(--text-tertiary);font-size:12px}

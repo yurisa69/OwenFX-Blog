@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
+import ArticleActionIcon from '@/components/ArticleActionIcon';
 import { getSupabaseBrowser } from '@/lib/supabase';
 
 type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null };
@@ -295,13 +296,13 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   </section>
                   <nav className="profile-activity-tabs" aria-label="个人活动">
                     <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('likes')}>
-                      <span className="profile-activity-symbol">♡</span><span>喜欢</span><b>{profileLikes.length}</b>
+                      <ArticleActionIcon type="like" /><span>喜欢</span><b>{profileLikes.length}</b>
                     </button>
                     <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('bookmarks')}>
-                      <span className="profile-activity-symbol">▣</span><span>收藏</span><b>{profileBookmarks.length}</b>
+                      <ArticleActionIcon type="bookmark" /><span>收藏</span><b>{profileBookmarks.length}</b>
                     </button>
                     <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('comments')}>
-                      <span className="profile-activity-symbol">▤</span><span>评论</span><b>{profileComments.length}</b>
+                      <ArticleActionIcon type="comment" /><span>评论</span><b>{profileComments.length}</b>
                     </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
@@ -313,7 +314,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                         <div className="profile-list-empty">{profileTab === 'likes' ? '还没有喜欢的文章' : '还没有收藏的文章'}</div>
                       ) : (profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
                         <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
-                          <span className="profile-activity-item-mark">{profileTab === 'likes' ? '♡' : '▣'}</span>
+                          <span className="profile-activity-item-mark">{profileTab === 'likes' ? <ArticleActionIcon type="like" /> : <ArticleActionIcon type="bookmark" />}</span>
                           <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span>
                           <span className="profile-activity-arrow">›</span>
                         </Link>
