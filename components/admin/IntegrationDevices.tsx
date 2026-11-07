@@ -117,7 +117,7 @@ Content-Type: application/json
       {!devices.length ? <p className="text-sm opacity-60">尚未创建导入授权。</p> : devices.map(device => <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
         <div>
           <p className="font-medium text-sm">{device.name}</p>
-          <p className="text-xs opacity-60">{device.scopes.join(', ')} · {device.last_used_at ? `最近使用 ${new Date(device.last_used_at).toLocaleString('zh-CN')}` : '尚未使用'}</p>
+          <p className="text-xs opacity-60">{device.scopes.join(', ')} · {device.last_used_at ? `最近使用 ${new Date(device.last_used_at).toLocaleString('zh-CN')}` : '尚未使用'} · {device.expires_at ? `有效期至 ${new Date(device.expires_at).toLocaleDateString('zh-CN')}` : '无过期时间'}</p>
         </div>
         <button type="button" disabled={!device.active} className="admin-nav-link" onClick={() => void revoke(device.id)}>{device.active ? '撤销授权' : '已撤销'}</button>
       </div>)}
