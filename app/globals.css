@@ -101,6 +101,12 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   outline: none;
   box-shadow: none;
 }
+
+/* Prevent synchronized button flashes while global theme variables change. */
+.theme-switching .nav-icon-btn,
+.theme-switching .nav-star-btn {
+  transition: none !important;
+}
 .nav-profile-trigger { padding: 2px; }
 
 .nav-link-pill{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:999px;font-size:14px;color:var(--text-secondary);transition:background .2s,color .2s,box-shadow .2s}
