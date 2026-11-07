@@ -160,7 +160,7 @@ body.drawer-scroll-lock {
 
 
 /* Original ZIP navbar controls */
-.theme-btn,.nav-icon-btn,.nav-star-btn{width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s,color .2s,box-shadow .2s;border:1px solid var(--border-color);background:var(--bg-glass);color:var(--text-secondary);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);-webkit-tap-highlight-color:transparent;touch-action:manipulation;box-shadow:0 0 22px rgba(129,140,248,.12)}
+.theme-btn,.nav-icon-btn,.nav-star-btn{-webkit-appearance:none;appearance:none;padding:0;font:inherit;width:36px;height:36px;flex:0 0 36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s,color .2s,box-shadow .2s;border:1px solid var(--border-color);background-color:var(--bg-glass);background-image:none;color:var(--text-secondary);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);-webkit-tap-highlight-color:transparent;touch-action:manipulation;box-shadow:0 0 22px rgba(129,140,248,.12)}
 @media(hover:hover) and (pointer:fine){.theme-btn:hover,.nav-icon-btn:hover,.nav-star-btn:hover{background:var(--bg-tertiary);color:var(--text-primary);box-shadow:0 0 28px rgba(129,140,248,.22)}}
 .theme-btn:active,.nav-icon-btn:active,.nav-star-btn:active{background:var(--bg-tertiary);color:var(--text-primary);box-shadow:0 0 28px rgba(129,140,248,.22)}
 .theme-btn:focus-visible,.nav-icon-btn:focus-visible,.nav-star-btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--accent)}
