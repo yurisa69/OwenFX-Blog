@@ -132,12 +132,6 @@ a { color: inherit; text-decoration: none; }
 .drawer-level-tone-7 { color: #a855f7; }
 .drawer-level-tone-max { color: #e2e8f0; }
 
-html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after {
-  transition: none !important;
-  animation-duration: 0.001ms !important;
-  animation-delay: 0s !important;
-}
-
 html.drawer-scroll-lock, body.drawer-scroll-lock {
   scrollbar-gutter: stable;
 }
