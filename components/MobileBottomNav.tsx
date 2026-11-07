@@ -54,7 +54,7 @@ export default function MobileBottomNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 md:hidden pointer-events-none">
-      <nav className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-2xl border border-[var(--border-color)] bg-[var(--bg-glass)] px-1 py-2 shadow-[0_8px_32px_rgba(0,0,0,.35)] backdrop-blur-xl">
+      <nav className="pointer-events-auto relative mx-auto flex max-w-md items-center justify-around overflow-hidden rounded-full border border-white/35 bg-[linear-gradient(135deg,rgba(255,255,255,0.34),rgba(255,255,255,0.10)_48%,rgba(255,255,255,0.22))] px-2 py-2 shadow-[0_12px_36px_rgba(15,23,42,0.20),inset_0_1px_0_rgba(255,255,255,0.55),inset_0_-1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/15 dark:bg-[linear-gradient(135deg,rgba(30,41,59,0.78),rgba(15,23,42,0.58)_48%,rgba(30,41,59,0.72))] dark:shadow-[0_12px_36px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-1px_0_rgba(255,255,255,0.06)]">
         {tabs.map(({ href, label, icon }) => {
           const active =
             href === '/'
@@ -64,13 +64,17 @@ export default function MobileBottomNav() {
             <Link
               key={href}
               href={href}
-              className={`flex min-w-[4.25rem] flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] transition ${
+              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-1 py-1 text-[11px] transition ${
                 active
                   ? 'text-[var(--accent)]'
                   : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
               }`}
             >
-              <span className={active ? 'scale-105' : ''}>{icon}</span>
+              <span className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
+                active
+                  ? 'bg-white/45 shadow-[inset_0_1px_2px_rgba(255,255,255,0.75),0_2px_10px_rgba(99,102,241,0.12)] dark:bg-white/15 dark:shadow-[inset_0_1px_2px_rgba(255,255,255,0.22),0_2px_10px_rgba(99,102,241,0.18)]'
+                  : 'bg-transparent'
+              }`}>{icon}</span>
               <span className="font-medium">{label}</span>
             </Link>
           )
