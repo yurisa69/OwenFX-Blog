@@ -44,6 +44,12 @@ function markdownToHtml(source: string) {
       continue;
     }
 
+    if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+      output.push('<hr>');
+      index += 1;
+      continue;
+    }
+
     if (line.includes('|') && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[index + 1])) {
       const cells = (row: string) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
       const header = cells(line);
