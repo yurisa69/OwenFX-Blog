@@ -26,7 +26,7 @@ export default async function HomePage() {
     createdAt: new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN'),
   }));
 
-  return <div className="pt-6">
+  return <div className="pt-6 md:pt-9">
     <Carousel />
     <HomeSections articles={articles} featured={software ?? []} />
     <footer className="text-center py-8 text-sm border-t" style={{ color: 'var(--text-tertiary)', borderColor: 'var(--border-color)' }}><p>OwenFX © {new Date().getFullYear()}</p></footer>
