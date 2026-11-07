@@ -102,10 +102,14 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   box-shadow: none;
 }
 
-/* Prevent synchronized button flashes while global theme variables change. */
-.theme-switching .nav-icon-btn,
-.theme-switching .nav-star-btn {
+/* Match the reference theme-switch behavior: freeze transitions and animations
+   briefly across the document while theme variables are being updated. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
   transition: none !important;
+  animation-duration: 0.001ms !important;
+  animation-delay: 0s !important;
 }
 .nav-profile-trigger { padding: 2px; }
 
