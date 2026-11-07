@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -51,10 +52,25 @@ const tabs = [
 
 export default function MobileBottomNav() {
   const pathname = usePathname()
+  const [expanded, setExpanded] = useState(true)
+
+  useEffect(() => {
+    if (!expanded) return
+    const timeout = window.setTimeout(() => setExpanded(false), 3000)
+    return () => window.clearTimeout(timeout)
+  }, [expanded, pathname])
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1 md:hidden pointer-events-none">
-      <nav className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-full border border-[var(--border-color)] bg-[var(--bg-glass)] px-1 py-2 backdrop-blur-[24px]">
+    <div className="pointer-events-none fixed right-3 top-1/2 z-40 -translate-y-1/2 md:hidden">
+      <nav
+        aria-label="移动端主导航"
+        className={`pointer-events-auto absolute right-0 top-1/2 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full border border-[var(--border-color)] bg-[var(--bg-glass)] px-1 py-2 backdrop-blur-[24px] transition-all duration-300 ease-out ${
+          expanded
+            ? 'translate-x-0 scale-100 opacity-100'
+            : 'pointer-events-none translate-x-4 scale-95 opacity-0'
+        }`}
+        aria-hidden={!expanded}
+      >
         {tabs.map(({ href, label, icon }) => {
           const active =
             href === '/'
@@ -64,7 +80,8 @@ export default function MobileBottomNav() {
             <Link
               key={href}
               href={href}
-              className={`flex min-w-[4.25rem] flex-col items-center gap-0.5 rounded-full px-2 py-1.5 text-[11px] transition ${
+              tabIndex={expanded ? 0 : -1}
+              className={`flex w-14 flex-col items-center gap-0.5 rounded-full px-1 py-2 text-[11px] transition ${
                 active
                   ? 'text-[var(--accent)]'
                   : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
@@ -76,6 +93,33 @@ export default function MobileBottomNav() {
           )
         })}
       </nav>
+
+      <button
+        type="button"
+        aria-label={expanded ? '收起导航菜单' : '展开导航菜单'}
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+        tabIndex={expanded ? -1 : 0}
+        className={`pointer-events-auto absolute right-0 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-glass)] text-[var(--text-secondary)] shadow-[0_8px_28px_rgba(0,0,0,.2)] backdrop-blur-[24px] transition-all duration-300 hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+          expanded
+            ? 'pointer-events-none translate-x-4 scale-90 opacity-0'
+            : 'translate-x-0 scale-100 opacity-100'
+        }`}
+      >
+        <svg
+          className={`h-6 w-6 ${expanded ? '' : 'animate-[spin_8s_linear_infinite] motion-reduce:animate-none'}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 2.8 14 4l2.2-.2 1.1 2.1 2 1.1-.2 2.2 1.2 2.8-1.2 2.8.2 2.2-2 1.1-1.1 2.1L14 20l-2 1.2L10 20l-2.2.2-1.1-2.1-2-1.1.2-2.2L3.7 12l1.2-2.8-.2-2.2 2-1.1 1.1-2.1L10 4l2-1.2Z" />
+          <circle cx="12" cy="12" r="3.2" />
+        </svg>
+      </button>
     </div>
   )
 }
