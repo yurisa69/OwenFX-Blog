@@ -169,3 +169,6 @@ body.drawer-scroll-lock {
 .nav-search-submit{display:flex;width:24px;height:24px;flex:0 0 24px;align-items:center;justify-content:center;border:0;border-radius:999px;background:transparent;color:var(--text-tertiary);cursor:pointer;transition:background .2s,color .2s}.nav-search-submit:hover{background:var(--bg-tertiary);color:var(--text-primary)}
 @media(max-width:420px){.nav-actions{gap:6px}.nav-actions-search-open .nav-search-slot{position:absolute;right:84px;z-index:80;width:120px;min-width:120px}.nav-actions-search-open .nav-theme-slot{visibility:hidden;pointer-events:none}.nav-actions-search-open .nav-search-capsule{width:120px;padding-left:12px;padding-right:8px}.nav-actions-search-open .nav-star-btn{width:34px;height:34px;flex:0 0 34px}}
 @keyframes six-star-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}.six-star-spin{transform-origin:50% 50%;animation:six-star-spin 8s linear infinite}a:hover .six-star-spin,button:hover .six-star-spin{animation-duration:3.2s}
+
+/* Match the reference navbar: prevent every control from animating together during a theme swap. */
+html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after{transition:none!important;animation-duration:.001ms!important;animation-delay:0s!important}
