@@ -142,16 +142,15 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{Array.from(commentText).length}/600</span>
+        <div className="w-full">
           {user ? (
             <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
-              className="uiverse-btn uiverse-btn-primary rounded-xl !px-5 !py-2.5 text-sm">
+              className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">
               {submitting ? '提交中…' : '发表评论'}
             </button>
           ) : (
             <button type="button" onClick={() => router.push('/login?next=' + encodeURIComponent(window.location.pathname))}
-              className="uiverse-btn uiverse-btn-primary rounded-xl !px-5 !py-2.5 text-sm">登录后评论</button>
+              className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">登录后评论</button>
           )}
         </div>
         {notice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}

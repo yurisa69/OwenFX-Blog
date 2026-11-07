@@ -92,8 +92,8 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </div>
         )}
 
+        <ArticleSupport className="mt-7" />
         <ArticleInteractions articleId={article.id} />
-        <ArticleSupport className="mt-8" />
       </article>
     </div>
   );
