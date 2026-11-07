@@ -146,6 +146,12 @@ cp .env.example .env.local
 - 正式环境需要配置服务端 `GITHUB_TOKEN`，建议使用仅对本仓库授予 Contents Read and write 权限的 Fine-grained Personal Access Token。
 - `GITHUB_REPOSITORY` 默认是 `yurisa69/OwenFX-Blog`，`GITHUB_BRANCH` 默认是 `main`。文章内容提交到 main 会按现有 Git 集成触发 Vercel 部署。
 
+| 变量 | 是否需要 | 用途 |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | 必填 | 服务端 GitHub Token，必须具有目标仓库 Contents: Read and write 权限。 |
+| `GITHUB_REPOSITORY` | 建议填写 | GitHub 仓库，格式为 `owner/repository`。 |
+| `GITHUB_BRANCH` | 建议填写 | 文章提交分支，当前使用 `main`。 |
+
 演示格式（非真实 Token）：
 
 - `GITHUB_TOKEN`：<code><font color="#f85149">"</font>github_pat_DEMO_ONLY_REPLACE_WITH_REAL_TOKEN<font color="#f85149">"</font></code>
@@ -215,7 +221,7 @@ API 设备可在「AI 导入」页面撤销。接口要求 Bearer Token，并检
 ### 环境变量安全规则
 
 1. `NEXT_PUBLIC_` 前缀表示变量可能被打包到浏览器端，只能放公开信息。
-2. `SUPABASE_SERVICE_ROLE_KEY`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY`、`SMTP_PASS` 必须保持服务端私密。
+2. `SUPABASE_SERVICE_ROLE_KEY`、`GITHUB_TOKEN`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY`、`SMTP_PASS` 必须保持服务端私密。
 3. 不要把真实的 `.env.local` 上传到 GitHub，也不要把真实密钥写进 README、源码、截图或 Issue。
 4. 如果密钥曾经提交到公开仓库，应立即在对应服务控制台轮换，而不是只删除 GitHub 文件。
 5. Vercel 中应分别为 Development、Preview、Production 配置对应环境变量；修改变量后需要重新部署才能让新部署读取新值。
