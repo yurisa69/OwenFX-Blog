@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: OwenFX Article Import API
+  version: 1.0.0
+  description: Import an AI-generated Markdown article as an unpublished OwenFX draft.
+servers:
+  - url: https://YOUR_OWENFX_DOMAIN
+    description: Replace with the OwenFX production domain.
+security:
+  - OwenFXBearer: []
+paths:
+  /api/integrations/v1/articles/import:
+    post:
+      operationId: importOwenFXArticle
+      summary: Import an article draft into OwenFX
+      description: Creates a Markdown file in the configured GitHub repository and creates article metadata in Supabase. The imported article is always a draft and is never published automatically. Reuse the same request_id when retrying the same import.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - title
+                - slug
+                - markdown
+                - request_id
+              properties:
+                title:
+                  type: string
+                  maxLength: 160
+                slug:
+                  type: string
+                  pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                  maxLength: 180
+                excerpt:
+                  type: string
+                  maxLength: 300
+                markdown:
+                  type: string
+                  maxLength: 500000
+                category:
+                  type: string
+                  description: Existing article category slug in OwenFX.
+                tags:
+                  type: array
+                  maxItems: 12
+                  items:
+                    type: string
+                  description: Existing tag slugs in OwenFX.
+                request_id:
+                  type: string
+                  minLength: 8
+                  maxLength: 120
+                  description: Stable unique request ID. Reuse it for retries to prevent duplicate articles.
+      responses:
+        '201':
+          description: Article draft created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  article_id:
+                    type: string
+                  status:
+                    type: string
+                    const: draft
+                  github_path:
+                    type: string
+                  edit_url:
+                    type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          description: Missing, invalid, revoked, or expired import token.
+        '409':
+          description: Slug already exists.
+        '422':
+          description: Unknown category or tag.
+        '502':
+          description: GitHub write or metadata synchronization failed.
+components:
+  securitySchemes:
+    OwenFXBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OwenFX API device token
