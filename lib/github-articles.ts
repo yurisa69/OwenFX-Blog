@@ -39,8 +39,8 @@ async function githubRequest(url: string, init: RequestInit = {}) {
   });
 }
 
-export async function readMarkdownFile(path: string): Promise<{ content: string; sha: string } | null> {
-  const response = await githubRequest(`${apiUrl(path)}?ref=${encodeURIComponent(getConfig().branch)}`);
+export async function readMarkdownFile(path: string, ref?: string): Promise<{ content: string; sha: string } | null> {
+  const response = await githubRequest(`${apiUrl(path)}?ref=${encodeURIComponent(ref || getConfig().branch)}`);
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`读取 GitHub 文章失败（HTTP ${response.status}）`);
   const file = await response.json() as GitHubContentResponse;
