@@ -108,12 +108,12 @@ function htmlToMarkdown(html: string) {
     if (!(node instanceof HTMLElement)) return '';
     if (node.tagName === 'IMG') {
       const src = node.getAttribute('src') || '';
-      const alt = (node.getAttribute('alt') || '').replace(/\]/g, '\\]');
+      const alt = (node.getAttribute('alt') || '').replace(/\]/g, '\]');
       return /^https?:\/\//i.test(src) ? `![${alt}](${src})` : '';
     }
     if (node.tagName === 'TABLE') {
       const rows = Array.from(node.querySelectorAll('tr')).map(row =>
-        Array.from(row.querySelectorAll('th,td')).map(cell => cell.textContent?.trim().replace(/\|/g, '\\|') || '')
+        Array.from(row.querySelectorAll('th,td')).map(cell => cell.textContent?.trim().replace(/\|/g, '\|') || '')
       );
       if (!rows.length) return '';
       const width = Math.max(...rows.map(row => row.length));
@@ -132,7 +132,7 @@ function htmlToMarkdown(html: string) {
       case 'STRONG': case 'B': return `**${content}**`;
       case 'EM': case 'I': return `*${content}*`;
       case 'CODE': return '`' + content + '`';
-      case 'PRE': return '```\\n' + (node.textContent || '') + '\\n```\\n\\n';
+      case 'PRE': return '```\n' + (node.textContent || '') + '\n```\n\n';
       case 'LI': return `- ${content}\n`;
       case 'UL': case 'OL': return `${content}\n`;
       case 'BLOCKQUOTE': return content.split('\n').filter(Boolean).map(line => `> ${line}`).join('\n') + '\n\n';
