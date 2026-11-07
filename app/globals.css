@@ -111,6 +111,11 @@ html.theme-switching *::after {
   animation-duration: 0.001ms !important;
   animation-delay: 0s !important;
 }
+
+/* Keep the navbar's six-point star spinning smoothly during theme changes. */
+html.theme-switching .six-star-spin {
+  animation: six-star-spin 8s linear infinite !important;
+}
 .nav-profile-trigger { padding: 2px; }
 
 .nav-link-pill{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:999px;font-size:14px;color:var(--text-secondary);transition:background .2s,color .2s,box-shadow .2s}
