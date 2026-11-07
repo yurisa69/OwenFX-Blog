@@ -131,8 +131,8 @@ function htmlToMarkdown(html: string) {
       case 'H6': return `###### ${content}\n\n`;
       case 'STRONG': case 'B': return `**${content}**`;
       case 'EM': case 'I': return `*${content}*`;
-      case 'CODE': return ```${content}```;
-      case 'PRE': return ```\n${node.textContent || ''}\n```\n\n`;
+      case 'CODE': return '`' + content + '`';
+      case 'PRE': return '```\\n' + (node.textContent || '') + '\\n```\\n\\n';
       case 'LI': return `- ${content}\n`;
       case 'UL': case 'OL': return `${content}\n`;
       case 'BLOCKQUOTE': return content.split('\n').filter(Boolean).map(line => `> ${line}`).join('\n') + '\n\n';
