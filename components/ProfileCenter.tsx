@@ -13,13 +13,13 @@ type UserProfile = { id: string; email?: string; name: string; avatar: string | 
 
 const EMPTY_USER: UserProfile = { id: '', name: '', avatar: null, bio: '' };
 
-export default function ProfileCenter() {
+export default function ProfileCenter({ initialProfile = null }: { initialProfile?: UserProfile | null }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('profile');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialProfile);
   const [tabLoading, setTabLoading] = useState<Tab | null>(null);
   const [error, setError] = useState('');
-  const [user, setUser] = useState<UserProfile>(EMPTY_USER);
+  const [user, setUser] = useState<UserProfile>(initialProfile || EMPTY_USER);
   const [bookmarks, setBookmarks] = useState<Interaction[]>([]);
   const [likes, setLikes] = useState<Interaction[]>([]);
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -57,13 +57,18 @@ export default function ProfileCenter() {
 
       // Render the account immediately from the local session; do not wait for
       // the profile-table request before showing the user's avatar.
-      setUser({
+      // Keep the server-rendered profile (especially its database avatar) as the
+      // first source of truth. Session metadata is only a fallback when no SSR
+      // profile was available, preventing an avatar swap after navigation.
+      setUser(current => ({
         id: authUser.id,
         email: authUser.email,
-        name: String(meta.display_name || meta.name || authUser.email?.split('@')[0] || '用户'),
-        avatar: sessionAvatar,
-        bio: '',
-      });
+        name: current.id === authUser.id && current.name
+          ? current.name
+          : String(meta.display_name || meta.name || authUser.email?.split('@')[0] || '用户'),
+        avatar: current.id === authUser.id ? (current.avatar || sessionAvatar) : sessionAvatar,
+        bio: current.id === authUser.id ? current.bio : '',
+      }));
       setLoading(false);
 
       const { data: profile, error: profileError } = await supabase
