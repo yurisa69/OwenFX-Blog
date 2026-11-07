@@ -282,6 +282,9 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
             <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'h2')}>H2</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'h3')}>H3</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('insertUnorderedList')}>• 列表</button>
+            <button className="admin-tool" type="button" onClick={() => runFormat('insertOrderedList')}>1. 编号</button>
+            <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'pre')}>代码块</button>
+            <button className="admin-tool" type="button" onClick={() => runFormat('insertHorizontalRule')}>分隔线</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'blockquote')}>引用</button>
             <button className="admin-tool" type="button" onClick={() => {
               const url = window.prompt('输入 https:// 链接地址');
