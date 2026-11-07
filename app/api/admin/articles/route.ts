@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, hashMarkdown, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownPath, hashMarkdown, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -28,6 +28,8 @@ export async function POST(req: Request) {
   if (!slugPattern.test(slug) || slug.length > 180) return NextResponse.json({ error: 'Slug 仅允许小写字母、数字和连字符' }, { status: 400 });
   if (status === 'published' && !content.trim()) return NextResponse.json({ error: '发布前请先填写文章正文' }, { status: 400 });
   if (content.length > 500000) return NextResponse.json({ error: '文章内容过大' }, { status: 413 });
+  const imageError = validateMarkdownImageUrls(content);
+  if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
   const { data: duplicate } = await auth.supabase.from('articles').select('id').eq('slug', slug).maybeSingle();
   if (duplicate) return NextResponse.json({ error: '这个 Slug 已被使用' }, { status: 409 });
