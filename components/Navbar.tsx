@@ -180,7 +180,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
         {menuOpen && (
           <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg">
             <nav className="flex flex-col p-4 gap-1">
-              {navLinks.map(link => (
+              {navLinks.filter(link => link.label !== '软件').map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
