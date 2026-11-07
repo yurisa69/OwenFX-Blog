@@ -90,3 +90,14 @@ export function hashMarkdown(content: string) {
 export function articleMarkdownPath(slug: string) {
   return `content/articles/${slug}.md`;
 }
+
+export function validateMarkdownImageUrls(content: string) {
+  const urls = [...content.matchAll(/!\\[[^\\]]*\\]\\((https?:\\/\\/[^ )]+)\\)/g)].map(match => match[1]);
+  if (!urls.length) return null;
+  const publicBase = process.env.R2_PUBLIC_BASE_URL?.replace(/\\/+$/, '');
+  if (!publicBase) return '文章包含图片，但 R2_PUBLIC_BASE_URL 尚未配置';
+  if (urls.some(url => !url.startsWith(`${publicBase}/`))) {
+    return '文章图片必须先上传到 Cloudflare R2，再插入 R2 图片地址';
+  }
+  return null;
+}
