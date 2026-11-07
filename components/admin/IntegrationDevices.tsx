@@ -18,6 +18,7 @@ export default function IntegrationDevices() {
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [siteOrigin, setSiteOrigin] = useState('');
 
   async function load() {
     const response = await fetch('/api/admin/integrations/devices', { cache: 'no-store' });
@@ -74,7 +75,7 @@ export default function IntegrationDevices() {
     setMessage('授权密钥已复制');
   }
 
-  const endpoint = '/api/integrations/v1/articles/import';
+  const endpoint = siteOrigin ? `${siteOrigin}/api/integrations/v1/articles/import` : '/api/integrations/v1/articles/import';
 
   return <div className="space-y-5">
     <section className="admin-panel space-y-3">
