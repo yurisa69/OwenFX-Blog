@@ -80,7 +80,7 @@ export default function IntegrationDevices() {
   return <div className="space-y-5">
     <section className="admin-panel space-y-3">
       <h2 className="font-semibold">创建 ChatGPT 导入授权</h2>
-      <p className="text-sm opacity-70">每个授权仅允许导入文章草稿。密钥只在创建时显示一次，可以随时撤销。</p>
+      <p className="text-sm opacity-70">每个授权仅允许导入文章草稿，默认 365 天过期。密钥只在创建时显示一次，可以随时撤销。</p>
       <form onSubmit={createDevice} className="flex flex-wrap gap-2">
         <input className="admin-input min-w-[220px] flex-1" value={name} onChange={event => setName(event.target.value)} maxLength={100} required aria-label="设备名称"/>
         <button className="uiverse-btn uiverse-btn-primary" disabled={busy}>{busy ? '创建中…' : '创建授权密钥'}</button>
@@ -94,7 +94,7 @@ export default function IntegrationDevices() {
 
     <section className="admin-panel space-y-3">
       <h2 className="font-semibold">导入接口</h2>
-      <p className="text-xs opacity-70">将此地址配置到支持外部 API 的 ChatGPT 连接器中。请求必须使用 Bearer 授权。</p>
+      <p className="text-xs opacity-70">将 OpenAPI Schema 导入支持 Actions / OpenAPI 的 ChatGPT 连接器，并配置下面的 Bearer 授权。</p><a className="text-sm underline" href="https://raw.githubusercontent.com/yurisa69/OwenFX-Blog/main/docs/openapi/owenfx-article-import.yaml" target="_blank" rel="noreferrer">打开 OwenFX OpenAPI Schema</a>
       <code className="block break-all rounded-lg p-3 text-xs" style={{ background: 'var(--bg-secondary)' }}>{endpoint}</code>
       <pre className="overflow-x-auto rounded-lg p-3 text-xs leading-6" style={{ background: 'var(--bg-secondary)' }}>{`POST ${endpoint}
 Authorization: Bearer <你的授权密钥>
