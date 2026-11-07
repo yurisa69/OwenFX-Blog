@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { articleMarkdownPath, hashMarkdown, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownPath, hashMarkdown, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 import { createServiceClient } from '@/lib/supabase/service';
 
 export const runtime = 'nodejs';
@@ -38,6 +38,8 @@ export async function POST(request: Request) {
   if (!slugPattern.test(slug) || slug.length > 180) return NextResponse.json({ error: 'Slug 仅允许小写字母、数字和连字符' }, { status: 400 });
   if (!markdown.trim()) return NextResponse.json({ error: 'Markdown 正文不能为空' }, { status: 400 });
   if (markdown.length > 500_000) return NextResponse.json({ error: 'Markdown 正文不能超过 500 KB' }, { status: 413 });
+  const imageError = validateMarkdownImageUrls(markdown);
+  if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
   if (!requestIdPattern.test(requestId)) return NextResponse.json({ error: 'request_id 必须为 8 至 120 位字母、数字或 . _ : -' }, { status: 400 });
 
   const service = createServiceClient();
