@@ -8,15 +8,15 @@ function escapeHtml(value: string) {
 
 function inlineMarkdown(value: string) {
   return value
-    .replace(/!\\[([^\\]]*)\\]\\((https?:\\/\\/[^ )]+)\\)/g, '<img src="$2" alt="$1" loading="lazy" />')
-    .replace(/\\[([^\\]]+)\\]\\((https?:\\/\\/[^ )]+)\\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')
-    .replace(/(?<!\\*)\\*([^*]+)\\*(?!\\*)/g, '<em>$1</em>')
+    .replace(/!\[([^\]]*)\]\((https?:\/\/[^ )]+)\)/g, '<img src="$2" alt="$1" loading="lazy" />')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^ )]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
 function markdownToHtml(source: string) {
-  const lines = source.replace(/\\r\\n/g, '\\n').split('\\n');
+  const lines = source.replace(/\r\n/g, '\n').split('\n');
   const output: string[] = [];
   let index = 0;
 
@@ -31,12 +31,12 @@ function markdownToHtml(source: string) {
         code.push(lines[index]);
         index += 1;
       }
-      output.push(`<pre><code>${escapeHtml(code.join('\\n'))}</code></pre>`);
+      output.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
       index += 1;
       continue;
     }
 
-    const heading = line.match(/^(#{1,6})\\s+(.+)$/);
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       const level = heading[1].length;
       output.push(`<h${level}>${inlineMarkdown(escapeHtml(heading[2]))}</h${level}>`);
@@ -44,8 +44,8 @@ function markdownToHtml(source: string) {
       continue;
     }
 
-    if (line.includes('|') && index + 1 < lines.length && /^\\s*\\|?\\s*:?-{3,}:?\\s*(\\|\\s*:?-{3,}:?\\s*)+\\|?\\s*$/.test(lines[index + 1])) {
-      const cells = (row: string) => row.trim().replace(/^\\|/, '').replace(/\\|$/, '').split('|').map(cell => cell.trim());
+    if (line.includes('|') && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[index + 1])) {
+      const cells = (row: string) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
       const header = cells(line);
       index += 2;
       const rows: string[][] = [];
@@ -57,20 +57,20 @@ function markdownToHtml(source: string) {
       continue;
     }
 
-    if (/^\\s*>/.test(line)) {
+    if (/^\s*>/.test(line)) {
       const quote: string[] = [];
-      while (index < lines.length && /^\\s*>/.test(lines[index])) {
-        quote.push(inlineMarkdown(escapeHtml(lines[index].replace(/^\\s*>\\s?/, '')));
+      while (index < lines.length && /^\s*>/.test(lines[index])) {
+        quote.push(inlineMarkdown(escapeHtml(lines[index].replace(/^\s*>\s?/, ''))));
         index += 1;
       }
       output.push(`<blockquote>${quote.join('<br>')}</blockquote>`);
       continue;
     }
 
-    if (/^\\s*[-*+]\\s+/.test(line) || /^\\s*\\d+\\.\\s+/.test(line)) {
-      const ordered = /^\\s*\\d+\\.\\s+/.test(line);
+    if (/^\s*[-*+]\s+/.test(line) || /^\s*\d+\.\s+/.test(line)) {
+      const ordered = /^\s*\d+\.\s+/.test(line);
       const items: string[] = [];
-      const pattern = ordered ? /^\\s*\\d+\\.\\s+/ : /^\\s*[-*+]\\s+/;
+      const pattern = ordered ? /^\s*\d+\.\s+/ : /^\s*[-*+]\s+/;
       while (index < lines.length && pattern.test(lines[index])) {
         items.push(`<li>${inlineMarkdown(escapeHtml(lines[index].replace(pattern, '')))}</li>`);
         index += 1;
@@ -80,7 +80,7 @@ function markdownToHtml(source: string) {
     }
 
     const paragraph: string[] = [];
-    while (index < lines.length && lines[index].trim() && !/^(#{1,6})\\s+/.test(lines[index]) && !/^\\s*>/.test(lines[index]) && !/^\\s*([-*+]\\s+|\\d+\\.\\s+)/.test(lines[index]) && !lines[index].trim().startsWith('```')) {
+    while (index < lines.length && lines[index].trim() && !/^(#{1,6})\s+/.test(lines[index]) && !/^\s*>/.test(lines[index]) && !/^\s*([-*+]\s+|\d+\.\s+)/.test(lines[index]) && !lines[index].trim().startsWith('```')) {
       paragraph.push(inlineMarkdown(escapeHtml(lines[index])));
       index += 1;
     }
@@ -90,18 +90,18 @@ function markdownToHtml(source: string) {
 }
 
 export default async function ArticleContent({ content }: { content: string }) {
-  const matches = [...content.matchAll(/\\{\\{software:([a-z0-9-]+)\\}\\}/g)];
+  const matches = [...content.matchAll(/\{\{software:([a-z0-9-]+)\}\}/g)];
   const slugs = [...new Set(matches.map(match => match[1]))];
   const supabase = await createClient();
   const { data } = slugs.length
     ? await supabase.from('software').select('id,title,slug,image_url,description,version').in('slug', slugs).eq('status', 'published')
     : { data: [] as any[] };
   const software = new Map((data || []).map(item => [item.slug, item]));
-  const pieces = content.split(/(\\{\\{software:[a-z0-9-]+\\}\\})/g);
+  const pieces = content.split(/(\{\{software:[a-z0-9-]+\}\})/g);
 
   return <div className="article-content space-y-4">
     {pieces.map((piece, index) => {
-      const match = piece.match(/^\\{\\{software:([a-z0-9-]+)\\}\\}$/);
+      const match = piece.match(/^\{\{software:([a-z0-9-]+)\}\}$/);
       if (match) {
         const item = software.get(match[1]);
         if (!item) return null;
