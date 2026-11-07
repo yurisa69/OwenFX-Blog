@@ -164,3 +164,14 @@ body.drawer-scroll-lock {
   }
 }
 
+
+/* Original ZIP navbar controls */
+.theme-btn,.nav-icon-btn,.nav-star-btn{width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s,color .2s,box-shadow .2s;border:1px solid var(--border-color);background:var(--bg-glass);color:var(--text-secondary);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);-webkit-tap-highlight-color:transparent;touch-action:manipulation;box-shadow:0 0 22px rgba(129,140,248,.12)}
+@media(hover:hover) and (pointer:fine){.theme-btn:hover,.nav-icon-btn:hover,.nav-star-btn:hover{background:var(--bg-tertiary);color:var(--text-primary);box-shadow:0 0 28px rgba(129,140,248,.22)}}
+.theme-btn:active,.nav-icon-btn:active,.nav-star-btn:active{background:var(--bg-tertiary);color:var(--text-primary);box-shadow:0 0 28px rgba(129,140,248,.22)}
+.theme-btn:focus-visible,.nav-icon-btn:focus-visible,.nav-star-btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--accent)}
+.nav-search-slot{min-width:36px;justify-content:flex-end}.nav-theme-slot{display:flex;width:36px;height:36px;flex:0 0 36px;align-items:center;justify-content:center}
+.nav-search-capsule{z-index:70;display:flex;width:clamp(128px,32vw,240px);height:36px;align-items:center;gap:8px;border-radius:999px;border:1px solid var(--border-color);background:var(--bg-glass-soft);color:var(--text-secondary);padding:0 8px 0 14px;box-shadow:0 10px 28px rgba(15,23,42,.16);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}.nav-search-capsule-inline{position:static}.nav-search-capsule input{color:var(--text-primary)}
+.nav-search-submit{display:flex;width:24px;height:24px;flex:0 0 24px;align-items:center;justify-content:center;border:0;border-radius:999px;background:transparent;color:var(--text-tertiary);cursor:pointer;transition:background .2s,color .2s}.nav-search-submit:hover{background:var(--bg-tertiary);color:var(--text-primary)}
+@media(max-width:420px){.nav-actions{gap:6px}.nav-actions-search-open .nav-search-slot{position:absolute;right:84px;z-index:80;width:120px;min-width:120px}.nav-actions-search-open .nav-theme-slot{visibility:hidden;pointer-events:none}.nav-actions-search-open .nav-search-capsule{width:120px;padding-left:12px;padding-right:8px}.nav-actions-search-open .nav-star-btn{width:34px;height:34px;flex:0 0 34px}}
+@keyframes six-star-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}.six-star-spin{transform-origin:50% 50%;animation:six-star-spin 8s linear infinite}a:hover .six-star-spin,button:hover .six-star-spin{animation-duration:3.2s}
