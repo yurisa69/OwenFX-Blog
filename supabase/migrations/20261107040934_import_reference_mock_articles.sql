@@ -1,0 +1,4 @@
+-- Historical migration placeholder.
+-- This migration was applied previously and its imported sample article records
+-- have since been removed at the user's request. Keep this version as a no-op
+-- so a fresh migration runner never recreates those sample records.
