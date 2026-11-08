@@ -56,7 +56,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </div>
           <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{publishedDate}</span>
         </div>
-        <h1 className="mb-6 text-2xl font-bold leading-tight text-center sm:text-3xl">{article.title}</h1>
+        <h1 className="mb-6 text-2xl font-bold leading-tight text-left sm:text-3xl">{article.title}</h1>
 
         {article.excerpt && (
           <p className="article-excerpt-card mb-6 rounded-lg px-4 py-3 text-sm leading-7">
