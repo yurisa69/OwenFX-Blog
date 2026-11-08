@@ -50,9 +50,11 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     <div className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <article className="uiverse-card mb-8 rounded-xl p-5 sm:p-7">
         <h1 className="mb-3 text-2xl font-bold leading-tight sm:text-3xl">{article.title}</h1>
-        <div className="mb-6 flex flex-wrap items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <span className="monet-waterlily-flow font-semibold">OWEN</span>
-          <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)' }}><span className="monet-waterlily-flow">站长</span></span>
+        <div className="mb-6 flex flex-col items-center gap-1 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <div className="flex items-center justify-center gap-2">
+            <span className="monet-waterlily-flow font-semibold">OWEN</span>
+            <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)' }}><span className="monet-waterlily-flow">站长</span></span>
+          </div>
           <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{publishedDate}</span>
         </div>
 
