@@ -211,50 +211,52 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
 
         <div className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
           <h2 className="mb-4 text-lg font-semibold">获取方式</h2>
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {software.official_download_url ? (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
-                softwareId={software.id} className="uiverse-btn uiverse-btn-primary flex min-w-0 flex-1 items-center justify-center rounded-full !px-4 !py-2 text-sm">
+                softwareId={software.id} className="uiverse-btn uiverse-btn-primary flex min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm">
                 官方下载
               </TrackLink>
             ) : (
-              <div className="uiverse-btn uiverse-btn-primary flex min-w-0 flex-1 items-center justify-center rounded-full !px-4 !py-2 text-sm opacity-60">
+              <div className="uiverse-btn uiverse-btn-primary flex min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm opacity-60">
                 官方下载
               </div>
             )}
-            <div className="uiverse-btn uiverse-btn-ghost flex min-w-0 flex-1 items-center justify-center rounded-full !px-4 !py-2 text-sm">
-              网盘下载
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-4 gap-2">
-            {quickProviders.map(({ key, label, link }) => link ? (
-              <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
-                softwareId={software.id}
-                className="flex min-w-0 flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
-                <ProviderIcon provider={key} />
-                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
-              </TrackLink>
-            ) : (
-              <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
-                className="flex min-w-0 flex-col items-center gap-1 text-xs">
-                <ProviderIcon provider={key} />
-                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+            <details className="contents group">
+              <summary className="uiverse-btn uiverse-btn-ghost col-start-2 row-start-1 flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
+                网盘下载
+              </summary>
+              <div className="col-span-2 row-start-2 grid grid-cols-4 items-start gap-x-2 gap-y-3 pt-1">
+                {quickProviders.map(({ key, label, link }) => link ? (
+                  <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
+                    softwareId={software.id}
+                    className="flex min-w-0 flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
+                    <ProviderIcon provider={key} />
+                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                    {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
+                  </TrackLink>
+                ) : (
+                  <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
+                    className="flex min-w-0 flex-col items-center gap-1 text-xs">
+                    <ProviderIcon provider={key} />
+                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+              {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
+                <div className="col-span-2 row-start-3 mt-1 flex flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
+                  {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
+                    <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
+                      softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
+                      {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
+                    </TrackLink>
+                  ))}
+                </div>
+              )}
+              {links.length === 0 && <p className="col-span-2 row-start-3 mt-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>}
+            </details>
+            {!software.official_download_url && links.length === 0 && <p className="col-span-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
           </div>
-          {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
-            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
-              {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
-                <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
-                  softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
-                  {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
-                </TrackLink>
-              ))}
-            </div>
-          )}
-          {links.length === 0 && <p className="mt-3 text-xs" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>}
-          {!software.official_download_url && links.length === 0 && <p className="mt-3 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
         </div>
         {Array.isArray(software.screenshots) && software.screenshots.length > 0 && (
           <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
