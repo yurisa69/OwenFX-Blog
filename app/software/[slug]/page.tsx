@@ -74,7 +74,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
   return (
     <article className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <section className="uiverse-card mb-6 rounded-xl p-5 sm:p-7">
-        <div className="mb-4 flex items-start gap-4 sm:gap-5">
+        <div className="mb-4 flex flex-col items-center text-center">
           <div className="software-icon-frame flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
             {software.image_url
               ? <img src={software.image_url} alt={software.title + ' 图标'} className="h-full w-full object-cover" />
@@ -123,7 +123,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         )}
 
         <div className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
-          <h2 className="mb-3 font-semibold">下载入口</h2>
+          <h2 className="mb-3 text-lg font-semibold">获取方式</h2>
           <div className="flex flex-wrap items-center gap-3">
             {software.official_download_url && (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
