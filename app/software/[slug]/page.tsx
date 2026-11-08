@@ -68,9 +68,10 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
     <article className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <section className="uiverse-card mb-6 rounded-xl p-5 sm:p-7">
         <div className="mb-4 flex items-start gap-4 sm:gap-5">
-          <div className="software-icon-frame flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24"
+            style={{ background: 'var(--bg-tertiary)' }}>
             {software.image_url
-              ? <img src={software.image_url} alt={software.title + ' 官方图标'} className="software-official-icon" />
+              ? <img src={software.image_url} alt={software.title + ' 图标'} className="h-full w-full object-cover" />
               : <span className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{software.title.slice(0, 1)}</span>}
           </div>
           <div className="min-w-0 flex-1">
@@ -174,9 +175,10 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               <Link key={item.id} href={'/software/' + item.slug}
                 className="flex items-center gap-3 rounded-xl p-3 text-sm transition hover:brightness-110"
                 style={{ background: 'var(--bg-secondary)' }}>
-                <div className="software-icon-frame flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg"
+                  style={{ background: 'var(--bg-tertiary)' }}>
                   {item.image_url
-                    ? <img src={item.image_url} alt={item.title + ' 官方图标'} className="software-official-icon" />
+                    ? <img src={item.image_url} alt={item.title + ' 图标'} className="h-full w-full object-cover" />
                     : <span className="font-semibold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>}
                 </div>
                 <div className="min-w-0">

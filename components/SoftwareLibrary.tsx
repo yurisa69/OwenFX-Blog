@@ -62,9 +62,9 @@ export default function SoftwareLibrary({ items }: { items: SoftwareItem[] }) {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {filteredItems.map((item) => (
             <Link key={item.id} href={'/software/' + item.slug} className="uiverse-card flex flex-col items-center p-4 text-center transition hover:-translate-y-1">
-              <div className="software-icon-frame mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl">
+              <div className="mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl" style={{ background: 'var(--bg-tertiary)' }}>
                 {item.image_url ? (
-                  <img src={item.image_url} alt={item.title + ' 官方图标'} className="software-official-icon" />
+                  <img src={item.image_url} alt={item.title + ' 图标'} className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>
                 )}
