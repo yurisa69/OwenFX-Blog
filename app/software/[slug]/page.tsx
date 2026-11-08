@@ -123,23 +123,29 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
             )}
           </div>
 
-          {links.length > 0 && (
-            <div className="mt-3 space-y-2.5">
-              {links.map(link => (
-                <div key={link.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 sm:p-4"
-                  style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
+          <details className="relative inline-block">
+            <summary className="uiverse-btn uiverse-btn-ghost inline-flex cursor-pointer list-none items-center gap-2 rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
+              网盘下载
+              <span aria-hidden="true" className="text-xs opacity-60">▾</span>
+            </summary>
+            <div className="absolute left-0 top-full z-30 mt-2 min-w-56 space-y-2 rounded-xl border p-3 shadow-xl"
+              style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
+              {links.length > 0 ? links.map(link => (
+                <div key={link.id} className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{providerNames[link.provider] || link.provider} · {link.label}</p>
+                    <p className="text-sm font-medium">{providerNames[link.provider] || link.provider}</p>
                     {link.access_code && <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>提取码：{link.access_code}</p>}
                   </div>
                   <TrackLink href={link.share_url} eventType="software_click" targetKey={link.provider}
-                    softwareId={software.id} className="uiverse-btn uiverse-btn-ghost rounded-full !px-4 !py-2 text-sm">
-                    网盘下载
+                    softwareId={software.id} className="shrink-0 text-sm font-medium" style={{ color: 'var(--accent)' }}>
+                    打开
                   </TrackLink>
                 </div>
-              ))}
+              )) : (
+                <p className="px-1 py-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>
+              )}
             </div>
-          )}
+          </details>
         </div>
 
         {software.introduction_markdown && (
