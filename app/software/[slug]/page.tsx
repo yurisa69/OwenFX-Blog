@@ -23,6 +23,17 @@ const providerNames: Record<string, string> = {
   other: '其他网盘',
 };
 
+function formatPlatforms(platform: string | null) {
+  if (!platform) return [];
+  return [...new Set(platform
+    .split(/[、，,;；|]+/)
+    .map(value => value.trim())
+    .filter(Boolean)
+    .map(value => value.replace(/\s+\d[\d./+-]*(?:\s*\/\s*\d[\d./+-]*)?$/, '').trim())
+    .filter(Boolean))]
+    .sort((a, b) => a.length - b.length);
+}
+
 function sortSoftwareTags(tags: string[]) {
   const priority = ['直播推流', '屏幕录制', '免费开源'];
   return tags
@@ -75,7 +86,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
     <article className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <section className="uiverse-card mb-6 rounded-xl p-5 sm:p-7">
         <div className="mb-4 flex flex-col items-center text-center">
-          <div className="software-icon-frame flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
+          <div className="software-icon-frame mb-3 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
             {software.image_url
               ? <img src={software.image_url} alt={software.title + ' 图标'} className="h-full w-full object-cover" />
               : <span className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{software.title.slice(0, 1)}</span>}
@@ -108,7 +119,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           {software.developer && <span>开发者：{software.developer}</span>}
           {software.version && <span>版本：{software.version}</span>}
           {software.file_size && <span>大小：{software.file_size}</span>}
-          {software.platform && <span>平台：{software.platform}</span>}
+          {software.platform && formatPlatforms(software.platform).length > 0 && <span>平台：{formatPlatforms(software.platform).join('、')}</span>}
           {software.updated_at && <span>更新：{new Date(software.updated_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Shanghai' })}</span>}
         </div>
 
