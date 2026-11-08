@@ -72,14 +72,25 @@ export default function SoftwareLibrary({ items }: { items: SoftwareItem[] }) {
               </div>
               <h2 className="line-clamp-1 text-sm font-semibold">{item.title}</h2>
               {(() => {
+                const tagLabels: Record<string, string> = {
+                  '直播推流': '直播',
+                  '屏幕录制': '录屏',
+                };
                 const tags = (item.tags || [])
                   .map((entry) => Array.isArray(entry.tag) ? entry.tag[0]?.name : entry.tag?.name)
                   .filter((tag): tag is string => Boolean(tag))
+                  .map((tag) => tagLabels[tag] || tag)
+                  .sort((a, b) => {
+                    const order = ['直播', '录屏', '免费开源'];
+                    const ai = order.indexOf(a);
+                    const bi = order.indexOf(b);
+                    return (ai === -1 ? order.length : ai) - (bi === -1 ? order.length : bi);
+                  })
                   .slice(0, 3);
                 return tags.length > 0 ? (
-                  <div className="mt-2 flex w-full flex-wrap justify-center gap-1.5">
+                  <div className="mt-2 flex w-full flex-nowrap items-center justify-center gap-1">
                     {tags.map((tag) => (
-                      <span key={tag} className="rounded-full px-2 py-1 text-[10px] leading-none"
+                      <span key={tag} className="whitespace-nowrap rounded-full px-1.5 py-1 text-[9px] leading-none"
                         style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
                         {tag}
                       </span>

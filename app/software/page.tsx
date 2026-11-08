@@ -27,7 +27,6 @@ export default async function SoftwarePage() {
       <h1 className="mb-2 text-2xl font-bold">软件库</h1>
       <p className="mb-6 text-sm opacity-70">精选免费与开源软件</p>
       <SoftwareLibrary items={items} />
-      <p className="mt-6 text-xs opacity-50">OwenFX 仅提供软件介绍与官方下载、网盘资源入口，不托管软件安装包。</p>
     </main>
   );
 }

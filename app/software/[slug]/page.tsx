@@ -106,7 +106,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           {software.version && <span>版本：{software.version}</span>}
           {software.file_size && <span>大小：{software.file_size}</span>}
           {software.platform && <span>平台：{software.platform}</span>}
-          {software.updated_at && <span>更新：{new Date(software.updated_at).toLocaleDateString('zh-CN')}</span>}
+          {software.updated_at && <span>更新：{new Date(software.updated_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Shanghai' })}</span>}
         </div>
 
         <div className="border-t pt-5" style={{ borderColor: 'var(--border-color)' }}>
