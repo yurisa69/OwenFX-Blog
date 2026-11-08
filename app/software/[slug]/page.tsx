@@ -43,17 +43,25 @@ function formatPlatforms(platform: string | null) {
     });
 }
 
+const providerLogoUrls: Record<string, string> = {
+  uc: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/93/77/db/9377dbc6-7805-f11f-7cf2-692ac94f85ab/AppIcon-0-0-1x_U007emarketing-0-5-0-0-sRGB-85-220.png/460x0w.webp',
+  quark: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/af/a6/a8/afa6a8a5-ccb4-5dc7-f8df-f844afb8b347/Placeholder.mill/1200x630wa.jpg',
+  baidu: 'https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/60/9f/8e/609f8e38-c796-29c3-b5da-891c266db491/icon.png/1200x630wa.png',
+  thunder: 'https://www.xunlei.com/thunder/icons/logo.svg',
+};
+
 function ProviderIcon({ provider }: { provider: string }) {
-  if (provider === 'uc') return <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-red-500 text-lg font-black italic tracking-[-2px] text-white shadow-sm">UC</span>;
-  if (provider === 'quark') return <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 text-2xl font-bold text-white shadow-sm">夸</span>;
-  if (provider === 'baidu') return (
-    <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef5ff] shadow-sm">
-      <svg viewBox="0 0 48 48" className="h-8 w-8" fill="#2878E5">
-        <ellipse cx="13" cy="13" rx="4.5" ry="7" transform="rotate(-25 13 13)" /><ellipse cx="24" cy="9" rx="4.5" ry="7" /><ellipse cx="35" cy="13" rx="4.5" ry="7" transform="rotate(25 35 13)" /><ellipse cx="8" cy="26" rx="4.5" ry="7" transform="rotate(-35 8 26)" /><path d="M24 19c-5.5 0-8 5.4-11 10.1-3.1 4.8-.2 9.2 4.5 8.2 2.3-.5 4.2-2.1 6.5-2.1s4.2 1.6 6.5 2.1c4.7 1 7.6-3.4 4.5-8.2C32 24.4 29.5 19 24 19Z" /><ellipse cx="40" cy="26" rx="4.5" ry="7" transform="rotate(35 40 26)" />
-      </svg>
-    </span>
+  return (
+    <img
+      aria-hidden="true"
+      src={providerLogoUrls[provider]}
+      alt=""
+      width={48}
+      height={48}
+      loading="lazy"
+      className="h-12 w-12 rounded-2xl object-contain"
+    />
   );
-  return <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 shadow-sm"><svg viewBox="0 0 48 48" className="h-8 w-8" fill="none"><path d="M27.5 4 10 27h11l-1 17 18-25H27l.5-15Z" fill="#FFD84D" stroke="#FFF2A6" strokeLinejoin="round" strokeWidth="1.5" /></svg></span>;
 }
 
 function sortSoftwareTags(tags: string[]) {
