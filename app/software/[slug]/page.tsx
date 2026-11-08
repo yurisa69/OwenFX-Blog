@@ -43,33 +43,38 @@ function formatPlatforms(platform: string | null) {
     });
 }
 
-// Official app artwork sourced from the providers' App Store listings.
-// Use square Apple artwork renditions; never crop a landscape preview image.
-const providerLogoUrls: Record<string, string> = {
-  uc: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/12/70/ab/1270ab94-3750-3864-82eb-e4c43834cf65/AppIcon-0-0-1x_U007emarketing-0-5-0-0-sRGB-85-220.png/512x512bb.webp',
-  quark: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/a9/ba/66/a9ba66e8-1e20-449a-93e0-6e279a021b75/Placeholder.mill/512x512bb.webp',
-  baidu: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/09/cb/ad/09cbad00-fcc7-a285-4df1-b2af3783424f/icon.png/512x512bb.webp',
-  thunder: 'https://static-pan.xunlei.com/_nuxt/dist/client/img/logo.5364057.svg',
-};
-
+// Brand-mark style vector artwork. These are clean, scalable marks rather than app-store tiles.
 function ProviderIcon({ provider }: { provider: string }) {
+  if (provider === 'uc') return (
+    <svg aria-hidden="true" viewBox="0 0 64 64" className="h-11 w-11 shrink-0" fill="none">
+      <path d="M11 31C8 19 15 8 27 6c10-2 20 3 23 12-5-2-9-1-12 2 10 1 17 8 17 17 0 12-10 21-23 21H23C12 58 5 51 5 42c0-5 2-8 6-11Z" fill="#F28C00"/>
+      <path d="M15 31c5-8 15-11 23-7 8 4 12 13 9 21-2 6-8 10-15 10H24c-8 0-13-5-13-12 0-5 1-9 4-12Z" fill="#FFF" fillOpacity=".96"/>
+      <path d="M19 35c3-5 9-7 14-4 5 3 7 9 5 14-2 4-6 6-11 6-6 0-10-4-10-9 0-3 1-5 2-7Z" fill="#F28C00"/>
+      <path d="M39 14c4-5 10-5 14-1-1 6-5 10-11 11" fill="#F28C00"/>
+      <path d="M47 28c5 1 9 5 9 10-3 3-7 4-11 2" fill="#F28C00"/>
+    </svg>
+  );
+  if (provider === 'quark') return (
+    <svg aria-hidden="true" viewBox="0 0 64 64" className="h-11 w-11 shrink-0" fill="none">
+      <defs><linearGradient id="quark-mark-gradient" x1="9" y1="8" x2="55" y2="56" gradientUnits="userSpaceOnUse"><stop stopColor="#24D6B5"/><stop offset=".42" stopColor="#168BFA"/><stop offset="1" stopColor="#5637E8"/></linearGradient></defs>
+      <path d="M43.8 12.5A24 24 0 1 0 52 32" stroke="url(#quark-mark-gradient)" strokeWidth="8" strokeLinecap="round"/>
+      <path d="M48.5 12.5v17.2H31.3" stroke="url(#quark-mark-gradient)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+  if (provider === 'baidu') return (
+    <svg aria-hidden="true" viewBox="0 0 64 64" className="h-11 w-11 shrink-0" fill="none">
+      <path d="M12 39.5c-6.1 0-9.5-4.3-9.5-9.2 0-5.2 4.2-9.4 9.5-9.4 1.3-9.2 9.2-16.1 18.6-16.1 8.2 0 15.1 5.2 17.7 12.5 8.6.2 15.5 7.1 15.5 15.7 0 8.8-7.1 15.9-15.9 15.9H16.7" stroke="#246BDE" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8.5 40.5c1.2-3.1 4.1-5.3 7.6-5.3 4.5 0 8.1 3.6 8.1 8.1s-3.6 8.1-8.1 8.1c-4.2 0-7.7-3.2-8.1-7.3" stroke="#E94355" strokeWidth="6" strokeLinecap="round"/>
+    </svg>
+  );
   return (
-    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl">
-      <img
-        aria-hidden="true"
-        src={providerLogoUrls[provider]}
-        alt=""
-        width={48}
-        height={48}
-        loading="lazy"
-        decoding="async"
-        className="!block !h-12 !w-12 !max-h-12 !max-w-12 shrink-0 object-contain"
-        style={{ width: 48, height: 48, maxWidth: 48, maxHeight: 48, objectFit: 'contain' }}
-      />
-    </span>
+    <svg aria-hidden="true" viewBox="0 0 64 64" className="h-11 w-11 shrink-0" fill="none">
+      <defs><linearGradient id="thunder-mark-gradient" x1="9" y1="49" x2="55" y2="11" gradientUnits="userSpaceOnUse"><stop stopColor="#168BFA"/><stop offset="1" stopColor="#37D4E8"/></linearGradient></defs>
+      <path d="M5 43.5 25 19c1.8-2.2 5.2-2.3 7.1-.2l5.1 5.6L53 12l-6.8 18.2c-1.1 3-4.8 4.2-7.5 2.5l-6.2-3.9-8.8 17.8c-1.6 3.3-5.8 4.3-8.7 2.1L5 43.5Z" fill="url(#thunder-mark-gradient)"/>
+      <path d="m18 45 15.4-15.8 7.2 4.3c2.7 1.6 6.2.5 7.4-2.4" stroke="#0B5CCB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   );
 }
-
 function sortSoftwareTags(tags: string[]) {
   const priority = ['直播推流', '屏幕录制', '免费开源'];
   return tags
