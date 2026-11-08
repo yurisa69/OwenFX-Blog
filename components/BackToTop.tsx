@@ -24,8 +24,8 @@ export default function BackToTop() {
 
   return (
     <button onClick={scrollToTop} aria-label="返回顶部"
-      className={"fixed bottom-20 right-6 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 bg-[var(--bg-glass)] backdrop-blur-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--accent)] hover:text-white " + (visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")}>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      className={"back-to-top-btn fixed bottom-20 right-6 z-50 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 bg-[var(--bg-glass)] backdrop-blur-xl border border-[var(--border-color)] text-[var(--text-secondary)] " + (visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none")}>
+      <svg className="back-to-top-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
       </svg>
     </button>
