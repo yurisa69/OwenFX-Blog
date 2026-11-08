@@ -23,10 +23,17 @@ const providerNames: Record<string, string> = {
   other: '其他网盘',
 };
 
-function sortTagsByLength(tags: string[]) {
+function sortSoftwareTags(tags: string[]) {
+  const priority = ['直播推流', '屏幕录制', '免费开源'];
   return tags
     .map((tag, index) => ({ tag, index }))
-    .sort((a, b) => Array.from(a.tag).length - Array.from(b.tag).length || a.index - b.index)
+    .sort((a, b) => {
+      const ai = priority.indexOf(a.tag);
+      const bi = priority.indexOf(b.tag);
+      const ar = ai === -1 ? priority.length : ai;
+      const br = bi === -1 ? priority.length : bi;
+      return ar - br || a.index - b.index;
+    })
     .map(({ tag }) => tag);
 }
 
@@ -42,7 +49,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
   const category = Array.isArray(software.category) ? software.category[0] : software.category;
   const categoryName = category?.name || '';
   const categoryColor = categoryColors[categoryName] || 'var(--accent)';
-  const tags = sortTagsByLength((software.tags || [])
+  const tags = sortSoftwareTags((software.tags || [])
     .map((entry: { tag?: { name?: string } | { name?: string }[] | null }) => {
       const tag = Array.isArray(entry.tag) ? entry.tag[0] : entry.tag;
       return tag?.name || '';
@@ -85,10 +92,6 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           </div>
         </div>
 
-        {software.description && (
-          <p className="mb-4 text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>{software.description}</p>
-        )}
-
         {tags.length > 0 && (
           <div className="mb-5 flex flex-wrap gap-1.5">
             {tags.map(tag => (
@@ -109,51 +112,53 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           {software.updated_at && <span>更新：{new Date(software.updated_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Shanghai' })}</span>}
         </div>
 
-        <div className="border-t pt-5" style={{ borderColor: 'var(--border-color)' }}>
+        {(software.description || software.introduction_markdown) && (
+          <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
+            <h2 className="mb-4 text-lg font-semibold">软件介绍</h2>
+            {software.description && (
+              <p className="mb-4 text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>{software.description}</p>
+            )}
+            {software.introduction_markdown && <ArticleContent content={software.introduction_markdown} />}
+          </section>
+        )}
+
+        <div className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
           <h2 className="mb-3 font-semibold">下载入口</h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {software.official_download_url && (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
                 softwareId={software.id} className="uiverse-btn uiverse-btn-primary rounded-full !px-4 !py-2 text-sm">
                 官方下载
               </TrackLink>
             )}
+            <details className="relative">
+              <summary className="uiverse-btn uiverse-btn-ghost inline-flex cursor-pointer list-none items-center gap-2 rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
+                网盘下载
+                <span aria-hidden="true" className="text-xs opacity-60">▾</span>
+              </summary>
+              <div className="absolute left-0 top-full z-30 mt-2 min-w-56 space-y-2 rounded-xl border p-3 shadow-xl"
+                style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
+                {links.length > 0 ? links.map(link => (
+                  <div key={link.id} className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{providerNames[link.provider] || link.provider}</p>
+                      {link.access_code && <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>提取码：{link.access_code}</p>}
+                    </div>
+                    <TrackLink href={link.share_url} eventType="software_click" targetKey={link.provider}
+                      softwareId={software.id} className="shrink-0 text-sm font-medium text-[var(--accent)]">
+                      打开
+                    </TrackLink>
+                  </div>
+                )) : (
+                  <p className="px-1 py-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>
+                )}
+              </div>
+            </details>
             {!software.official_download_url && links.length === 0 && (
-              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>下载入口暂未添加。</p>
+              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>
             )}
           </div>
-
-          <details className="relative inline-block">
-            <summary className="uiverse-btn uiverse-btn-ghost inline-flex cursor-pointer list-none items-center gap-2 rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
-              网盘下载
-              <span aria-hidden="true" className="text-xs opacity-60">▾</span>
-            </summary>
-            <div className="absolute left-0 top-full z-30 mt-2 min-w-56 space-y-2 rounded-xl border p-3 shadow-xl"
-              style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
-              {links.length > 0 ? links.map(link => (
-                <div key={link.id} className="flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{providerNames[link.provider] || link.provider}</p>
-                    {link.access_code && <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>提取码：{link.access_code}</p>}
-                  </div>
-                  <TrackLink href={link.share_url} eventType="software_click" targetKey={link.provider}
-                    softwareId={software.id} className="shrink-0 text-sm font-medium text-[var(--accent)]">
-                    打开
-                  </TrackLink>
-                </div>
-              )) : (
-                <p className="px-1 py-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>
-              )}
-            </div>
-          </details>
         </div>
-
-        {software.introduction_markdown && (
-          <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
-            <h2 className="mb-4 text-lg font-semibold">软件介绍</h2>
-            <ArticleContent content={software.introduction_markdown} />
-          </section>
-        )}
 
         {Array.isArray(software.screenshots) && software.screenshots.length > 0 && (
           <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
