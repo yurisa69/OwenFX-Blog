@@ -224,42 +224,37 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
                 官方下载
               </div>
             )}
-            <details className="group relative min-w-0">
-              <summary className="uiverse-btn uiverse-btn-ghost flex w-full cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
-                网盘下载
-              </summary>
-              <div className="absolute left-0 right-0 top-full z-30 mt-3 w-full max-w-full rounded-xl border p-4 shadow-xl"
-                style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
-                <div className="grid grid-cols-4 justify-items-center gap-x-2 gap-y-4">
-                  {quickProviders.map(({ key, label, link }) => link ? (
-                    <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
-                      softwareId={software.id}
-                      className="flex min-w-0 flex-col items-center gap-1.5 text-xs">
-                      <ProviderIcon provider={key} />
-                      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                      {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
-                    </TrackLink>
-                  ) : (
-                    <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
-                      className="flex min-w-0 flex-col items-center gap-1.5 text-xs">
-                      <ProviderIcon provider={key} />
-                      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                    </div>
-                  ))}
-                </div>
-                {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
-                  <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
-                    {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
-                      <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
-                        softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
-                        {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
-                      </TrackLink>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </details>
+            <div className="uiverse-btn uiverse-btn-ghost flex w-full items-center justify-center rounded-full !px-4 !py-2 text-sm">
+              网盘下载
+            </div>
           </div>
+          <div className="mt-4 grid grid-cols-4 justify-items-center gap-x-2 gap-y-3">
+            {quickProviders.map(({ key, label, link }) => link ? (
+              <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
+                softwareId={software.id}
+                className="flex min-w-0 flex-col items-center gap-1.5 text-xs">
+                <ProviderIcon provider={key} />
+                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
+              </TrackLink>
+            ) : (
+              <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
+                className="flex min-w-0 flex-col items-center gap-1.5 text-xs">
+                <ProviderIcon provider={key} />
+                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+          {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
+            <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
+              {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
+                <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
+                  softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
+                  {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
+                </TrackLink>
+              ))}
+            </div>
+          )}
           {!software.official_download_url && links.length === 0 && (
             <p className="mt-3 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>
           )}
