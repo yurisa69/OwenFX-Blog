@@ -185,7 +185,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               <div className="mt-4 flex flex-wrap items-start gap-x-5 gap-y-3">
                 {quickProviders.map(({ key, label, link }) => link ? (
                   <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
-                    softwareId={software.id} title={providerNames[key]}
+                    softwareId={software.id}
                     className="flex min-w-14 flex-col items-center gap-1.5 text-xs transition-opacity hover:opacity-80">
                     <ProviderIcon provider={key} />
                     <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
