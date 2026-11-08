@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authorizeAdmin } from '@/lib/admin-api';
 
-const providers = ['baidu', 'quark', 'aliyun', 'tianyi', '123pan', 'other'];
+const providers = ['uc', 'quark', 'baidu', 'thunder', 'aliyun', 'tianyi', '123pan', 'other'];
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorizeAdmin();

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authorizeAdmin } from '@/lib/admin-api';
 
-const providers = ['baidu', 'quark', 'aliyun', 'tianyi', '123pan', 'other'];
+const providers = ['uc', 'quark', 'baidu', 'thunder', 'aliyun', 'tianyi', '123pan', 'other'];
 const slugOk = (value: string) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 
 export async function GET() {
