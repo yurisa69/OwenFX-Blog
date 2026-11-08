@@ -137,7 +137,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
                     {link.access_code && <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>提取码：{link.access_code}</p>}
                   </div>
                   <TrackLink href={link.share_url} eventType="software_click" targetKey={link.provider}
-                    softwareId={software.id} className="shrink-0 text-sm font-medium" style={{ color: 'var(--accent)' }}>
+                    softwareId={software.id} className="shrink-0 text-sm font-medium text-[var(--accent)]">
                     打开
                   </TrackLink>
                 </div>
