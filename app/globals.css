@@ -102,18 +102,6 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   box-shadow: none;
 }
 
-/* Touch browsers can retain :active after a tap. Keep navbar controls neutral
-   on touch devices; desktop pointer devices retain the brief pressed feedback. */
-@media (hover: none), (pointer: coarse) {
-  .nav-icon-btn:active,
-  .nav-star-btn:active {
-    background: var(--bg-glass);
-    color: var(--text-secondary);
-    box-shadow: none;
-    transform: none;
-  }
-}
-
 /* Match the reference theme-switch behavior: freeze transitions and animations
    briefly across the document while theme variables are being updated. */
 html.theme-switching *,
