@@ -68,8 +68,7 @@ export default function SoftwareSupport({ className = '', placement = 'software'
             const method = config?.methods?.[key] || {};
             const enabled = !!method.enabled;
             return (
-              <div key={key} className="support-method-card" aria-disabled={!enabled}
-                style={!enabled ? { opacity: 0.48 } : undefined}>
+              <div key={key} className="support-method-card" aria-disabled={!enabled}>
                 <span className={"support-method-icon support-method-icon-" + key}><SupportIcon type={key as SupportTone} /></span>
                 <strong className="support-method-label">{labels[key]}</strong>
                 {enabled ? (
@@ -86,18 +85,14 @@ export default function SoftwareSupport({ className = '', placement = 'software'
                       }} className="mt-2 text-xs" style={{ color: 'var(--accent)' }}>复制地址</button>}
                     </>
                   )
-                ) : (
-                  <p className="mt-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>暂未启用</p>
-                )}
+                ) : null}
               </div>
             );
           })}
         </div>
-        {enabledMethods.length === 0 && (
-          <p className="mt-4 text-center text-xs" style={{ color: 'var(--text-tertiary)' }}>
-            目前尚未开放收款方式，敬请期待。
-          </p>
-        )}
+        <p className="mt-4 text-center text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+          每一份支持，都是我们持续分享与更新的动力。感谢有你！
+        </p>
       </div>
     </div>,
     document.body
