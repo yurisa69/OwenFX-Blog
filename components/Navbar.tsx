@@ -19,8 +19,8 @@ const navLinks = [
   { label: '文章', href: '/articles' },
   { label: '软件', href: '/software' },
   { label: '分类', href: '/categories' },
-  { label: '关于', href: '/about' },
   { label: '联系', href: '/contact' },
+  { label: '关于', href: '/about' },
 ];
 
 function SearchIcon({ size = 18 }: { size?: number }) {
@@ -199,13 +199,13 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
               <span className="text-lg font-bold tracking-tight text-[var(--accent)]">OwenFX</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map(link => <Link key={link.href} href={link.href} className="nav-link-pill">{link.label}</Link>)}
+              {navLinks.map(link => <Link key={link.href} href={link.href} className="nav-link-pill text-sm" style={{ fontSize: '14px' }}>{link.label}</Link>)}
             </nav>
             <div className={`nav-actions relative flex items-center gap-2 ${searchOpen ? "nav-actions-search-open" : ""}`}>
               <div className="nav-search-slot flex items-center">
                 {searchOpen ? (
                   <form onSubmit={handleSearch} className="nav-search-capsule nav-search-capsule-inline animate-fade-in">
-                    <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder={isMobileSearch ? "搜索文章 »" : "搜索文章 » 软件"} aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/>
+                    <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder={isMobileSearch ? "搜索文章 »" : "搜索文章 » 软件"} aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]" style={{ fontSize: '14px' }}/>
                     <button type="submit" aria-label="提交搜索" className="nav-search-submit"><SearchIcon size={15}/></button>
                   </form>
                 ) : <button type="button" aria-label="搜索" className="nav-icon-btn" onClick={() => setSearchOpen(true)}><SearchIcon/></button>}
