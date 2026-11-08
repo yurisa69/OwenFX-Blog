@@ -226,11 +226,11 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               <summary className="uiverse-btn uiverse-btn-ghost flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
                 网盘下载
               </summary>
-              <div className="relative left-[-100%] mt-3 flex w-[calc(200%+0.75rem)] flex-nowrap items-start justify-between gap-x-5 gap-y-3 pt-1">
+              <div className="relative left-[-100%] mt-3 flex w-[calc(200%+0.75rem)] flex-nowrap items-start justify-evenly gap-y-3 pt-1">
                 {quickProviders.map(({ key, label, link }) => link ? (
                   <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
                     softwareId={software.id}
-                    className="flex min-w-0 flex-1 flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
+                    className="flex min-w-0 flex-none flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
                     <ProviderIcon provider={key} />
                     <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
                     {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
