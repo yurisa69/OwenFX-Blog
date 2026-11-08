@@ -9,7 +9,7 @@ export const metadata = {
 export default async function SoftwarePage() {
   const supabase = await createClient();
   const { data } = await supabase.from('software')
-    .select('id,title,slug,description,developer,version,platform,image_url,featured,category:categories!software_category_id_fkey(name,slug)')
+    .select('id,title,slug,description,developer,version,platform,image_url,featured,category:categories!software_category_id_fkey(name,slug),tags:software_tags(tag:tags(name))')
     .eq('status', 'published')
     .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
     .order('featured', { ascending: false })

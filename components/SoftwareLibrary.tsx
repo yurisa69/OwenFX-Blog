@@ -13,6 +13,7 @@ type SoftwareItem = {
   platform: string | null;
   image_url: string | null;
   category: { name: string; slug: string } | null;
+  tags: { tag: { name: string } | { name: string }[] | null }[] | null;
 };
 
 const categoryOrder = ['工具', '多媒体', '开发工具', '系统增强', 'Android软件', 'Windows软件'];
@@ -70,8 +71,22 @@ export default function SoftwareLibrary({ items }: { items: SoftwareItem[] }) {
                 )}
               </div>
               <h2 className="line-clamp-1 text-sm font-semibold">{item.title}</h2>
-              <p className="mt-1 line-clamp-2 text-xs opacity-60">{item.description || item.developer || item.platform || '软件详情'}</p>
-              {item.version && <span className="mt-2 text-[11px] opacity-50">{item.version}</span>}
+              {(() => {
+                const tags = (item.tags || [])
+                  .map((entry) => Array.isArray(entry.tag) ? entry.tag[0]?.name : entry.tag?.name)
+                  .filter((tag): tag is string => Boolean(tag))
+                  .slice(0, 3);
+                return tags.length > 0 ? (
+                  <div className="mt-2 flex w-full flex-wrap justify-center gap-1.5">
+                    {tags.map((tag) => (
+                      <span key={tag} className="rounded-full px-2 py-1 text-[10px] leading-none"
+                        style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
             </Link>
           ))}
         </div>
