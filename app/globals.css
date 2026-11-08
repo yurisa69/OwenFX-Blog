@@ -175,6 +175,9 @@ html.theme-switching .six-star-spin {
   to { transform: rotate(360deg); }
 }
 
+/* Software icon frames keep the light-theme surface in both themes. */
+.software-icon-frame { background: #e2e8f0; }
+
 /* Software catalog and support dialog */
 .support-trigger{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 18px;border:1px solid var(--border-color);border-radius:999px;background:var(--accent-bg);color:var(--accent);font-size:14px;font-weight:600;cursor:pointer}
 .support-modal-overlay{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.70);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
