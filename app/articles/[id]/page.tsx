@@ -48,22 +48,12 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <div className="mb-4 flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        <span className="monet-waterlily-flow font-semibold">OWEN</span>
-        <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)' }}><span className="monet-waterlily-flow">站长</span></span>
-      </div>
-
       <article className="uiverse-card mb-8 rounded-xl p-5 sm:p-7">
         <h1 className="mb-3 text-2xl font-bold leading-tight sm:text-3xl">{article.title}</h1>
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          {categoryName && (
-            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-              style={{ background: 'var(--accent-bg)', color: categoryColor }}>
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: categoryColor }} />
-              {categoryName}
-            </span>
-          )}
-          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>· {publishedDate}</span>
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <span className="monet-waterlily-flow font-semibold">OWEN</span>
+          <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)' }}><span className="monet-waterlily-flow">站长</span></span>
+          <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{publishedDate}</span>
         </div>
 
         {article.excerpt && (
