@@ -91,7 +91,9 @@ export default function SoftwareSupport({ className = '', placement = 'software'
           })}
         </div>
         <p className="mt-4 text-center text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
-          每一份支持，都是我们持续分享与更新的动力。感谢有你！
+          <span className="block">每一份支持</span>
+          <span className="block">都是我们持续分享与更新的动力</span>
+          <span className="block">感谢有你！</span>
         </p>
       </div>
     </div>,

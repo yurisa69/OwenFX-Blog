@@ -1,5 +1,6 @@
 import Carousel from '@/components/Carousel';
 import HomeSections from '@/components/HomeSections';
+import { formatChineseDate } from '@/lib/date';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function HomePage() {
@@ -23,7 +24,7 @@ export default async function HomePage() {
     title: article.title,
     category: article.categories?.name || '文章',
     description: article.excerpt || '',
-    createdAt: new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+    createdAt: formatChineseDate(article.published_at || article.created_at),
   }));
 
   return <div className="pt-6 md:pt-9">

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { formatChineseDate } from '@/lib/date';
 import { readMarkdownFile } from '@/lib/github-articles';
 import ArticleContent from '@/components/ArticleContent';
 import ArticleSupport from '@/components/ArticleSupport';
@@ -43,11 +44,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
       return tag?.name || '';
     })
     .filter(Boolean));
-  const publishedDate = new Date(article.published_at || article.created_at).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: 'numeric',
-  });
+  const publishedDate = formatChineseDate(article.published_at || article.created_at);
 
   return (
     <div className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
