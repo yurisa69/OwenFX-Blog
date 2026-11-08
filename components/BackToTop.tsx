@@ -11,7 +11,7 @@ export default function BackToTop() {
         setVisible(true);
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => setVisible(false), 2000);
-      } else {
+      } else if (window.scrollY <= 1) {
         setVisible(false);
         if (timer) clearTimeout(timer);
       }
