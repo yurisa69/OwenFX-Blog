@@ -432,7 +432,7 @@ html.theme-switching .six-star-spin {
   isolation: isolate;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: opacity .46s cubic-bezier(.22, .68, 0, 1), transform .46s cubic-bezier(.22, .68, 0, 1);
+  /* Use Tailwind transition-all so opacity and Tailwind v4's individual translate property animate together. */
 }
 .back-to-top-btn::before,
 .back-to-top-btn::after {
