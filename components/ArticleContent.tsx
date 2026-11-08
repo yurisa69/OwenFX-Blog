@@ -15,11 +15,16 @@ function inlineMarkdown(value: string) {
     .replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>');
 }
 
-function markdownToHtml(source: string) {
+function markdownToHtml(source: string, articleTitle?: string) {
   const cleanedSource = source
     .replace(/^\s*\*{0,2}\s*(?:官方下载|下载)[^\r\n]*https?:\/\/\S+[^\r\n]*$/gim, '')
     .replace(/^\s*\[(?:官方下载|下载)\]\(https?:\/\/[^)\s]+\)\s*$/gim, '');
   const lines = cleanedSource.replace(/\r\n/g, '\n').split('\n');
+  const firstContentLine = lines.findIndex(line => line.trim().length > 0);
+  if (firstContentLine >= 0 && articleTitle) {
+    const firstHeading = lines[firstContentLine].match(/^#\s+(.+)$/);
+    if (firstHeading?.[1].trim() === articleTitle.trim()) lines.splice(firstContentLine, 1);
+  }
   const output: string[] = [];
   let index = 0;
 
@@ -98,7 +103,7 @@ function markdownToHtml(source: string) {
   return output.join('');
 }
 
-export default async function ArticleContent({ content }: { content: string }) {
+export default async function ArticleContent({ content, title }: { content: string; title?: string }) {
   const matches = [...content.matchAll(/\{\{software:([a-z0-9-]+)\}\}/g)];
   const slugs = [...new Set(matches.map(match => match[1]))];
   const supabase = await createClient();
@@ -123,7 +128,7 @@ export default async function ArticleContent({ content }: { content: string }) {
         </Link>;
       }
       if (!piece.trim()) return null;
-      return <div key={index} className="prose-block" dangerouslySetInnerHTML={{ __html: markdownToHtml(piece) }} />;
+      return <div key={index} className="prose-block" dangerouslySetInnerHTML={{ __html: markdownToHtml(piece, title) }} />;
     })}
 
   </div>;

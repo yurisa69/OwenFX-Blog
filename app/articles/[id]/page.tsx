@@ -59,14 +59,13 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {article.excerpt && (
-          <p className="mb-6 rounded-lg px-4 py-3 text-sm leading-7"
-            style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+          <p className="article-excerpt-card mb-6 rounded-lg px-4 py-3 text-sm leading-7">
             {article.excerpt}
           </p>
         )}
 
         <div className="border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
-          <ArticleContent content={file.content} />
+          <ArticleContent content={file.content} title={article.title} />
         </div>
 
         {tags.length > 0 && (

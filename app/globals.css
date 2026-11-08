@@ -408,3 +408,18 @@ html.theme-switching .six-star-spin {
 .profile-comment-item a{display:inline-block;margin-top:8px;color:var(--accent);font-size:11px}
 .profile-list-notice{margin:0;border:1px solid rgba(251,191,36,.2);border-radius:12px;background:rgba(251,191,36,.07);padding:10px 12px;color:var(--text-secondary);font-size:11px}
 @media(max-width:767px){.profile-drawer-content{gap:13px;padding-top:14px}.profile-identity-card,.profile-edit-card{padding:14px}.profile-activity-tab{min-height:54px}}
+
+
+/* Article excerpt: make the summary visibly distinct from the paper-like reading surface. */
+.article-excerpt-card {
+  border: 1px solid rgba(129, 140, 248, .34);
+  background: linear-gradient(135deg, rgba(99, 102, 241, .22), rgba(56, 189, 248, .13));
+  color: var(--text-primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .045), 0 8px 24px rgba(2, 6, 23, .12);
+}
+[data-theme="light"] .article-excerpt-card {
+  border-color: rgba(99, 102, 241, .22);
+  background: linear-gradient(135deg, rgba(99, 102, 241, .10), rgba(56, 189, 248, .08));
+  color: var(--text-secondary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .72), 0 6px 18px rgba(15, 23, 42, .045);
+}
