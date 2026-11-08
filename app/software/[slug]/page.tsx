@@ -49,7 +49,7 @@ const providerLogoUrls: Record<string, string> = {
   uc: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/12/70/ab/1270ab94-3750-3864-82eb-e4c43834cf65/AppIcon-0-0-1x_U007emarketing-0-5-0-0-sRGB-85-220.png/512x512bb.webp',
   quark: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/a9/ba/66/a9ba66e8-1e20-449a-93e0-6e279a021b75/Placeholder.mill/512x512bb.webp',
   baidu: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/09/cb/ad/09cbad00-fcc7-a285-4df1-b2af3783424f/icon.png/512x512bb.webp',
-  thunder: 'https://www.xunlei.com/thunder/icons/logo.svg',
+  thunder: 'https://static-pan.xunlei.com/_nuxt/dist/client/img/logo.5364057.svg',
 };
 
 function ProviderIcon({ provider }: { provider: string }) {
