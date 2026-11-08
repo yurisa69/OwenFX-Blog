@@ -45,7 +45,7 @@ function formatPlatforms(platform: string | null) {
 
 // Brand-mark style vector artwork. These are clean, scalable marks rather than app-store tiles.
 function ProviderIcon({ provider }: { provider: string }) {
-  const iconClass = "h-8 w-8 shrink-0";
+  const iconClass = "h-6 w-6 shrink-0";
   const svgProps = {
     "aria-hidden": true,
     viewBox: "0 0 1024 1024",
@@ -211,48 +211,50 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
 
         <div className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
           <h2 className="mb-4 text-lg font-semibold">获取方式</h2>
-          <div className="flex flex-wrap items-center gap-3">
-            {software.official_download_url && (
+          <div className="flex gap-3">
+            {software.official_download_url ? (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
-                softwareId={software.id} className="uiverse-btn uiverse-btn-primary rounded-full !px-4 !py-2 text-sm">
+                softwareId={software.id} className="uiverse-btn uiverse-btn-primary flex min-w-0 flex-1 items-center justify-center rounded-full !px-4 !py-2 text-sm">
                 官方下载
               </TrackLink>
-            )}
-            <details className="group">
-              <summary className="uiverse-btn uiverse-btn-ghost inline-flex cursor-pointer list-none items-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
-                网盘下载
-              </summary>
-              <div className="mt-4 flex flex-wrap items-start gap-x-5 gap-y-3">
-                {quickProviders.map(({ key, label, link }) => link ? (
-                  <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
-                    softwareId={software.id}
-                    className="flex min-w-14 flex-col items-center gap-1.5 text-xs transition-opacity hover:opacity-80">
-                    <ProviderIcon provider={key} />
-                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                    {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
-                  </TrackLink>
-                ) : (
-                  <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
-                    className="flex min-w-14 flex-col items-center gap-1.5 text-xs opacity-35">
-                    <ProviderIcon provider={key} />
-                    <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                  </div>
-                ))}
+            ) : (
+              <div className="uiverse-btn uiverse-btn-primary flex min-w-0 flex-1 items-center justify-center rounded-full !px-4 !py-2 text-sm opacity-60">
+                官方下载
               </div>
-              {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
-                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
-                  {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
-                    <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
-                      softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
-                      {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
-                    </TrackLink>
-                  ))}
-                </div>
-              )}
-              {links.length === 0 && <p className="mt-3 text-xs" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>}
-            </details>
-            {!software.official_download_url && links.length === 0 && <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
+            )}
+            <div className="uiverse-btn uiverse-btn-ghost flex min-w-0 flex-1 items-center justify-center rounded-full !px-4 !py-2 text-sm">
+              网盘下载
+            </div>
           </div>
+          <div className="mt-4 grid grid-cols-4 gap-2">
+            {quickProviders.map(({ key, label, link }) => link ? (
+              <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
+                softwareId={software.id}
+                className="flex min-w-0 flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
+                <ProviderIcon provider={key} />
+                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
+              </TrackLink>
+            ) : (
+              <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
+                className="flex min-w-0 flex-col items-center gap-1 text-xs">
+                <ProviderIcon provider={key} />
+                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+          {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
+              {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
+                <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
+                  softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
+                  {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
+                </TrackLink>
+              ))}
+            </div>
+          )}
+          {links.length === 0 && <p className="mt-3 text-xs" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>}
+          {!software.official_download_url && links.length === 0 && <p className="mt-3 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
         </div>
         {Array.isArray(software.screenshots) && software.screenshots.length > 0 && (
           <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
