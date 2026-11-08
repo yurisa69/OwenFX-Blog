@@ -43,24 +43,30 @@ function formatPlatforms(platform: string | null) {
     });
 }
 
+// Official app artwork sourced from the providers' App Store listings.
+// Use square Apple artwork renditions; never crop a landscape preview image.
 const providerLogoUrls: Record<string, string> = {
-  uc: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/93/77/db/9377dbc6-7805-f11f-7cf2-692ac94f85ab/AppIcon-0-0-1x_U007emarketing-0-5-0-0-sRGB-85-220.png/460x0w.webp',
-  quark: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/af/a6/a8/afa6a8a5-ccb4-5dc7-f8df-f844afb8b347/Placeholder.mill/1200x630wa.jpg',
-  baidu: 'https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/60/9f/8e/609f8e38-c796-29c3-b5da-891c266db491/icon.png/1200x630wa.png',
+  uc: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/12/70/ab/1270ab94-3750-3864-82eb-e4c43834cf65/AppIcon-0-0-1x_U007emarketing-0-5-0-0-sRGB-85-220.png/512x512bb.webp',
+  quark: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/a9/ba/66/a9ba66e8-1e20-449a-93e0-6e279a021b75/Placeholder.mill/512x512bb.webp',
+  baidu: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/09/cb/ad/09cbad00-fcc7-a285-4df1-b2af3783424f/icon.png/512x512bb.webp',
   thunder: 'https://www.xunlei.com/thunder/icons/logo.svg',
 };
 
 function ProviderIcon({ provider }: { provider: string }) {
   return (
-    <img
-      aria-hidden="true"
-      src={providerLogoUrls[provider]}
-      alt=""
-      width={48}
-      height={48}
-      loading="lazy"
-      className="h-12 w-12 rounded-2xl object-contain"
-    />
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl">
+      <img
+        aria-hidden="true"
+        src={providerLogoUrls[provider]}
+        alt=""
+        width={48}
+        height={48}
+        loading="lazy"
+        decoding="async"
+        className="!block !h-12 !w-12 !max-h-12 !max-w-12 shrink-0 object-contain"
+        style={{ width: 48, height: 48, maxWidth: 48, maxHeight: 48, objectFit: 'contain' }}
+      />
+    </span>
   );
 }
 
