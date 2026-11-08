@@ -31,7 +31,14 @@ function formatPlatforms(platform: string | null) {
     .filter(Boolean)
     .map(value => value.replace(/\s+\d[\d./+-]*(?:\s*\/\s*\d[\d./+-]*)?$/, '').trim())
     .filter(Boolean))]
-    .sort((a, b) => a.length - b.length);
+    .sort((a, b) => {
+      const order: Record<string, number> = {
+        Linux: 0,
+        macOS: 1,
+        Windows: 2,
+      };
+      return (order[a] ?? Number.MAX_SAFE_INTEGER) - (order[b] ?? Number.MAX_SAFE_INTEGER);
+    });
 }
 
 function sortSoftwareTags(tags: string[]) {
