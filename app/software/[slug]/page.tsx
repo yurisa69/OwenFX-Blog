@@ -214,7 +214,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           <div className="grid grid-cols-2 items-start gap-3">
             {software.official_download_url ? (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
-                softwareId={software.id} className="uiverse-btn uiverse-btn-primary flex min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm">
+                softwareId={software.id} className="uiverse-btn uiverse-btn-primary flex w-full min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm">
                 官方下载
               </TrackLink>
             ) : (
@@ -226,18 +226,18 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               <summary className="uiverse-btn uiverse-btn-ghost flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
                 网盘下载
               </summary>
-              <div className="relative left-[-100%] mt-3 flex w-[calc(200%+0.75rem)] flex-nowrap items-start justify-evenly gap-y-3 pt-1">
+              <div className="relative left-[-100%] mt-3 grid w-[calc(200%+0.75rem)] grid-cols-4 items-start gap-y-3 pt-1">
                 {quickProviders.map(({ key, label, link }) => link ? (
                   <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
                     softwareId={software.id}
-                    className="flex min-w-0 flex-none flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
+                    className="flex w-full min-w-0 flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
                     <ProviderIcon provider={key} />
                     <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
                     {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
                   </TrackLink>
                 ) : (
                   <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
-                    className="flex min-w-0 flex-col items-center gap-1 text-xs">
+                    className="flex w-full min-w-0 flex-col items-center gap-1 text-xs">
                     <ProviderIcon provider={key} />
                     <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
                   </div>
@@ -253,7 +253,6 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
                   ))}
                 </div>
               )}
-              {links.length === 0 && <p className="relative left-[-100%] mt-3 w-[calc(200%+0.75rem)] text-xs" style={{ color: 'var(--text-tertiary)' }}>网盘资源暂未添加。</p>}
             </details>
             {!software.official_download_url && links.length === 0 && <p className="col-span-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
           </div>
