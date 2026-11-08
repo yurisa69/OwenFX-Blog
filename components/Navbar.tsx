@@ -19,12 +19,12 @@ const navLinks = [
   { label: '文章', href: '/articles' },
   { label: '软件', href: '/software' },
   { label: '分类', href: '/categories' },
-  { label: '联系', href: '/contact' },
   { label: '关于', href: '/about' },
+  { label: '联系', href: '/contact' },
 ];
 
-function SearchIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>;
+function SearchIcon({ size = 18 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>;
 }
 function StarIcon() {
   return <svg className="six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 20 17H4L12 3Z"/><path d="M12 21 4 7h16l-8 14Z"/></svg>;
@@ -177,8 +177,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '头像上传失败');
     } finally {
-      setUploading(false);
-      event.target.value = '';
+      setUploading(false);      event.target.value = '';
     }
   };
 
@@ -207,7 +206,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                 {searchOpen ? (
                   <form onSubmit={handleSearch} className="nav-search-capsule nav-search-capsule-inline animate-fade-in">
                     <input ref={searchRef} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} type="search" placeholder={isMobileSearch ? "搜索文章 »" : "搜索文章 » 软件"} aria-label="搜索文章或软件" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-tertiary)]"/>
-                    <button type="submit" aria-label="提交搜索" className="nav-search-submit"><SearchIcon/></button>
+                    <button type="submit" aria-label="提交搜索" className="nav-search-submit"><SearchIcon size={15}/></button>
                   </form>
                 ) : <button type="button" aria-label="搜索" className="nav-icon-btn" onClick={() => setSearchOpen(true)}><SearchIcon/></button>}
               </div>
