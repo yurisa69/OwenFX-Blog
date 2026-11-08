@@ -506,14 +506,14 @@ html.theme-switching .six-star-spin {
 /* Responsive article appreciation control: keep the current mobile dimensions,
    then scale up progressively for tablet and desktop reading layouts. */
 @media (min-width: 768px) {
-  .support-trigger[data-placement="article"] {
+  article .support-trigger {
     min-height: 46px;
     padding: 11px 26px;
     font-size: 15px;
   }
 }
 @media (min-width: 1024px) {
-  .support-trigger[data-placement="article"] {
+  article .support-trigger {
     min-width: 220px;
     min-height: 52px;
     padding: 13px 32px;
