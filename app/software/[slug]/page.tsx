@@ -211,7 +211,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
 
         <div className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
           <h2 className="mb-4 text-lg font-semibold">获取方式</h2>
-          <div className="grid w-full grid-cols-2 gap-3">
+          <div className="relative grid w-full grid-cols-2 gap-3">
             {software.official_download_url ? (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
                 softwareId={software.id}
@@ -228,7 +228,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               <summary className="uiverse-btn uiverse-btn-ghost flex w-full cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
                 网盘下载
               </summary>
-              <div className="absolute left-1/2 top-full z-30 mt-3 w-[min(80vw,42rem)] -translate-x-1/2 rounded-xl border p-4 shadow-xl"
+              <div className="absolute left-0 right-0 top-full z-30 mt-3 w-full max-w-full rounded-xl border p-4 shadow-xl"
                 style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
                 <div className="grid grid-cols-4 justify-items-center gap-x-2 gap-y-4">
                   {quickProviders.map(({ key, label, link }) => link ? (
