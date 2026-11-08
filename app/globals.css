@@ -499,3 +499,18 @@ html.theme-switching .six-star-spin {
   .back-to-top-btn:active::before,
   .back-to-top-btn:active::after { animation: none; }
 }
+
+
+/* Software app icons must retain their original official artwork in every theme. */
+.software-icon-frame {
+  background-color: #0b0f1a !important;
+}
+.software-official-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: none !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+}

@@ -120,8 +120,8 @@ export default async function ArticleContent({ content, title }: { content: stri
         const item = software.get(match[1]);
         if (!item) return null;
         return <Link key={index} href={'/software/' + item.slug} className="uiverse-card flex items-center gap-4 p-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl" style={{ background: 'var(--bg-tertiary)' }}>
-            {item.image_url ? <img src={item.image_url} alt={item.title + ' 图标'} className="h-full w-full object-cover" /> : <span className="text-xl font-bold">{item.title.slice(0, 1)}</span>}
+          <div className="software-icon-frame flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl">
+            {item.image_url ? <img src={item.image_url} alt={item.title + ' 官方图标'} className="software-official-icon" /> : <span className="text-xl font-bold">{item.title.slice(0, 1)}</span>}
           </div>
           <div className="min-w-0 flex-1"><p className="font-semibold">{item.title}</p><p className="mt-1 line-clamp-2 text-xs opacity-70">{item.description || item.version || '查看软件详情'}</p></div>
           <span className="text-sm" style={{ color: 'var(--accent)' }}>查看 →</span>

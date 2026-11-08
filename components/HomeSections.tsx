@@ -23,8 +23,8 @@ export default function HomeSections({ articles, featured }: HomeSectionProps) {
       <div className="mb-5 flex items-center justify-between"><h2 className="flex items-center gap-2 text-lg font-semibold md:text-xl">精选推荐<span className="h-3 w-3 rounded-full" style={{ background: '#a855f7' }} /></h2><Link href="/software" className="text-sm" style={{ color: 'var(--accent)' }}>查看全部</Link></div>
       <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         {featured.slice(fp * PAGE_SIZE, (fp + 1) * PAGE_SIZE).map((item, index) => <Link key={item.id} href={'/software/' + item.slug} aria-label={'查看' + item.title + '软件详情'} className="uiverse-card animate-fade-in flex min-h-36 flex-col items-center justify-center gap-3 p-4 text-center transition hover:-translate-y-1" style={{ animationDelay: index * 80 + 'ms' }}>
-          <div className="flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-[22px] shadow-sm" style={{ background: 'var(--bg-tertiary)' }}>
-            {item.image_url ? <img src={item.image_url} alt={item.title + ' 官方图标'} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="h-full w-full object-cover" /> : <span className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>}
+          <div className="software-icon-frame flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-[22px] shadow-sm">
+            {item.image_url ? <img src={item.image_url} alt={item.title + ' 官方图标'} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="software-official-icon" /> : <span className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{item.title.slice(0, 1)}</span>}
           </div>
           <h3 className="w-full truncate text-sm font-semibold">{item.title}</h3>
         </Link>)}
