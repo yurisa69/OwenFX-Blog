@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { isSupportedRegistrationEmail, REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE } from '@/lib/registration-email';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -100,8 +101,8 @@ export default function RegisterPage() {
             <form onSubmit={register} className="space-y-4">
               <input required maxLength={40} className="admin-input w-full" placeholder="用户名" value={name} onChange={event => setName(event.target.value)} />
               <input required type="email" autoComplete="email" className="admin-input w-full" placeholder="邮箱" value={email} onChange={event => setEmail(event.target.value)} />
-              <input required minLength={6} type="password" autoComplete="new-password" className="admin-input w-full" placeholder="密码（至少6位）" value={password} onChange={event => setPassword(event.target.value)} />
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              <PasswordInput required minLength={6} autoComplete="new-password" className="admin-input w-full" placeholder="密码（至少6位）" value={password} onChange={event => setPassword(event.target.value)} />
+              {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
               <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '注册中…' : '注册并发送确认邮件'}</button>
             </form>
             <p className="mt-5 text-center text-xs opacity-70">已有账号？<Link href="/auth/login" className="underline" style={{ color: 'var(--accent)' }}>登录</Link></p>
