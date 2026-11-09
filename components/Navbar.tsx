@@ -181,12 +181,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     }
   };
 
-  const handleLogout = async () => {
-    const supabase = getSupabaseBrowser();
-    if (supabase) await supabase.auth.signOut();
-    setUser(null); setDrawerOpen(false); router.push('/'); router.refresh();
-  };
-
   const avatar = editing ? profile.avatar_url : (user?.avatar_url || profile.avatar_url);
   const displayName = editing ? profile.display_name : (user?.name || '用户');
 
@@ -331,10 +325,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                 </>
               )}
               {notice && <p role="status" className="profile-list-notice">{notice}</p>}
-            </div>
-            <div className="profile-drawer-footer">
-              <div className="text-xs text-[var(--text-tertiary)]">个人资料由你的 OwenFX 账号管理</div>
-              <button type="button" className="profile-logout-action" onClick={handleLogout}>退出登录</button>
             </div>
           </aside>
         </div>

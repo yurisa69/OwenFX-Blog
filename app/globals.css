@@ -520,3 +520,31 @@ html.theme-switching .six-star-spin {
     font-size: 16px;
   }
 }
+
+
+/* Account settings */
+.account-settings-page{width:100%;max-width:760px;margin:0 auto;padding:34px 0 64px}
+.account-settings-topline{display:flex;align-items:center;justify-content:space-between;color:var(--text-tertiary);font-size:10px;letter-spacing:.16em}
+.account-settings-back{color:var(--text-secondary);font-size:13px;letter-spacing:0;transition:color .18s}
+.account-settings-back:hover{color:var(--accent)}
+.account-settings-header{display:flex;align-items:center;gap:16px;margin:30px 0 22px}
+.account-settings-symbol{display:grid;width:52px;height:52px;flex:0 0 52px;place-items:center;border:1px solid rgba(129,140,248,.3);border-radius:17px;background:linear-gradient(135deg,rgba(129,140,248,.2),rgba(56,189,248,.1));color:var(--accent);font-size:28px;box-shadow:0 8px 28px rgba(99,102,241,.12)}
+.account-settings-header h1{margin:0;font-size:25px;font-weight:750;letter-spacing:-.03em}
+.account-settings-header p{margin:5px 0 0;color:var(--text-tertiary);font-size:13px}
+.account-settings-current{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px;border:1px solid var(--border-color);border-radius:15px;background:var(--bg-glass);padding:14px 16px}
+.account-settings-current span{color:var(--text-tertiary);font-size:12px}
+.account-settings-current strong{max-width:100%;overflow-wrap:anywhere;color:var(--text-primary);font-size:13px;font-weight:600}
+.account-settings-message{margin:0 0 16px;border:1px solid rgba(52,211,153,.22);border-radius:12px;background:rgba(52,211,153,.07);padding:11px 13px;color:var(--text-secondary);font-size:12px;line-height:1.7}
+.account-settings-message.is-error{border-color:rgba(248,113,113,.24);background:rgba(248,113,113,.07);color:#fca5a5}
+.account-settings-card{margin-top:15px;border:1px solid var(--border-color);border-radius:20px;background:var(--bg-glass);padding:20px;box-shadow:0 12px 36px rgba(2,6,23,.06)}
+.account-settings-card-heading>div{display:flex;align-items:center;gap:10px}
+.account-settings-index{color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.12em}
+.account-settings-card-heading h2,.account-settings-logout h2{margin:0;color:var(--text-primary);font-size:16px;font-weight:700}
+.account-settings-card-heading p,.account-settings-logout p{margin:7px 0 0;color:var(--text-tertiary);font-size:12px;line-height:1.7}
+.account-settings-form{display:flex;flex-direction:column;gap:9px;margin-top:18px}
+.account-settings-form label{margin-top:4px;color:var(--text-secondary);font-size:12px}
+.account-settings-submit{width:100%;margin-top:7px}
+.account-settings-logout{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:22px;border:1px solid rgba(248,113,113,.2);border-radius:18px;background:rgba(248,113,113,.035);padding:18px 20px}
+.account-settings-logout .profile-logout-action{width:auto;min-width:132px;margin:0;padding:0 18px}
+.account-settings-loading{display:grid;min-height:42vh;place-items:center;color:var(--text-tertiary);font-size:13px}
+@media(max-width:767px){.account-settings-page{padding:24px 0 42px}.account-settings-header{margin:24px 0 18px}.account-settings-header h1{font-size:22px}.account-settings-card{padding:16px;border-radius:17px}.account-settings-logout{align-items:stretch;flex-direction:column;padding:16px}.account-settings-logout .profile-logout-action{width:100%}}
