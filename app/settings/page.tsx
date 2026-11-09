@@ -227,7 +227,7 @@ export default function SettingsPage() {
           </div>
         </div>
         <div className="account-settings-identity-footer">
-          <button type="button" className="profile-logout-action account-settings-identity-logout" onClick={handleLogout} disabled={logoutBusy}>
+          <button type="button" className="profile-primary-action account-settings-identity-logout" onClick={handleLogout} disabled={logoutBusy}>
             {logoutBusy ? '正在退出…' : '退出'}
           </button>
         </div>
