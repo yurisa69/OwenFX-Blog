@@ -94,7 +94,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
 
       <style>{`
-        .admin-sidebar{overflow:hidden;border:1px solid var(--border-color);border-radius:18px;background:var(--bg-glass);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+        .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
         .admin-sidebar-link{display:flex;min-width:0;min-height:40px;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:8px 10px;color:var(--text-secondary);font-size:13px;transition:background .18s,border-color .18s,color .18s}
         .admin-sidebar-link:hover{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
         .admin-sidebar-icon{display:inline-flex;width:20px;flex:0 0 20px;align-items:center;justify-content:center;font-size:15px;color:var(--text-tertiary)}
