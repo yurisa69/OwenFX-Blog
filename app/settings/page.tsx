@@ -20,6 +20,8 @@ export default function SettingsPage() {
   const [logoutBusy, setLogoutBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     const supabase = getSupabaseBrowser();
@@ -100,19 +102,19 @@ export default function SettingsPage() {
   const handleEmailChange = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setNotice('');
-    setError('');
+    setEmailError('');
     const nextEmail = email.trim().toLowerCase();
     if (!nextEmail) {
-      setError('请输入新的邮箱地址。');
+      setEmailError('请输入新的邮箱地址。');
       return;
     }
     if (nextEmail === (user?.email || '').toLowerCase()) {
-      setError('新邮箱与当前邮箱相同。');
+      setEmailError('新邮箱与当前邮箱相同。');
       return;
     }
     const supabase = getSupabaseBrowser();
     if (!supabase) {
-      setError('账号服务暂不可用，请稍后重试。');
+      setEmailError('账号服务暂不可用，请稍后重试。');
       return;
     }
 
@@ -130,11 +132,11 @@ export default function SettingsPage() {
         authMessage.includes('email_exists') ||
         authMessage.includes('user_already_exists')
       ) {
-        setError('该邮箱已有注册记录（可能尚未完成验证）。请先完成该邮箱原有的注册验证，或更换其他邮箱。');
+        setEmailError('该邮箱已有注册记录（可能尚未完成验证）。请先完成该邮箱原有的注册验证，或更换其他邮箱。');
       } else if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
-        setError('邮箱验证请求过于频繁，请稍后再试。');
+        setEmailError('邮箱验证请求过于频繁，请稍后再试。');
       } else {
-        setError('邮箱修改请求失败，请检查邮箱地址后稍后重试。');
+        setEmailError('邮箱修改请求失败，请检查邮箱地址后稍后重试。');
       }
       return;
     }
@@ -144,30 +146,30 @@ export default function SettingsPage() {
   const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setNotice('');
-    setError('');
+    setPasswordError('');
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('请完整填写当前密码和两次新密码。');
+      setPasswordError('请完整填写当前密码和两次新密码。');
       return;
     }
     if (newPassword.length < 6) {
-      setError('新密码至少需要 6 位。');
+      setPasswordError('新密码至少需要 6 位。');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('两次输入的新密码不一致。');
+      setPasswordError('两次输入的新密码不一致。');
       return;
     }
     if (newPassword === currentPassword) {
-      setError('新密码不能与当前密码相同。');
+      setPasswordError('新密码不能与当前密码相同。');
       return;
     }
     if (!user?.email) {
-      setError('当前账号没有可用于验证的邮箱，请重新登录后再试。');
+      setPasswordError('当前账号没有可用于验证的邮箱，请重新登录后再试。');
       return;
     }
     const supabase = getSupabaseBrowser();
     if (!supabase) {
-      setError('账号服务暂不可用，请稍后重试。');
+      setPasswordError('账号服务暂不可用，请稍后重试。');
       return;
     }
 
@@ -178,14 +180,14 @@ export default function SettingsPage() {
     });
     if (verifyError) {
       setPasswordBusy(false);
-      setError('当前密码不正确，请检查后重试。');
+      setPasswordError('当前密码不正确，请检查后重试。');
       return;
     }
 
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
     setPasswordBusy(false);
     if (updateError) {
-      setError(updateError.message || '密码修改失败，请稍后重试。');
+      setPasswordError(updateError.message || '密码修改失败，请稍后重试。');
       return;
     }
     setCurrentPassword('');
@@ -257,6 +259,7 @@ export default function SettingsPage() {
           <p>提交新邮箱后，需要通过验证邮件确认变更。</p>
         </div>
         <form onSubmit={handleEmailChange} className="account-settings-form">
+          {emailError && <p role="alert" className="account-settings-message is-error">{emailError}</p>}
           <label htmlFor="account-email">新邮箱地址</label>
           <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮箱地址" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={emailBusy || !user?.email}>
@@ -271,6 +274,7 @@ export default function SettingsPage() {
           <p>为保护账号安全，修改前需要验证当前密码。</p>
         </div>
         <form onSubmit={handlePasswordChange} className="account-settings-form">
+          {passwordError && <p role="alert" className="account-settings-message is-error">{passwordError}</p>}
           <label htmlFor="current-password">当前密码</label>
           <input id="current-password" className="admin-input" type="password" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
           <label htmlFor="new-password">新密码</label>
