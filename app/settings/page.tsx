@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 
-type AccountUser = { id: string; email?: string };
+type AccountUser = { id: string; name: string; email?: string; avatarUrl: string | null };
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -37,7 +37,25 @@ export default function SettingsPage() {
         router.replace('/login?next=%2Fsettings');
         return;
       }
-      const account = { id: data.user.id, email: data.user.email || '' };
+      const metadata = data.user.user_metadata as Record<string, unknown>;
+      const metadataName = typeof metadata.display_name === 'string'
+        ? metadata.display_name
+        : typeof metadata.name === 'string' ? metadata.name : '';
+      const metadataAvatar = typeof metadata.avatar_url === 'string'
+        ? metadata.avatar_url
+        : typeof metadata.picture === 'string' ? metadata.picture : null;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name,avatar_url')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      if (!active) return;
+      const account = {
+        id: data.user.id,
+        name: profile?.display_name || metadataName || data.user.email?.split('@')[0] || '用户',
+        email: data.user.email || '',
+        avatarUrl: profile?.avatar_url || metadataAvatar,
+      };
       setUser(account);
       setLoading(false);
       if (new URLSearchParams(window.location.search).get('emailChange') === 'success') {
@@ -57,8 +75,19 @@ export default function SettingsPage() {
         return;
       }
       if (event === 'USER_UPDATED' && session?.user) {
-        const account = { id: session.user.id, email: session.user.email || '' };
-        setUser(account);
+        const metadata = session.user.user_metadata as Record<string, unknown>;
+        const metadataName = typeof metadata.display_name === 'string'
+          ? metadata.display_name
+          : typeof metadata.name === 'string' ? metadata.name : '';
+        const metadataAvatar = typeof metadata.avatar_url === 'string'
+          ? metadata.avatar_url
+          : typeof metadata.picture === 'string' ? metadata.picture : null;
+        setUser(current => ({
+          id: session.user.id,
+          name: current?.name || metadataName || session.user.email?.split('@')[0] || '用户',
+          email: session.user.email || '',
+          avatarUrl: current?.avatarUrl || metadataAvatar,
+        }));
       }
     });
 
@@ -178,22 +207,26 @@ export default function SettingsPage() {
   return (
     <div className="account-settings-page">
       <div className="account-settings-topline">
-        <Link href="/" className="account-settings-back">‹ 返回首页</Link>
         <span>OWENFX ACCOUNT</span>
+        <Link href="/" className="account-settings-back">返回首页 &gt;</Link>
       </div>
 
-      <header className="account-settings-header">
-        <div className="account-settings-symbol" aria-hidden="true">✳</div>
-        <div>
-          <h1>账号设置</h1>
-          <p>管理你的登录邮箱、密码和账号会话</p>
+      <section className="profile-identity-card account-settings-identity" aria-label="当前账号">
+        <div className="profile-identity-main">
+          <div className="profile-avatar-ring profile-avatar-ring-compact">
+            <div className="profile-avatar-inner">
+              {user?.avatarUrl
+                ? <img src={user.avatarUrl} alt="头像" className="h-full w-full object-cover" />
+                : <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>}
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-xl font-bold">{user?.name || '用户'}</h2>
+            <p className="mt-1 truncate text-xs text-[var(--text-secondary)]">{user?.email || 'OwenFX 用户'}</p>
+            <span className="profile-member-state"><i className="profile-status-dot" />账号已登录</span>
+          </div>
         </div>
-      </header>
-
-      <div className="account-settings-current">
-        <span>当前登录邮箱</span>
-        <strong>{user?.email || '未获取到邮箱'}</strong>
-      </div>
+      </section>
 
       {(notice || error) && (
         <div role="status" className={error ? 'account-settings-message is-error' : 'account-settings-message'}>
