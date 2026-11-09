@@ -9,7 +9,7 @@ const navGroups = [
   {
     title: '内容管理',
     items: [
-      { label: '评论审核', href: null, icon: '◌', pending: true },
+      { label: '评论审核', href: '/admin/comments', icon: '◌' },
       { label: '文章管理', href: '/admin/articles', icon: '▤' },
       { label: '分类和标签', href: null, icon: '◇', pending: true },
     ],

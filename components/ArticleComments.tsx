@@ -105,10 +105,13 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
     setSubmitting(true);
     setNotice('');
+    const { data: isAdmin } = await supabase.rpc('is_owenfx_admin');
+    const isSiteAdmin = isAdmin === true;
     const { data, error } = await supabase.from('comments').insert({
       article_id: articleId,
       author_id: session.user.id,
       body,
+      ...(isSiteAdmin ? { status: 'approved' } : {}),
     }).select('id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)').single();
     setSubmitting(false);
 
@@ -119,7 +122,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
     setComments(current => [data as unknown as CommentRow, ...current]);
     setCommentText('');
-    setNotice('评论已提交，审核通过后会公开显示。');
+    setNotice(isSiteAdmin ? '评论已发布并公开显示。' : '评论已提交，审核通过后会公开显示。');
   };
 
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
