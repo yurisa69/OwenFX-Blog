@@ -14,13 +14,13 @@
 | UI | React 19 + Tailwind CSS 4 |
 | 用户认证 / 数据库 | Supabase |
 | 对象存储 | Cloudflare R2（S3 兼容 API） |
-| 邮件发送 | Nodemailer + SMTP |
+| 邮件发送 | Supabase Auth 邮件模板 |
 | 部署 | Vercel |
 | 代码仓库 | [yurisa69/OwenFX-Blog](https://github.com/yurisa69/OwenFX-Blog) |
 
 ## 功能说明
 
-以下内容以仓库当前源码为准。依赖 Supabase、R2、SMTP 或数据库结构的功能，只有完成对应服务配置后才能正常使用。
+以下内容以仓库当前源码为准。依赖 Supabase、R2 或数据库结构的功能，只有完成对应服务配置后才能正常使用。
 
 ### 网站前台
 
@@ -57,8 +57,8 @@
 - 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2，并将媒体元数据写入 `media_assets`。
 - ChatGPT 等外部工具可通过受控 API 设备令牌导入文章草稿；令牌可在「管理后台 → AI 导入」创建和撤销。
 - 图片上传限制为 JPG、PNG、WebP、GIF、AVIF，单张不超过 10 MB。
-- 注册验证码通过 SMTP 邮件发送；验证码有效期为 10 分钟，并有发送频率限制。
-- Supabase Service Role、R2 密钥和 SMTP 密码只允许放在服务端环境变量中。
+- 注册确认邮件及其他认证邮件统一由 Supabase Auth 根据 Authentication → Email Templates 中的六种模板发送。
+- Supabase Service Role 和 R2 密钥只允许放在服务端环境变量中。
 
 ## 技术架构
 
@@ -77,15 +77,15 @@ Next.js App Router（Vercel）
       +---- Cloudflare R2
       |       文章封面、正文图片、头像及其他媒体文件
       |
-      +---- SMTP
-              注册验证码邮件
+      +---- Supabase Auth Email
+              注册确认、邀请、魔法链接、邮箱变更、密码重置与重新认证邮件
 ```
 
 - **Vercel**：运行 Next.js 网站和服务端 API。
 - **Supabase**：提供身份认证、文章 / 软件等业务元数据、文章修订索引、API 设备授权和权限相关能力；不保存新文章正文。
 - **GitHub**：保存文章 Markdown 正文文件，默认路径为 `content/articles/{slug}.md`。
 - **Cloudflare R2**：通过 S3 兼容接口保存文章图片、封面、头像和其他媒体对象；Supabase `media_assets` 仅保存文件元数据和 R2 对象引用。
-- **SMTP**：发送注册验证码邮件。
+- **Supabase Auth Email**：统一发送注册确认、邀请、魔法链接、邮箱变更、密码重置和重新认证邮件；邮件主题与正文由 Supabase Auth Email Templates 管理。
 
 ## 目录结构
 
@@ -129,7 +129,7 @@ cp .env.example .env.local
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | 必填 | Supabase 项目 URL，浏览器和服务端 Supabase 客户端都会使用。 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 必填 | Supabase 客户端使用的公开 API Key；数据库访问仍必须由 RLS / 权限策略保护。 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 服务端必填 | 服务端管理客户端使用，用于注册账号管理、验证码及需要管理员权限的操作。绝不能添加 `NEXT_PUBLIC_` 前缀。 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 服务端必填 | 服务端管理客户端用于需要管理员权限的后台操作。绝不能添加 `NEXT_PUBLIC_` 前缀。 |
 
 演示格式（非真实项目、非有效密钥）：
 
@@ -197,26 +197,6 @@ API 设备可在「AI 导入」页面撤销。接口要求 Bearer Token，并检
 - `R2_SECRET_ACCESS_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_R2_SECRET_ACCESS_KEY<font color="#f85149">"</font></code>
 - `R2_PUBLIC_BASE_URL`：<code><font color="#f85149">"</font>https://images.example.com<font color="#f85149">"</font></code>
 
-### SMTP 邮件服务
-
-以下变量会被注册验证码接口读取。它们目前需要在本地 `.env.local` 和 Vercel 环境变量中单独添加；当前 `.env.example` 尚未列出这些 SMTP 项。
-
-| 变量 | 是否需要 | 用途 |
-| --- | --- | --- |
-| `SMTP_HOST` | 可选 | SMTP 服务器地址；未填写时代码默认使用 `smtp.gmail.com`。 |
-| `SMTP_PORT` | 可选 | SMTP 端口；未填写时默认使用 `587`。 |
-| `SMTP_USER` | 必填 | SMTP 登录账号 / 发件邮箱。 |
-| `SMTP_PASS` | 必填 | SMTP 授权码或应用专用密码，不一定是邮箱网页登录密码。 |
-| `SMTP_FROM` | 可选 | 邮件发件人；未填写时使用 `SMTP_USER`。 |
-
-演示格式（不可用于发送邮件）：
-
-- `SMTP_HOST`：<code><font color="#f85149">"</font>smtp.example.com<font color="#f85149">"</font></code>
-- `SMTP_PORT`：<code><font color="#f85149">"</font>587<font color="#f85149">"</font></code>
-- `SMTP_USER`：<code><font color="#f85149">"</font>demo@example.com<font color="#f85149">"</font></code>
-- `SMTP_PASS`：<code><font color="#f85149">"</font>DEMO_ONLY_SMTP_APP_PASSWORD<font color="#f85149">"</font></code>
-- `SMTP_FROM`：<code><font color="#f85149">"</font>OwenFX Demo<font color="#f85149">"</font></code>
-
 ### 站点配置
 
 | 变量 | 是否需要 | 用途 |
@@ -229,7 +209,7 @@ API 设备可在「AI 导入」页面撤销。接口要求 Bearer Token，并检
 ### 环境变量安全规则
 
 1. `NEXT_PUBLIC_` 前缀表示变量可能被打包到浏览器端，只能放公开信息。
-2. `SUPABASE_SERVICE_ROLE_KEY`、`GITHUB_TOKEN`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY`、`SMTP_PASS` 必须保持服务端私密。
+2. `SUPABASE_SERVICE_ROLE_KEY`、`GITHUB_TOKEN`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY`、 必须保持服务端私密。
 3. 不要把真实的 `.env.local` 上传到 GitHub，也不要把真实密钥写进 README、源码、截图或 Issue。
 4. 如果密钥曾经提交到公开仓库，应立即在对应服务控制台轮换，而不是只删除 GitHub 文件。
 5. Vercel 中应分别为 Development、Preview、Production 配置对应环境变量；修改变量后需要重新部署才能让新部署读取新值。
@@ -266,7 +246,7 @@ npm run dev
 
 ## Supabase 数据库说明
 
-项目运行依赖 Supabase Auth 和多组业务数据表，例如用户资料、文章、分类、软件、软件网盘链接、云资源、赞赏设置、验证码、文章修订记录、审计日志和统计事件等。
+项目运行依赖 Supabase Auth 和多组业务数据表，例如用户资料、文章、分类、软件、软件网盘链接、云资源、赞赏设置、历史验证码记录、文章修订记录、审计日志和统计事件等。历史 `verification_codes` 表保留，不再参与注册确认邮件流程。
 
 **数据库结构必须与当前 `app/` 下的 API 查询字段保持一致。** 仓库中的 `supabase/migrations/` 保存已纳入版本管理的数据库变更记录，但目前这些迁移并不等同于完整的生产数据库初始化脚本。正式部署或迁移环境前，仍需核对当前版本所需的表结构、字段、索引、RLS 策略和权限函数（例如管理员 / 内容编辑权限检查函数），确认迁移与目标数据库状态一致后再执行。
 
@@ -285,8 +265,8 @@ R2 密钥只用于服务端上传。公开图片 URL 可以展示在网页中，
 ## Vercel 部署
 
 1. 将 GitHub 仓库导入 Vercel，框架选择 Next.js，Root Directory 使用仓库根目录。
-2. 在 Vercel 项目设置的 Environment Variables 中填写 Supabase、R2、SMTP 和站点变量。
-3. 确认生产环境数据库结构、RLS、权限函数及 SMTP 发信配置均已准备完成。
+2. 在 Vercel 项目设置的 Environment Variables 中填写 Supabase、R2 和站点变量。
+3. 确认生产环境数据库结构、RLS、权限函数，以及 Supabase Auth 的邮件服务和六种邮件模板均已配置完成。
 4. 将正式域名配置到 Vercel，并把 `NEXT_PUBLIC_SITE_URL` 设置为对应 HTTPS 地址。
 5. 推送到 GitHub 默认分支后，Vercel 会按项目 Git 集成设置自动触发部署。
 6. 部署后检查首页、文章、软件详情、登录注册、图片上传及管理后台功能。
@@ -319,7 +299,7 @@ R2 密钥只用于服务端上传。公开图片 URL 可以展示在网页中，
 检查 `.env.local` 是否存在，确认 Supabase URL 和公开 API Key 是否正确；修改环境变量后重新启动开发服务器。
 
 **2. 注册验证码无法发送怎么办？**  
-确认 Service Role Key、SMTP_USER、SMTP_PASS 等服务端变量已配置，并检查 SMTP 服务商是否允许应用密码 / SMTP 登录。也要检查验证码相关数据库表是否已创建。
+检查 Supabase Dashboard → Authentication → Email Templates 中的 Confirm Sign Up 模板，并确认 Authentication 的邮件发送服务、Site URL 和 Redirect URLs 配置正确；同时检查垃圾邮件文件夹及 Supabase Auth 日志。
 
 **3. 图片上传失败怎么办？**  
 检查 R2 Endpoint、Bucket、Access Key ID、Secret Access Key 和公开访问域名；同时确认密钥有目标 Bucket 的写入权限，以及图片格式和大小符合限制。
