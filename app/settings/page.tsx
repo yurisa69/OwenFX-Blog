@@ -282,13 +282,15 @@ export default function SettingsPage() {
         </form>
       </section>
 
+      {passwordError && (
+        <div role="alert" className="account-settings-message is-error">{passwordError}</div>
+      )}
       <section className="account-settings-card">
         <div className="account-settings-card-heading">
           <div><span className="account-settings-index">02</span><h2>更改密码</h2></div>
           <p>为保护账号安全，修改前需要验证当前密码。</p>
         </div>
         <form onSubmit={handlePasswordChange} className="account-settings-form">
-          {passwordError && <p role="alert" className="account-settings-message is-error">{passwordError}</p>}
           <label htmlFor="current-password">当前密码</label>
           <input id="current-password" className="admin-input" type="password" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
           <label htmlFor="new-password">新密码</label>
