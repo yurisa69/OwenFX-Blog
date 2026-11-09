@@ -111,7 +111,7 @@ Next.js App Router（Vercel）
 └── tsconfig.json
 ```
 
-> 仓库中还保留有 `src/app/` 和 `src/lib/` 的旧版 / 备用代码。当前 `tsconfig.json` 的编译范围包含根目录的 `app/`、`components/`、`lib/`，并明确排除了 `src/`；新增页面和业务代码应优先放在根目录对应位置，不要误把 `src/app/` 当成当前路由入口。
+> 当前项目使用仓库根目录的 `app/`、`components/` 和 `lib/` 作为源码目录，`tsconfig.json` 明确排除了 `src/`。旧版占位路由已保留为兼容重定向入口。
 
 ## 环境变量配置
 
