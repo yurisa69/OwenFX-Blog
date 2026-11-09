@@ -4,29 +4,30 @@ import { requireContentEditor } from '@/lib/admin-auth';
 const navGroups = [
   {
     title: '工作台',
-    items: [{ label: '概览', href: '/admin', icon: '⌂' }],
+    items: [{ label: '工作概览', href: '/admin', icon: '⌂' }],
   },
   {
-    title: '内容管理',
+    title: '内容创作',
+    items: [
+      { label: '文章管理', href: '/admin/articles', icon: '▤' },
+      { label: 'AI 文章导入', href: '/admin/integrations', icon: '✧' },
+    ],
+  },
+  {
+    title: '资源管理',
+    items: [
+      { label: '软件库管理', href: '/admin/software', icon: '▦' },
+      { label: '媒体资源库', href: null, icon: '▧', pending: true },
+      { label: '分类与标签', href: null, icon: '◇', pending: true },
+    ],
+  },
+  {
+    title: '互动与运营',
     items: [
       { label: '评论审核', href: '/admin/comments', icon: '◌' },
-      { label: '文章管理', href: '/admin/articles', icon: '▤' },
-      { label: '分类和标签', href: null, icon: '◇', pending: true },
-    ],
-  },
-  {
-    title: '资源与用户',
-    items: [
-      { label: '媒体库', href: null, icon: '▧', pending: true },
-      { label: '用户管理', href: null, icon: '♙', pending: true },
-      { label: '软件管理', href: '/admin/software', icon: '▦' },
-    ],
-  },
-  {
-    title: '运营管理',
-    items: [
       { label: '数据统计', href: '/admin/analytics', icon: '▥' },
-      { label: '系统设置', href: '/admin/support', icon: '⚙' },
+      { label: '赞赏与设置', href: '/admin/support', icon: '⚙' },
+      { label: '用户管理', href: null, icon: '♙', pending: true },
     ],
   },
 ];
@@ -45,7 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <p className="mt-2 truncate text-xs" style={{ color: 'var(--text-tertiary)' }}>{user.email}</p>
           </div>
 
-          <nav aria-label="后台导航" className="flex-1 space-y-5 overflow-x-auto px-3 py-4 md:overflow-visible">
+          <nav aria-label="OwenFX Studio 工作空间导航" className="flex-1 space-y-5 overflow-x-auto px-3 py-4 md:overflow-visible">
             {navGroups.map(group => (
               <div key={group.title}>
                 <p className="mb-2 px-3 text-[10px] font-semibold tracking-[.18em]" style={{ color: 'var(--text-tertiary)' }}>
@@ -81,11 +82,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium tracking-[.16em]" style={{ color: 'var(--accent)' }}>STUDIO WORKSPACE</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight">内容管理中心</h1>
+              <h1 className="mt-1 text-2xl font-bold tracking-tight">OwenFX Studio</h1>
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>统一管理文章创作、软件资源与网站运营。</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link href="/admin/articles/new" className="uiverse-btn uiverse-btn-primary">写文章</Link>
-              <Link href="/admin/integrations" className="admin-nav-link">AI 导入</Link>
               <Link href="/admin/software" className="admin-nav-link">添加软件</Link>
             </div>
           </header>
