@@ -226,6 +226,11 @@ export default function SettingsPage() {
             <span className="profile-member-state"><i className="profile-status-dot" />账号已登录</span>
           </div>
         </div>
+        <div className="account-settings-identity-footer">
+          <button type="button" className="profile-logout-action account-settings-identity-logout" onClick={handleLogout} disabled={logoutBusy}>
+            {logoutBusy ? '正在退出…' : '退出'}
+          </button>
+        </div>
       </section>
 
       {(notice || error) && (
@@ -266,12 +271,6 @@ export default function SettingsPage() {
         </form>
       </section>
 
-      <section className="account-settings-logout">
-        <div><h2>退出登录</h2><p>退出当前设备上的 OwenFX 账号。</p></div>
-        <button type="button" className="profile-logout-action" onClick={handleLogout} disabled={logoutBusy}>
-          {logoutBusy ? '正在退出…' : '退出当前账号'}
-        </button>
-      </section>
     </div>
   );
 }
