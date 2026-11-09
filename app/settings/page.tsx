@@ -123,7 +123,19 @@ export default function SettingsPage() {
     );
     setEmailBusy(false);
     if (updateError) {
-      setError(updateError.message || '邮箱修改请求失败，请稍后重试。');
+      const authMessage = updateError.message.toLowerCase();
+      if (
+        authMessage.includes('already registered') ||
+        authMessage.includes('already been registered') ||
+        authMessage.includes('email_exists') ||
+        authMessage.includes('user_already_exists')
+      ) {
+        setError('该邮箱已有注册记录（可能尚未完成验证）。请先完成该邮箱原有的注册验证，或更换其他邮箱。');
+      } else if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
+        setError('邮箱验证请求过于频繁，请稍后再试。');
+      } else {
+        setError('邮箱修改请求失败，请检查邮箱地址后稍后重试。');
+      }
       return;
     }
     setNotice('验证邮件已发送。请按邮件提示完成验证，验证成功后邮箱才会更新。');
