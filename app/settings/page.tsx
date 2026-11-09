@@ -189,6 +189,7 @@ export default function SettingsPage() {
       current_password: currentPassword,
     });
     if (updateError) {
+      setPasswordBusy(false);
       const authMessage = updateError.message.toLowerCase();
       if (
         authMessage.includes('current password required') ||
