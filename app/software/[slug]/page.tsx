@@ -194,18 +194,12 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         {(software.description || software.introduction_markdown) && (
           <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
             <h2 className="mb-4 text-lg font-semibold">软件介绍</h2>
-            {slug === 'obs-studio' ? (
-              <p className="text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>
-                OBS Studio 是一款免费开源的屏幕录制与直播软件，支持显示器、应用窗口、摄像头、图片、文字和音频设备等多来源画面采集，可组合场景并通过转场切换，同时支持实时音频混音。适用于软件教程、课程录制、游戏录制、产品演示和直播。初次使用建议先检查画面尺寸、帧率、编码器及音频来源。
-              </p>
-            ) : (
-              <>
-                {software.description && (
-                  <p className="mb-4 text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>{software.description}</p>
-                )}
-                {software.introduction_markdown && <ArticleContent content={software.introduction_markdown} />}
-              </>
-            )}
+            <>
+              {software.description && (
+                <p className="mb-4 text-sm leading-7" style={{ color: 'var(--text-secondary)' }}>{software.description}</p>
+              )}
+              {software.introduction_markdown && <ArticleContent content={software.introduction_markdown} />}
+            </>
           </section>
         )}
 

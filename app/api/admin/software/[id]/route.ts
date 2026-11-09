@@ -10,10 +10,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object') return NextResponse.json({ error: '请求数据无效' }, { status: 400 });
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  for (const key of ['title', 'slug', 'description', 'developer', 'version', 'platform', 'image_url', 'official_download_url', 'introduction_markdown', 'screenshots', 'featured', 'featured_order']) if (key in body) patch[key] = body[key];
+  for (const key of ['title', 'slug', 'description', 'developer', 'version', 'file_size', 'platform', 'image_url', 'official_download_url', 'introduction_markdown', 'screenshots', 'featured', 'featured_order']) if (key in body) patch[key] = body[key];
   if (typeof body.status === 'string' && ['draft', 'published', 'archived'].includes(body.status)) {
     patch.status = body.status; patch.published_at = body.status === 'published' ? new Date().toISOString() : null;
   }
+  if (typeof patch.file_size === 'string') patch.file_size = patch.file_size.slice(0, 80) || null;
   if (patch.screenshots !== undefined && (!Array.isArray(patch.screenshots) || patch.screenshots.length > 12 || patch.screenshots.some((url: unknown) => typeof url !== 'string' || !/^https:\/\//i.test(url)))) return NextResponse.json({ error: '截图地址必须是 HTTPS，最多 12 张' }, { status: 400 });
   if (typeof patch.slug === 'string' && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(patch.slug)) return NextResponse.json({ error: 'slug 格式无效' }, { status: 400 });
   if (typeof patch.official_download_url === 'string' && patch.official_download_url && !/^https:\/\//i.test(patch.official_download_url)) return NextResponse.json({ error: '官方下载地址必须使用 HTTPS' }, { status: 400 });

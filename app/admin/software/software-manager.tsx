@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import R2ImageUploader from '@/components/admin/R2ImageUploader';
 
 type LinkItem = { provider: string; label: string; share_url: string; access_code: string };
-type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; featured_order?: number | null; status: string; featured: boolean; software_download_links?: LinkItem[] };
+type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; file_size: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; featured_order?: number | null; status: string; featured: boolean; software_download_links?: LinkItem[] };
 
 const emptyLink = (): LinkItem => ({ provider: 'quark', label: '夸克网盘', share_url: '', access_code: '' });
 const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'baidu', label: '百度网盘' }, { value: 'thunder', label: '迅雷网盘' }, { value: 'aliyun', label: '阿里云盘' }, { value: 'tianyi', label: '天翼云盘' }, { value: '123pan', label: '123云盘' }, { value: 'other', label: '其他' }];
@@ -12,7 +12,7 @@ const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: 
 export default function SoftwareManager() {
   const [rows, setRows] = useState<SoftwareRow[]>([]);
   const [editId, setEditId] = useState('');
-  const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '', featured_order: 0, featured: false });
+  const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '', featured_order: 0, featured: false });
   const [links, setLinks] = useState<LinkItem[]>([emptyLink()]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -29,7 +29,7 @@ export default function SoftwareManager() {
   }
   function reset() {
     setEditId('');
-    setForm({ title: '', slug: '', description: '', developer: '', version: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '', featured_order: 0, featured: false });
+    setForm({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '', featured_order: 0, featured: false });
     setLinks([emptyLink()]);
   }
   async function save(event: React.FormEvent) {
@@ -44,7 +44,7 @@ export default function SoftwareManager() {
   }
   function edit(row: SoftwareRow) {
     setEditId(row.id);
-    setForm({ title: row.title, slug: row.slug, description: row.description || '', developer: row.developer || '', version: row.version || '', platform: row.platform || '', image_url: row.image_url || '', official_download_url: row.official_download_url || '', introduction_markdown: row.introduction_markdown || '', screenshots: (row.screenshots || []).join('\n'), featured_order: row.featured_order || 0, featured: row.featured });
+    setForm({ title: row.title, slug: row.slug, description: row.description || '', developer: row.developer || '', version: row.version || '', file_size: row.file_size || '', platform: row.platform || '', image_url: row.image_url || '', official_download_url: row.official_download_url || '', introduction_markdown: row.introduction_markdown || '', screenshots: (row.screenshots || []).join('\n'), featured_order: row.featured_order || 0, featured: row.featured });
     setLinks(row.software_download_links?.length ? row.software_download_links : [emptyLink()]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -63,7 +63,8 @@ export default function SoftwareManager() {
       <input className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="一句话介绍" value={form.description} onChange={e => change('description', e.target.value)} />
       <input className="rounded-lg border bg-transparent p-2" placeholder="开发者 / 厂商" value={form.developer} onChange={e => change('developer', e.target.value)} />
       <input className="rounded-lg border bg-transparent p-2" placeholder="版本号" value={form.version} onChange={e => change('version', e.target.value)} />
-      <input className="rounded-lg border bg-transparent p-2" placeholder="平台，例如 Windows / Android" value={form.platform} onChange={e => change('platform', e.target.value)} />
+      <input className="rounded-lg border bg-transparent p-2" placeholder="文件大小，例如 120 MB" value={form.file_size} onChange={e => change("file_size", e.target.value)} />
+      <input className="rounded-lg border bg-transparent p-2" placeholder="平台，例如 Linux、macOS、Windows" value={form.platform} onChange={e => change('platform', e.target.value)} />
       <R2ImageUploader kind="software_icon" label="软件官方图标" alt={(form.title || "软件") + " 官方图标"} value={form.image_url} onChange={value => change('image_url', value)} />
       <input type="url" className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="官方官方下载页面 HTTPS 地址" value={form.official_download_url} onChange={e => change('official_download_url', e.target.value)} />
       <textarea rows={6} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件详细介绍（支持 Markdown 文本）" value={form.introduction_markdown} onChange={e => change('introduction_markdown', e.target.value)} />\n      <textarea rows={3} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件截图 HTTPS 图片地址，每行一个（可选）" value={form.screenshots} onChange={e => change('screenshots', e.target.value)} />\n      <label className="block text-sm">精选排序<input type="number" min="0" className="admin-input mt-2 w-full" value={form.featured_order} onChange={e => change('featured_order', Number(e.target.value))} /></label>
