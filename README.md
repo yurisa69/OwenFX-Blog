@@ -100,7 +100,7 @@ Next.js App Router（Vercel）
 │   ├── software/           # 软件列表与详情
 │   └── layout.tsx          # 全局布局
 ├── components/             # 页面与交互组件
-├── database/               # SQL 文件及数据库相关配置
+├── supabase/migrations/    # Supabase 数据库结构变更记录
 ├── content/articles/       # GitHub 管理的 Markdown 正文文件
 ├── docs/openapi/           # 外部文章导入 API Schema
 ├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
@@ -268,7 +268,7 @@ npm run dev
 
 项目运行依赖 Supabase Auth 和多组业务数据表，例如用户资料、文章、分类、软件、软件网盘链接、云资源、赞赏设置、验证码、文章修订记录、审计日志和统计事件等。
 
-**数据库结构必须与当前 `app/` 下的 API 查询字段保持一致。** 仓库中的 `database/schema.sql` 是早期基础结构，包含旧版 `posts`、`comments`、`bookmarks` 等表，并不等同于当前管理后台所需的完整数据库迁移；不要把它当作当前生产数据库的一键完整初始化脚本。正式部署前应先准备并核对当前版本所需的数据库迁移、表结构、索引、RLS 策略和权限函数（例如管理员 / 内容编辑权限检查函数）。
+**数据库结构必须与当前 `app/` 下的 API 查询字段保持一致。** 仓库中的 `supabase/migrations/` 保存已纳入版本管理的数据库变更记录，但目前这些迁移并不等同于完整的生产数据库初始化脚本。正式部署或迁移环境前，仍需核对当前版本所需的表结构、字段、索引、RLS 策略和权限函数（例如管理员 / 内容编辑权限检查函数），确认迁移与目标数据库状态一致后再执行。
 
 不要为了让页面显示数据而关闭 RLS，也不要把 Service Role Key 放进浏览器端。
 
