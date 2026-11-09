@@ -226,7 +226,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               <summary className="uiverse-btn uiverse-btn-ghost flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
                 网盘下载
               </summary>
-              <div className="relative left-[-100%] mt-3 grid w-[calc(200%+0.75rem)] grid-cols-4 items-start gap-y-3 pt-1">
+              <div className="relative left-[calc(-100%-0.75rem)] mt-3 grid w-[calc(200%+0.75rem)] grid-cols-4 items-start gap-x-3 gap-y-3 pt-1">
                 {quickProviders.map(({ key, label, link }) => link ? (
                   <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
                     softwareId={software.id}
@@ -244,7 +244,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
                 ))}
               </div>
               {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
-                <div className="relative left-[-100%] mt-3 flex w-[calc(200%+0.75rem)] flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="relative left-[calc(-100%-0.75rem)] mt-3 flex w-[calc(200%+0.75rem)] flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
                   {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
                     <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
                       softwareId={software.id} className="text-xs font-medium text-[var(--accent)]">
