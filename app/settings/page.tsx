@@ -174,20 +174,34 @@ export default function SettingsPage() {
     }
 
     setPasswordBusy(true);
-    const { error: verifyError } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: currentPassword,
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+      current_password: currentPassword,
     });
-    if (verifyError) {
-      setPasswordBusy(false);
-      setPasswordError('当前密码不正确，请检查后重试。');
-      return;
-    }
-
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
     setPasswordBusy(false);
     if (updateError) {
-      setPasswordError(updateError.message || '密码修改失败，请稍后重试。');
+      const authMessage = updateError.message.toLowerCase();
+      if (
+        authMessage.includes('current password required') ||
+        authMessage.includes('current password mismatch') ||
+        authMessage.includes('invalid current password')
+      ) {
+        setPasswordError('当前密码不正确，请检查后重试。');
+      } else if (
+        authMessage.includes('same_password') ||
+        authMessage.includes('new password should be different')
+      ) {
+        setPasswordError('新密码不能与当前密码相同。');
+      } else if (
+        authMessage.includes('password') &&
+        (authMessage.includes('weak') || authMessage.includes('strength') || authMessage.includes('too short'))
+      ) {
+        setPasswordError('新密码未满足安全要求，请更换更复杂的密码。');
+      } else if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
+        setPasswordError('操作过于频繁，请稍后重试。');
+      } else {
+        setPasswordError('密码修改失败，请稍后重试。');
+      }
       return;
     }
     setCurrentPassword('');
