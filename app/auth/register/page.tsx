@@ -28,6 +28,11 @@ export default function RegisterPage() {
       setBusy(false);
       return;
     }
+    if (password.length < 12) {
+      setError('密码至少需要12位');
+      setBusy(false);
+      return;
+    }
     if (name.trim().length > 40) {
       setError('用户名不能超过40个字符');
       setBusy(false);
@@ -35,24 +40,14 @@ export default function RegisterPage() {
     }
 
     try {
-      const supabase = createClient();
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: normalized,
-        password,
-        options: {
-          data: { display_name: name.trim() },
-          emailRedirectTo: `${window.location.origin}/auth/login`,
-        },
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalized, password, name: name.trim() }),
       });
-      if (signUpError) {
-        const authMessage = signUpError.message.toLowerCase();
-        if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
-          throw new Error('邮件发送过于频繁，请稍后再试。');
-        }
-        if (authMessage.includes('password')) {
-          throw new Error('密码不符合要求，请检查后重试。');
-        }
-        throw new Error('注册请求失败，请检查邮箱地址后重试。');
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(typeof result.error === 'string' ? result.error : '注册失败，请稍后重试。');
       }
 
       setRegisteredEmail(normalized);
@@ -101,7 +96,7 @@ export default function RegisterPage() {
             <form onSubmit={register} className="space-y-4">
               <input required maxLength={40} className="admin-input w-full" placeholder="用户名" value={name} onChange={event => setName(event.target.value)} />
               <input required type="email" autoComplete="email" className="admin-input w-full" placeholder="邮箱" value={email} onChange={event => setEmail(event.target.value)} />
-              <PasswordInput required minLength={6} autoComplete="new-password" className="admin-input w-full" placeholder="密码（至少6位）" value={password} onChange={event => setPassword(event.target.value)} />
+              <PasswordInput required minLength={12} autoComplete="new-password" className="admin-input w-full" placeholder="密码（至少12位）" value={password} onChange={event => setPassword(event.target.value)} />
               {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
               <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '注册中…' : '注册并发送确认邮件'}</button>
             </form>
