@@ -556,27 +556,3 @@ html.theme-switching .six-star-spin {
 
 .account-settings-identity-footer{position:absolute;right:14px;bottom:10px;display:flex;justify-content:flex-end}
 .account-settings-identity-logout{width:auto;min-width:0;min-height:28px;margin:0;padding:0 10px;font-size:12px;line-height:1}
-
-
-/* Account settings loading: keep the page structure stable while account data resolves. */
-.account-settings-loading-shell{min-height:calc(100vh - 56px)}
-.account-settings-skeleton{display:block;border-radius:999px;background:linear-gradient(100deg,var(--bg-tertiary) 20%,rgba(129,140,248,.12) 42%,var(--bg-tertiary) 64%);background-size:220% 100%;animation:account-settings-skeleton-shimmer 1.35s ease-in-out infinite}
-@keyframes account-settings-skeleton-shimmer{to{background-position-x:-220%}}
-.account-settings-skeleton-short{width:76px;height:10px}
-.account-settings-skeleton-identity{min-height:142px}
-.account-settings-skeleton-avatar{width:58px;height:58px;flex:0 0 58px;border-radius:50%}
-.account-settings-skeleton-user{display:flex;min-width:0;flex:1;flex-direction:column;gap:9px}
-.account-settings-skeleton-name{width:min(42%,150px);height:17px}
-.account-settings-skeleton-email{width:min(68%,220px);height:11px}
-.account-settings-skeleton-status{width:76px;height:10px}
-.account-settings-skeleton-button{position:absolute;right:14px;bottom:14px;width:76px;height:34px}
-.account-settings-skeleton-card{min-height:220px}
-.account-settings-skeleton-heading{display:flex;flex-direction:column;gap:11px}
-.account-settings-skeleton-title{width:116px;height:17px}
-.account-settings-skeleton-description{width:min(78%,280px);height:11px}
-.account-settings-skeleton-form{display:flex;flex-direction:column;gap:10px;margin-top:22px}
-.account-settings-skeleton-label{width:72px;height:10px;margin-top:3px}
-.account-settings-skeleton-input{width:100%;height:42px;border-radius:12px}
-.account-settings-skeleton-submit{width:100%;height:42px;margin-top:6px;border-radius:999px}
-@media(prefers-reduced-motion:reduce){.account-settings-skeleton{animation:none}}
-@media(max-width:767px){.account-settings-skeleton-card{min-height:205px}.account-settings-skeleton-identity{min-height:132px}}
