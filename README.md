@@ -283,6 +283,73 @@ Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `p
 
 免费套餐下的备份与恢复范围、Auth 用户限制、当前项目触发器 / 扩展清单、CLI 导出流程及恢复核对步骤，统一见 [`supabase/docs/BACKUP_AND_RECOVERY.md`](supabase/docs/BACKUP_AND_RECOVERY.md)。备份文件必须保存在加密的异地位置，不得提交到 GitHub；网站部署不得自动执行备份或数据库恢复。
 
+### 使用电脑或 VPS 导出 / 检查数据库
+
+根据任务选择方式。**日常逻辑备份优先在可信任的电脑上使用官方 Supabase CLI；VPS 方式主要用于检查已有 PostgreSQL custom-format 归档、提取迁移账本和恢复历史迁移档案。** 两种方式都不能单独备份整个 Supabase 项目。
+
+#### 方式 A：在电脑上使用 Supabase CLI 导出
+
+适用于 Windows、macOS 或 Linux 工作站。需要安装 Supabase CLI，并准备 Docker（CLI 的数据库导出流程会使用容器）。不要仅为了导出数据库而在生产 VPS 上临时安装 Docker。
+
+1. 在 Supabase Dashboard → Connect 中获取数据库连接字符串，在本机安全地设置为环境变量 `SUPABASE_DB_URL`。连接字符串包含数据库凭据，不要写入脚本、README、聊天记录或 GitHub。
+2. 在本机创建仅当前用户可访问的备份目录，并在该目录执行：
+
+   ```bash
+   mkdir -p ./owenfx-backup
+   chmod 700 ./owenfx-backup
+   supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/roles.sql --role-only
+   supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/schema.sql
+   supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/data.sql --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
+   ```
+
+3. 检查三个文件是否存在且非空，记录导出时间、项目 Ref、PostgreSQL 版本、文件大小和 SHA-256。
+4. 将备份加密后保存到独立于 Supabase 和生产 VPS 的安全位置。不要把 SQL 数据文件提交到 GitHub。
+
+`roles.sql`、`schema.sql` 和 `data.sql` 是逻辑导出，不是物理快照。CLI 导出不包含 Supabase 托管的 `auth`、`storage` 等 Schema，也不包含 R2 对象和所有 Dashboard 配置；其中 `data.sql` 可能包含用户及业务数据，必须按生产敏感数据保护。
+
+#### 方式 B：在 VPS 上检查 PostgreSQL custom-format 归档并提取迁移历史
+
+当已有 PostgreSQL custom-format dump 时，可在安装了兼容版本 PostgreSQL 客户端工具的 VPS 上使用 `pg_restore` 做只读检查。本次 OwenFX 历史迁移档案恢复使用的文件位于：
+
+- 原始归档：`/root/OwenFX-Backups/owenfx-production-full.dump`
+- 提取的迁移账本：`/root/OwenFX-Backups/migration-ledger.sql`
+- 恢复的 8 个历史 SQL：`/root/OwenFX-Backups/recovered-migrations/`
+- Termius SFTP 临时下载副本：`/tmp/OwenFX-Backups/recovered-migrations/`
+
+先列出归档目录，不恢复或执行任何 SQL：
+
+```bash
+pg_restore --list /root/OwenFX-Backups/owenfx-production-full.dump
+```
+
+只提取 Supabase 迁移账本表的数据到独立 SQL 文件：
+
+```bash
+pg_restore --data-only --schema=supabase_migrations --table=schema_migrations --file=/root/OwenFX-Backups/migration-ledger.sql /root/OwenFX-Backups/owenfx-production-full.dump
+```
+
+迁移账本中的 `statements` 字段保存了当时记录的 SQL 文本。恢复历史文件时必须正确解析 PostgreSQL COPY 转义和文本数组，不能用简单的 `cut`、`awk` 或按逗号拆分来处理。每个恢复文件应按账本版本号命名，并同时生成 `manifest.json`，记录版本、迁移名称、字节数和 SHA-256。
+
+在恢复目录执行校验：
+
+```bash
+cd /root/OwenFX-Backups/recovered-migrations
+sha256sum *.sql
+```
+
+将输出与 `manifest.json` 中每个文件的 SHA-256 比较；全部一致才表示这些文件与本次恢复生成的档案一致。通过 Termius 下载后，还应在电脑本地重新计算 SHA-256，与同一 manifest 比较，以验证传输后的文件完整性。
+
+**重要边界：** 本节记录的是 OwenFX 本次已验证的归档检查和迁移历史提取流程，不代表推荐把对 Supabase 所有托管 Schema 的原始 `pg_dump` 当作受支持的完整备份或可直接恢复方案。custom-format 文件可用于检查归档目录和提取指定表数据；恢复到新 Supabase 项目前，仍必须遵循官方恢复文档并在隔离项目演练。不要把恢复出的历史 SQL 重新执行到现有生产数据库。
+
+#### 两种方式的共同安全要求
+
+- VPS 和电脑都应使用专用、权限受限的备份目录；备份文件不得放在网站公开目录。
+- 数据库密码、Supabase Access Token、Service Role Key 和连接字符串不得写入命令历史、源码或 README。
+- 不要为了方便下载而开放整个备份目录；只对明确需要下载的临时副本授予最小读取权限，下载后及时清理临时副本。
+- 逻辑备份、custom-format 归档、迁移历史 SQL、Auth 用户清单、R2 对象和平台配置是不同的备份对象，不能互相替代。
+- `manifest.json` 是校验清单，不是迁移文件；它可随恢复档案保留，但不应放进 `supabase/migrations/`。
+- 任何恢复演练都必须使用新的隔离项目或测试环境。不得在生产项目中试恢复、重放历史迁移或执行 `supabase db reset`。
+
 ### 数据库与网站部署相互独立
 
 - 普通页面、样式、组件和 API 代码更新：只提交网站源码，由 GitHub → Vercel 自动部署，不执行数据库迁移。
@@ -321,7 +388,7 @@ Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `p
 
 ### 当前生产迁移历史提示
 
-截至 2026-11-10，生产迁移账本包含 13 条记录。部分较早的生产迁移没有对应的原始 SQL 文件；另有 R2 媒体迁移文件与生产迁移账本不完全一致。详细版本、差异和已执行的旧资源模块清理记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。
+截至 2026-11-10，生产迁移账本的历史核对发现 8 条较早迁移原始 SQL 曾在 GitHub 中缺失。2026-11-11 已从生产数据库备份归档中的迁移账本 `statements` 字段恢复这 8 份 SQL，并对恢复目录中的文件完成 8/8 SHA-256 校验；这些文件目前属于独立恢复档案，尚需与 GitHub 当前迁移文件逐项比对后再决定如何补回仓库。恢复档案不是待执行迁移，不得重放到现有生产数据库。详细版本、差异和已执行的旧资源模块清理记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。
 
 不要为了让页面显示数据而关闭 RLS，也不要把 Service Role Key 放进浏览器端。
 
