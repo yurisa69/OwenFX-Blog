@@ -34,8 +34,15 @@ export default function Carousel() {
   }, []);
 
   useEffect(() => {
-    // Keep the server-rendered glow positions stable on first paint.
-    // Random movement begins only after the initial view has settled.
+    // Randomize the first visible arrangement after hydration, so every page refresh starts differently.
+    setGlowRound(Math.floor(Math.random() * glowPalettes.length));
+    setGlowPositions(
+      Array.from({ length: 3 }, () => ({
+        x: 8 + Math.random() * 84,
+        y: 12 + Math.random() * 76,
+      }))
+    );
+
     const timer = window.setInterval(() => {
       setGlowRound(current => (current + 1) % glowPalettes.length);
       setGlowPositions(
