@@ -1,0 +1,12 @@
+-- OwenFX production public-schema structural baseline
+-- Captured: 2026-11-10 | PostgreSQL 17.11
+-- Project ref: gjzxultalptqwqmpagzj
+-- Structure only. No application rows, Auth users, or business data are included.
+-- Scope: public tables, constraints, indexes, functions, RLS policies and table grants.
+-- Supabase-managed schemas and platform roles are external dependencies.
+-- This catalog-derived snapshot is not a complete Supabase platform backup.
+-- It is a reference/bootstrap artifact, not an incremental migration.
+-- Do not run this file against the existing production database.
+-- Future production changes must be incremental SQL files in supabase/migrations.
+-- undefined: undefined
+undefined

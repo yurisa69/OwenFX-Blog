@@ -1,0 +1,6 @@
+# OwenFX Supabase CLI project configuration.
+# This file contains non-secret project metadata only.
+project_id = "owenfx-blog"
+
+[db]
+major_version = 17
