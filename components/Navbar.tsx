@@ -5,6 +5,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import ArticleActionIcon from '@/components/ArticleActionIcon';
+import Avatar from '@/components/Avatar';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import { getDisplayNameLength, limitDisplayName, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
 
@@ -82,23 +83,81 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', close); document.body.style.overflow = oldOverflow; };
   }, [drawerOpen]);
+  // Warm the account profile as soon as the authenticated Navbar mounts.
+  // The server-provided Session remains the immediate fallback; profile data
+  // and its image are fetched/decoded in the background before the drawer opens.
   useEffect(() => {
-    if (!drawerOpen || !user?.id) return;
+    const userId = user?.id;
+    if (!userId) return;
     let active = true;
-    const load = async () => {
-      const supabase = getSupabaseBrowser();
-      if (!supabase) return;
-      const { data } = await supabase.from('profiles').select('display_name,bio,avatar_url').eq('id', user.id).maybeSingle();
-      if (!active) return;
-      setProfile({
-        display_name: data?.display_name || user.name,
-        bio: data?.bio || '',
-        avatar_url: data?.avatar_url || user.avatar_url,
-      });
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+
+    const preloadAvatar = (url: string | null) => {
+      if (!url) return;
+      const image = new window.Image();
+      image.decoding = 'async';
+      image.src = url;
+      if (typeof image.decode === 'function') {
+        void image.decode().catch(() => undefined);
+      }
     };
+
+    const load = async () => {
+      const [sessionResult, profileResult] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.from('profiles')
+          .select('display_name,bio,avatar_url')
+          .eq('id', userId)
+          .maybeSingle(),
+      ]);
+      if (!active) return;
+
+      const sessionUser = sessionResult.data.session?.user;
+      if (sessionUser && sessionUser.id !== userId) return;
+
+      const metadata = (sessionUser?.user_metadata || {}) as Record<string, unknown>;
+      const sessionAvatar = typeof metadata.avatar_url === 'string'
+        ? metadata.avatar_url
+        : typeof metadata.picture === 'string'
+          ? metadata.picture
+          : null;
+      const sessionName = typeof metadata.display_name === 'string'
+        ? metadata.display_name
+        : typeof metadata.name === 'string'
+          ? metadata.name
+          : null;
+
+      if (sessionUser?.id === userId) preloadAvatar(sessionAvatar);
+      if (profileResult.error) {
+        if (sessionUser?.id === userId) {
+          setUser(current => current?.id === userId
+            ? { ...current, avatar_url: current.avatar_url || sessionAvatar }
+            : current);
+        }
+        return;
+      }
+
+      const data = profileResult.data;
+      const nextAvatar = data?.avatar_url || sessionAvatar || user.avatar_url;
+      setProfile({
+        display_name: data?.display_name || sessionName || user.name,
+        bio: data?.bio || '',
+        avatar_url: nextAvatar,
+      });
+      setUser(current => current?.id === userId
+        ? {
+            ...current,
+            name: data?.display_name || current.name || sessionName || '用户',
+            avatar_url: data?.avatar_url || current.avatar_url || sessionAvatar,
+          }
+        : current);
+      preloadAvatar(nextAvatar);
+    };
+
     void load();
     return () => { active = false; };
-  }, [drawerOpen, user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!drawerOpen || !user?.id) return;
@@ -253,7 +312,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   <div className="profile-edit-heading">
                     <div className="profile-avatar-ring profile-avatar-ring-edit">
                       <div className="profile-avatar-inner">
-                        {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
+                        <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
@@ -277,7 +336,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     <div className="profile-identity-main">
                       <div className="profile-avatar-ring profile-avatar-ring-compact">
                         <div className="profile-avatar-inner">
-                          {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
+                          <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
                         </div>
                       </div>
                       <div className="min-w-0 flex-1">
