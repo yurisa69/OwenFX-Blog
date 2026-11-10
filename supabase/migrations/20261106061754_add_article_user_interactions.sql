@@ -1,0 +1,11 @@
+-- HISTORY-ONLY PLACEHOLDER: original migration SQL is unavailable.
+-- Production migration version: 20261106061754
+-- Recorded migration name: add_article_user_interactions
+--
+-- This file contains no DDL or DML and intentionally performs no database changes.
+-- It exists only to align the local migration version list with the existing
+-- production migration ledger. Do NOT treat it as the original migration.
+-- Do NOT use it to bootstrap, restore, or reconstruct a new database.
+-- The production schema snapshot and recovery limitations are documented in:
+--   supabase/schema/production-baseline.sql
+--   supabase/docs/MIGRATION_HISTORY.md

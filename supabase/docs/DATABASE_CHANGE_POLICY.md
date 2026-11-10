@@ -77,3 +77,12 @@ Before closing a database change, verify:
 - PostgreSQL major version: 17.
 - Supabase CLI v3 is installed on the previously linked VPS, but the earlier schema dump attempt could not run because the CLI's dump path requires a Docker-compatible container runtime. Docker was intentionally not installed on the expiring VPS.
 - The catalog-derived baseline in this repository is therefore explicitly marked as a structural reference, not represented as a full `supabase db dump`.
+
+
+## 9. Project-owned Supabase platform dependencies
+
+- The project-owned database-wide event trigger `ensure_rls` runs after DDL commands and executes `public.rls_auto_enable()`. Its verified definition and restore notes are recorded in `docs/PLATFORM_DEPENDENCIES.md`.
+- The project-owned Auth trigger `on_auth_user_created_owenfx` runs after inserts on `auth.users` and executes `public.handle_new_owenfx_user()`. It is outside the public-schema baseline and must be handled as a separate Auth dependency.
+- Supabase-managed triggers, event triggers, schemas, and internal objects are not project-owned and must not be copied or recreated from catalog listings.
+- The eight history-only migration placeholders documented in `docs/MIGRATION_HISTORY.md` contain no schema SQL. They align migration identifiers only and cannot initialize or restore a database.
+- A new-project bootstrap is not yet a supported one-command operation. Do not infer that replaying the migration directory or executing the public baseline alone creates a complete working OwenFX Supabase project.

@@ -977,3 +977,11 @@ GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE pub
 
 -- GRANT: service_role.tags
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.tags TO service_role;
+
+-- PLATFORM DEPENDENCY: database-wide DDL event trigger.
+-- This project-owned trigger invokes public.rls_auto_enable() after DDL commands.
+-- It is included as a verified dependency, although event triggers are not
+-- scoped to the public schema. Review ownership and enabled state before restore.
+CREATE EVENT TRIGGER ensure_rls
+  ON ddl_command_end
+  EXECUTE FUNCTION public.rls_auto_enable();
