@@ -60,7 +60,18 @@ Before closing a database change, verify:
 - Supabase security/performance advisors have been reviewed where applicable.
 - No production data was unintentionally deleted or exposed.
 
-## 7. Current environment notes
+## 7. Backup and recovery policy
+
+- The production organization is currently on the Supabase Free plan. Supabase daily managed database backups are not available on this plan.
+- The Supabase CLI `db dump` command is an official logical export, but it intentionally excludes Supabase-managed schemas such as `auth` and `storage`, as well as extension-managed schemas. It is not a full platform backup.
+- Never describe `production-baseline.sql` or a CLI logical dump as a complete Supabase project backup.
+- Store database exports only in encrypted off-site storage. Never commit production rows, Auth user exports, database dumps, connection strings, or secrets to GitHub.
+- Keep database exports, Auth recovery information, extension inventory, trigger inventory, project configuration, and R2 media-object backups as separately documented recovery components.
+- A Free-plan logical export cannot preserve Auth password hashes/sessions or all Supabase-managed global event triggers and project-level settings. Record these gaps and verify/reconfigure them during recovery.
+- Do not use raw `pg_dump` against Supabase-managed internals as an assumed drop-in replacement for the supported CLI workflow. Any experimental full-schema export must be tested against a disposable target before being treated as restorable.
+- Follow `docs/BACKUP_AND_RECOVERY.md` for the current backup method, verified project-specific dependencies, and restore checklist.
+
+## 8. Current environment notes
 
 - Production project: `gjzxultalptqwqmpagzj`.
 - PostgreSQL major version: 17.

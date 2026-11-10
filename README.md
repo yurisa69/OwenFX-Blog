@@ -118,7 +118,7 @@ Next.js App Router（Vercel）
 ├── supabase/               # Supabase CLI 配置、迁移、结构快照与数据库文档
 │   ├── migrations/         # 增量 SQL 迁移
 │   ├── schema/             # 生产结构参考快照（不可直接对生产执行）
-│   └── docs/               # 迁移历史和数据库变更规范
+│   └── docs/               # 迁移历史、数据库变更规范和备份恢复手册
 ├── content/articles/       # GitHub 管理的 Markdown 正文文件
 ├── docs/openapi/           # 外部文章导入 API Schema
 ├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
@@ -275,6 +275,13 @@ Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `p
 | `supabase/schema/production-baseline.sql` | 2026-11-10 生产 `public` schema 结构参考快照 | 不包含业务数据；不是完整 Supabase 备份；严禁直接对生产执行。 |
 | `supabase/docs/MIGRATION_HISTORY.md` | 生产迁移账本与仓库文件差异 | 历史原始 SQL 缺失时如实记录，不猜测、不伪造。 |
 | `supabase/docs/DATABASE_CHANGE_POLICY.md` | 数据库变更、安全和验证规则 | 数据库操作以该文件为准。 |
+| `supabase/docs/BACKUP_AND_RECOVERY.md` | Supabase 备份能力边界、免费套餐备份流程和恢复清单 | 当前 Free 套餐不具备 Supabase 每日物理备份；按手册执行异地逻辑备份。 |
+
+### 数据库备份与恢复边界
+
+当前生产 Supabase 组织为 **Free 套餐**。Supabase 官方每日自动数据库备份不适用于当前套餐；官方 CLI `supabase db dump` 也会排除 `auth`、`storage` 和扩展管理的 Schema，不能单独作为完整 Supabase 项目备份。`supabase/schema/production-baseline.sql` 仍然只是 `public` 结构参考快照。
+
+免费套餐下的备份与恢复范围、Auth 用户限制、当前项目触发器 / 扩展清单、CLI 导出流程及恢复核对步骤，统一见 [`supabase/docs/BACKUP_AND_RECOVERY.md`](supabase/docs/BACKUP_AND_RECOVERY.md)。备份文件必须保存在加密的异地位置，不得提交到 GitHub；网站部署不得自动执行备份或数据库恢复。
 
 ### 数据库与网站部署相互独立
 
@@ -309,6 +316,8 @@ Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `p
 - 已在生产执行的 migration 不得回头修改；需要修正时新增前向迁移。
 - 生产迁移账本只记录版本和名称，不代表能够恢复历史 SQL。缺失的历史 SQL必须标记为缺失，不能根据名称补写猜测版本。
 - `production-baseline.sql` 是结构参考，不是迁移脚本，不可对现有生产库执行。
+- 当前 Free 套餐没有 Supabase 官方每日物理备份；不得将 CLI `db dump` 或 `public` baseline 描述为完整平台备份。
+- 生产数据库备份、Auth 用户导出和 R2 媒体备份均不得写入 GitHub；备份恢复流程以 `supabase/docs/BACKUP_AND_RECOVERY.md` 为准。
 
 ### 当前生产迁移历史提示
 
