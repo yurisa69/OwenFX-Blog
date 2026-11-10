@@ -9,7 +9,7 @@ import Avatar from '@/components/Avatar';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import { getDisplayNameLength, limitDisplayName, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
 
-type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null; bio?: string | null };
+type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null };
 type Profile = { display_name: string; bio: string; avatar_url: string | null };
 type ProfileTab = 'profile' | 'likes' | 'bookmarks' | 'comments';
 type ProfileArticle = { id?: string; title?: string; slug?: string } | null;
@@ -43,7 +43,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const [searchOpen, setSearchOpen] = useState(false);
   const [isMobileSearch, setIsMobileSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [profile, setProfile] = useState<Profile>({ display_name: initialUser?.name || '', bio: initialUser?.bio || '', avatar_url: initialUser?.avatar_url || null });
+  const [profile, setProfile] = useState<Profile>({ display_name: initialUser?.name || '', bio: '', avatar_url: initialUser?.avatar_url || null });
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -52,19 +52,12 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   const [profileLikes, setProfileLikes] = useState<ProfileInteraction[]>([]);
   const [profileBookmarks, setProfileBookmarks] = useState<ProfileInteraction[]>([]);
   const [profileComments, setProfileComments] = useState<ProfileComment[]>([]);
-  const [profileListStatus, setProfileListStatus] = useState<Record<Exclude<ProfileTab, 'profile'>, 'idle' | 'loading' | 'loaded' | 'error'>>({ likes: 'idle', bookmarks: 'idle', comments: 'idle' });
-  const [profileListErrors, setProfileListErrors] = useState<Record<Exclude<ProfileTab, 'profile'>, string>>({ likes: '', bookmarks: '', comments: '' });
-  const [profileListTotals, setProfileListTotals] = useState<Record<Exclude<ProfileTab, 'profile'>, number>>({ likes: 0, bookmarks: 0, comments: 0 });
-  const [profileListMoreLoading, setProfileListMoreLoading] = useState(false);
-  const userIdRef = useRef<string | null>(initialUser?.id || null);
+  const [profileListsLoading, setProfileListsLoading] = useState(false);
+  const [profileListsError, setProfileListsError] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setUser(initialUser);
-    userIdRef.current = initialUser?.id || null;
-    setProfile({ display_name: initialUser?.name || '', bio: initialUser?.bio || '', avatar_url: initialUser?.avatar_url || null });
-  }, [initialUser]);
+  useEffect(() => setUser(initialUser), [initialUser]);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 767px)');
     const update = () => setIsMobileSearch(media.matches);
@@ -90,98 +83,116 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', close); document.body.style.overflow = oldOverflow; };
   }, [drawerOpen]);
-  // The server layout supplies the first-render profile. Navbar only preloads
-  // the known avatar image; it does not issue a duplicate profiles query.
+  // Warm the account profile as soon as the authenticated Navbar mounts.
+  // The server-provided Session remains the immediate fallback; profile data
+  // and its image are fetched/decoded in the background before the drawer opens.
   useEffect(() => {
-    const url = user?.avatar_url;
-    if (!url) return;
-    const image = new window.Image();
-    image.decoding = 'async';
-    image.src = url;
-    if (typeof image.decode === 'function') void image.decode().catch(() => undefined);
-  }, [user?.avatar_url]);
-
-  // Clear user-scoped activity data immediately when the authenticated account changes.
-  useEffect(() => {
-    userIdRef.current = user?.id || null;
-    setProfileLikes([]);
-    setProfileBookmarks([]);
-    setProfileComments([]);
-    setProfileListStatus({ likes: 'idle', bookmarks: 'idle', comments: 'idle' });
-    setProfileListErrors({ likes: '', bookmarks: '', comments: '' });
-    setProfileListTotals({ likes: 0, bookmarks: 0, comments: 0 });
-  }, [user?.id]);
-
-  // Load only the selected activity tab. Requests continue when the drawer closes
-  // or another tab is selected, allowing results to be reused when revisiting.
-  useEffect(() => {
-    const tab = profileTab;
     const userId = user?.id;
-    if (tab === 'profile' || !userId || profileListStatus[tab] !== 'idle') return;
-    const supabase = getSupabaseBrowser();
-    if (!supabase) {
-      setProfileListErrors(current => ({ ...current, [tab]: 'Supabase 尚未配置，暂时无法加载记录。' }));
-      setProfileListStatus(current => ({ ...current, [tab]: 'error' }));
-      return;
-    }
-
-    setProfileListStatus(current => ({ ...current, [tab]: 'loading' }));
-    setProfileListErrors(current => ({ ...current, [tab]: '' }));
-    const load = async () => {
-      try {
-        const query = tab === 'comments'
-          ? supabase.from('comments').select('id,body,status,created_at,article:articles(id,title,slug)', { count: 'exact' })
-              .eq('author_id', userId).order('created_at', { ascending: false }).range(0, 49)
-          : supabase.from('article_interactions').select('id,created_at,article:articles(id,title,slug)', { count: 'exact' })
-              .eq('user_id', userId).eq('interaction_type', tab === 'likes' ? 'like' : 'bookmark')
-              .order('created_at', { ascending: false }).range(0, 49);
-        const { data, error, count } = await query;
-        if (userIdRef.current !== userId) return;
-        if (error) throw error;
-        if (tab === 'comments') setProfileComments((data || []) as unknown as ProfileComment[]);
-        else if (tab === 'likes') setProfileLikes((data || []) as unknown as ProfileInteraction[]);
-        else setProfileBookmarks((data || []) as unknown as ProfileInteraction[]);
-        setProfileListTotals(current => ({ ...current, [tab]: count ?? data?.length ?? 0 }));
-        setProfileListStatus(current => ({ ...current, [tab]: 'loaded' }));
-      } catch {
-        if (userIdRef.current !== userId) return;
-        setProfileListErrors(current => ({ ...current, [tab]: '记录加载失败，请检查网络后重试。' }));
-        setProfileListStatus(current => ({ ...current, [tab]: 'error' }));
-      }
-    };
-    void load();
-  }, [profileTab, user?.id, profileListStatus]);
-
-  const loadMoreProfileActivity = async () => {
-    const tab = profileTab;
-    const userId = user?.id;
-    if (tab === 'profile' || !userId || profileListMoreLoading) return;
-    const currentLength = tab === 'likes' ? profileLikes.length : tab === 'bookmarks' ? profileBookmarks.length : profileComments.length;
-    if (currentLength >= profileListTotals[tab]) return;
+    if (!userId) return;
+    let active = true;
     const supabase = getSupabaseBrowser();
     if (!supabase) return;
-    setProfileListMoreLoading(true);
-    setProfileListErrors(current => ({ ...current, [tab]: '' }));
-    try {
-      const query = tab === 'comments'
-        ? supabase.from('comments').select('id,body,status,created_at,article:articles(id,title,slug)', { count: 'exact' })
-            .eq('author_id', userId).order('created_at', { ascending: false }).range(currentLength, currentLength + 49)
-        : supabase.from('article_interactions').select('id,created_at,article:articles(id,title,slug)', { count: 'exact' })
-            .eq('user_id', userId).eq('interaction_type', tab === 'likes' ? 'like' : 'bookmark')
-            .order('created_at', { ascending: false }).range(currentLength, currentLength + 49);
-      const { data, error, count } = await query;
-      if (error) throw error;
-      if (userIdRef.current !== userId) return;
-      if (tab === 'comments') setProfileComments(current => [...current, ...((data || []) as unknown as ProfileComment[])]);
-      else if (tab === 'likes') setProfileLikes(current => [...current, ...((data || []) as unknown as ProfileInteraction[])]);
-      else setProfileBookmarks(current => [...current, ...((data || []) as unknown as ProfileInteraction[])]);
-      setProfileListTotals(current => ({ ...current, [tab]: count ?? current[tab] }));
-    } catch {
-      if (userIdRef.current === userId) setProfileListErrors(current => ({ ...current, [tab]: '加载更多失败，请重试。' }));
-    } finally {
-      setProfileListMoreLoading(false);
-    }
-  };
+
+    const preloadAvatar = (url: string | null) => {
+      if (!url) return;
+      const image = new window.Image();
+      image.decoding = 'async';
+      image.src = url;
+      if (typeof image.decode === 'function') {
+        void image.decode().catch(() => undefined);
+      }
+    };
+
+    const load = async () => {
+      const [sessionResult, profileResult] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.from('profiles')
+          .select('display_name,bio,avatar_url')
+          .eq('id', userId)
+          .maybeSingle(),
+      ]);
+      if (!active) return;
+
+      const sessionUser = sessionResult.data.session?.user;
+      if (sessionUser && sessionUser.id !== userId) return;
+
+      const metadata = (sessionUser?.user_metadata || {}) as Record<string, unknown>;
+      const sessionAvatar = typeof metadata.avatar_url === 'string'
+        ? metadata.avatar_url
+        : typeof metadata.picture === 'string'
+          ? metadata.picture
+          : null;
+      const sessionName = typeof metadata.display_name === 'string'
+        ? metadata.display_name
+        : typeof metadata.name === 'string'
+          ? metadata.name
+          : null;
+
+      if (sessionUser?.id === userId) preloadAvatar(sessionAvatar);
+      if (profileResult.error) {
+        if (sessionUser?.id === userId && sessionAvatar) {
+          setUser(current => current?.id === userId && !current.avatar_url
+            ? { ...current, avatar_url: sessionAvatar }
+            : current);
+        }
+        return;
+      }
+
+      const data = profileResult.data;
+      const nextAvatar = data?.avatar_url || sessionAvatar;
+      setProfile(current => ({
+        display_name: data?.display_name || sessionName || current.display_name,
+        bio: data?.bio || current.bio,
+        avatar_url: data?.avatar_url || current.avatar_url || sessionAvatar,
+      }));
+      setUser(current => current?.id === userId
+        ? {
+            ...current,
+            name: data?.display_name || current.name || sessionName || '用户',
+            avatar_url: data?.avatar_url || current.avatar_url || sessionAvatar,
+          }
+        : current);
+      preloadAvatar(nextAvatar);
+    };
+
+    void load();
+    return () => { active = false; };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!drawerOpen || !user?.id) return;
+    let active = true;
+    const loadActivity = async () => {
+      const supabase = getSupabaseBrowser();
+      if (!supabase) return;
+      setProfileListsLoading(true);
+      setProfileListsError('');
+      const [likes, bookmarks, comments] = await Promise.all([
+        supabase.from('article_interactions')
+          .select('id,created_at,article:articles(id,title,slug)')
+          .eq('user_id', user.id).eq('interaction_type', 'like')
+          .order('created_at', { ascending: false }).limit(50),
+        supabase.from('article_interactions')
+          .select('id,created_at,article:articles(id,title,slug)')
+          .eq('user_id', user.id).eq('interaction_type', 'bookmark')
+          .order('created_at', { ascending: false }).limit(50),
+        supabase.from('comments')
+          .select('id,body,status,created_at,article:articles(id,title,slug)')
+          .eq('author_id', user.id)
+          .order('created_at', { ascending: false }).limit(50),
+      ]);
+      if (!active) return;
+      if (likes.error || bookmarks.error || comments.error) {
+        setProfileListsError('部分记录暂时无法加载，请稍后重试。');
+      }
+      if (!likes.error) setProfileLikes((likes.data || []) as unknown as ProfileInteraction[]);
+      if (!bookmarks.error) setProfileBookmarks((bookmarks.data || []) as unknown as ProfileInteraction[]);
+      if (!comments.error) setProfileComments((comments.data || []) as unknown as ProfileComment[]);
+      setProfileListsLoading(false);
+    };
+    void loadActivity();
+    return () => { active = false; };
+  }, [drawerOpen, user?.id]);
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -236,11 +247,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   const avatar = editing ? profile.avatar_url : (user?.avatar_url || profile.avatar_url);
   const displayName = editing ? profile.display_name : (user?.name || '用户');
-  const activeActivityTab: Exclude<ProfileTab, 'profile'> | null = profileTab === 'profile' ? null : profileTab;
-  const activeActivityItems = profileTab === 'likes' ? profileLikes : profileTab === 'bookmarks' ? profileBookmarks : profileComments;
-  const activeActivityStatus = activeActivityTab ? profileListStatus[activeActivityTab] : 'idle';
-  const activeActivityError = activeActivityTab ? profileListErrors[activeActivityTab] : '';
-  const activeActivityHasMore = activeActivityTab !== null && activeActivityItems.length < profileListTotals[activeActivityTab];
 
   return (
     <>
@@ -347,25 +353,19 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   </section>
                   <nav className="profile-activity-tabs" aria-label="个人活动">
                     <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('likes')}>
-                      <ArticleActionIcon type="like" /><span>喜欢</span><b>{profileListTotals.likes}</b>
+                      <ArticleActionIcon type="like" /><span>喜欢</span><b>{profileLikes.length}</b>
                     </button>
                     <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('bookmarks')}>
-                      <ArticleActionIcon type="bookmark" /><span>收藏</span><b>{profileListTotals.bookmarks}</b>
+                      <ArticleActionIcon type="bookmark" /><span>收藏</span><b>{profileBookmarks.length}</b>
                     </button>
                     <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('comments')}>
-                      <ArticleActionIcon type="comment" /><span>评论</span><b>{profileListTotals.comments}</b>
+                      <ArticleActionIcon type="comment" /><span>评论</span><b>{profileComments.length}</b>
                     </button>
                   </nav>
+                  {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
                   <section className="profile-activity-list" aria-live="polite">
-                    {!activeActivityTab ? (
-                      <div className="profile-list-empty">选择上方栏目查看互动记录</div>
-                    ) : activeActivityStatus === 'loading' ? (
+                    {profileListsLoading ? (
                       <div className="profile-list-empty">正在加载记录…</div>
-                    ) : activeActivityStatus === 'error' ? (
-                      <div className="profile-list-empty">
-                        <p>{activeActivityError}</p>
-                        <button type="button" className="profile-secondary-action mt-3" onClick={() => activeActivityTab && setProfileListStatus(current => ({ ...current, [activeActivityTab]: 'idle' }))}>重试</button>
-                      </div>
                     ) : profileTab === 'likes' || profileTab === 'bookmarks' ? (
                       (profileTab === 'likes' ? profileLikes : profileBookmarks).length === 0 ? (
                         <div className="profile-list-empty">{profileTab === 'likes' ? '还没有喜欢的文章' : '还没有收藏的文章'}</div>
@@ -385,12 +385,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                         {item.article?.slug && <Link href={'/articles/' + item.article.slug} onClick={() => setDrawerOpen(false)}>查看文章 ›</Link>}
                       </article>
                     ))}
-                    {activeActivityTab && activeActivityError && activeActivityStatus === 'loaded' && <p role="status" className="profile-list-notice">{activeActivityError}</p>}
-                    {activeActivityTab && activeActivityStatus === 'loaded' && activeActivityHasMore && (
-                      <button type="button" className="profile-secondary-action mt-3 w-full" onClick={() => void loadMoreProfileActivity()} disabled={profileListMoreLoading}>
-                        {profileListMoreLoading ? '加载中…' : '加载更多'}
-                      </button>
-                    )}
                   </section>
                 </>
               )}

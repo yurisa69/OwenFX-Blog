@@ -29,7 +29,7 @@ const themeInitScript = `(() => {
 const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null; bio?: string | null } | null = null;
+  let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -45,11 +45,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
       // Read only the fields needed by the global account identity so the
       // database avatar is already available in the first server-rendered HTML.
-      let profile: { display_name?: string | null; avatar_url?: string | null; bio?: string | null } | null = null;
+      let profile: { display_name?: string | null; avatar_url?: string | null } | null = null;
       try {
         const { data } = await supabase
           .from('profiles')
-          .select('display_name,avatar_url,bio')
+          .select('display_name,avatar_url')
           .eq('id', session.user.id)
           .maybeSingle();
         profile = data;
@@ -62,7 +62,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         name: profile?.display_name || metadataName || session.user.email?.split('@')[0] || '用户',
         email: session.user.email,
         avatar_url: profile?.avatar_url || metadataAvatar,
-        bio: profile?.bio || null,
       };
     }
   } catch {}
