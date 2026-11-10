@@ -130,21 +130,21 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
       if (sessionUser?.id === userId) preloadAvatar(sessionAvatar);
       if (profileResult.error) {
-        if (sessionUser?.id === userId) {
-          setUser(current => current?.id === userId
-            ? { ...current, avatar_url: current.avatar_url || sessionAvatar }
+        if (sessionUser?.id === userId && sessionAvatar) {
+          setUser(current => current?.id === userId && !current.avatar_url
+            ? { ...current, avatar_url: sessionAvatar }
             : current);
         }
         return;
       }
 
       const data = profileResult.data;
-      const nextAvatar = data?.avatar_url || sessionAvatar || user.avatar_url;
-      setProfile({
-        display_name: data?.display_name || sessionName || user.name,
-        bio: data?.bio || '',
-        avatar_url: nextAvatar,
-      });
+      const nextAvatar = data?.avatar_url || sessionAvatar;
+      setProfile(current => ({
+        display_name: data?.display_name || sessionName || current.display_name,
+        bio: data?.bio || current.bio,
+        avatar_url: data?.avatar_url || current.avatar_url || sessionAvatar,
+      }));
       setUser(current => current?.id === userId
         ? {
             ...current,
