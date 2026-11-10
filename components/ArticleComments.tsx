@@ -42,41 +42,44 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const authUser = session?.user || null;
+      const selection = 'id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)';
+      // Public comments and the current Session are independent; start both together.
+      const [sessionResult, approvedResult] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.from('comments').select(selection)
+          .eq('article_id', articleId).eq('status', 'approved')
+          .order('created_at', { ascending: false }).limit(100),
+      ]);
+      const authUser = sessionResult.data.session?.user || null;
       if (!active) return;
+
+      let rows = (approvedResult.data || []) as unknown as CommentRow[];
+      setComments(rows);
+      setCommentsLoaded(true);
+      if (approvedResult.error) setNotice('部分评论暂时无法显示，请稍后重试。');
 
       if (authUser) {
         const metadata = authUser.user_metadata || {};
-        const { data: profile } = await supabase.from('profiles')
-          .select('display_name,avatar_url').eq('id', authUser.id).maybeSingle();
+        const [profileResult, pendingResult] = await Promise.all([
+          supabase.from('profiles').select('display_name,avatar_url').eq('id', authUser.id).maybeSingle(),
+          supabase.from('comments').select(selection).eq('article_id', articleId)
+            .eq('author_id', authUser.id).eq('status', 'pending')
+            .order('created_at', { ascending: false }).limit(50),
+        ]);
         if (!active) return;
         setUser({
           id: authUser.id,
-          name: profile?.display_name || String(metadata.display_name || metadata.name || authUser.email?.split('@')[0] || '用户'),
-          avatar: profile?.avatar_url || (typeof metadata.avatar_url === 'string' ? metadata.avatar_url : typeof metadata.picture === 'string' ? metadata.picture : null),
+          name: profileResult.data?.display_name || String(metadata.display_name || metadata.name || authUser.email?.split('@')[0] || '用户'),
+          avatar: profileResult.data?.avatar_url || (typeof metadata.avatar_url === 'string' ? metadata.avatar_url : typeof metadata.picture === 'string' ? metadata.picture : null),
         });
+        if (profileResult.error || pendingResult.error) setNotice('部分评论或个人资料暂时无法完整显示，请稍后重试。');
+        if (!pendingResult.error && pendingResult.data?.length) {
+          rows = [...rows, ...(pendingResult.data as unknown as CommentRow[])];
+          const unique = Array.from(new Map(rows.map(row => [row.id, row])).values())
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          setComments(unique);
+        }
       }
-
-      const selection = 'id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)';
-      const approvedQuery = supabase.from('comments').select(selection)
-        .eq('article_id', articleId).eq('status', 'approved')
-        .order('created_at', { ascending: false }).limit(100);
-      const pendingQuery = authUser
-        ? supabase.from('comments').select(selection).eq('article_id', articleId)
-            .eq('author_id', authUser.id).eq('status', 'pending')
-            .order('created_at', { ascending: false }).limit(50)
-        : Promise.resolve({ data: [] as CommentRow[], error: null });
-
-      const [approvedResult, pendingResult] = await Promise.all([approvedQuery, pendingQuery]);
-      if (!active) return;
-
-      const rows = [...(approvedResult.data || []), ...(pendingResult.data || [])] as unknown as CommentRow[];
-      const unique = Array.from(new Map(rows.map(row => [row.id, row])).values())
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      setComments(unique);
-      if (approvedResult.error || pendingResult.error) setNotice('部分评论暂时无法显示，请稍后重试。');
-      setCommentsLoaded(true);
     };
 
     void load();
