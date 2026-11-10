@@ -288,7 +288,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     </div>
                     <p className="profile-identity-bio">{profile.bio || '还没有填写个人简介。'}</p>
                     <div className="grid grid-cols-2 gap-2">
-                      <button type="button" className="profile-primary-action" onClick={() => {setEditing(true);setNotice('');}}>编辑资料</button>
+                      <button type="button" className="profile-secondary-action" onClick={() => {setEditing(true);setNotice('');}}>编辑资料</button>
                       <Link href="/settings" className="profile-secondary-action" onClick={() => setDrawerOpen(false)}>账号设置</Link>
                     </div>
                   </section>

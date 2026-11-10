@@ -243,7 +243,46 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return <div className="account-settings-page"><div className="account-settings-loading">正在加载账号设置…</div></div>;
+    return (
+      <div className="account-settings-page account-settings-loading-shell" aria-busy="true" aria-label="正在加载账号设置">
+        <div className="account-settings-topline">
+          <span>OWENFX ACCOUNT</span>
+          <span className="account-settings-skeleton account-settings-skeleton-short" />
+        </div>
+        <section className="profile-identity-card account-settings-identity account-settings-skeleton-identity">
+          <div className="profile-identity-main">
+            <span className="account-settings-skeleton account-settings-skeleton-avatar" />
+            <div className="account-settings-skeleton-user">
+              <span className="account-settings-skeleton account-settings-skeleton-name" />
+              <span className="account-settings-skeleton account-settings-skeleton-email" />
+              <span className="account-settings-skeleton account-settings-skeleton-status" />
+            </div>
+          </div>
+          <span className="account-settings-skeleton account-settings-skeleton-button" />
+        </section>
+        {[1, 2].map(section => (
+          <section className="account-settings-card account-settings-skeleton-card" key={section}>
+            <div className="account-settings-skeleton-heading">
+              <span className="account-settings-skeleton account-settings-skeleton-title" />
+              <span className="account-settings-skeleton account-settings-skeleton-description" />
+            </div>
+            <div className="account-settings-skeleton-form">
+              <span className="account-settings-skeleton account-settings-skeleton-label" />
+              <span className="account-settings-skeleton account-settings-skeleton-input" />
+              {section === 2 && (
+                <>
+                  <span className="account-settings-skeleton account-settings-skeleton-label" />
+                  <span className="account-settings-skeleton account-settings-skeleton-input" />
+                  <span className="account-settings-skeleton account-settings-skeleton-label" />
+                  <span className="account-settings-skeleton account-settings-skeleton-input" />
+                </>
+              )}
+              <span className="account-settings-skeleton account-settings-skeleton-submit" />
+            </div>
+          </section>
+        ))}
+      </div>
+    );
   }
 
   return (
