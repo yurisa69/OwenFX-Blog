@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import ArticleActionIcon from '@/components/ArticleActionIcon';
 import { getSupabaseBrowser } from '@/lib/supabase';
+import { getDisplayNameLength, limitDisplayName, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
 
 type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null };
 type Profile = { display_name: string; bio: string; avatar_url: string | null };
@@ -145,6 +146,11 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
 
   const handleProfileSave = async () => {
     if (!user?.id) return;
+    const nextName = profile.display_name.trim() || user.name;
+    if (getDisplayNameLength(nextName) > MAX_DISPLAY_NAME_LENGTH) {
+      setNotice('昵称不能超过12个字符');
+      return;
+    }
     const supabase = getSupabaseBrowser();
     if (!supabase) { setNotice('Supabase 尚未配置'); return; }
     setSaving(true); setNotice('');
@@ -157,7 +163,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     }, { onConflict: 'id' });
     setSaving(false);
     if (error) { setNotice(error.message || '资料保存失败'); return; }
-    const nextName = profile.display_name.trim() || user.name;
     setUser({ ...user, name: nextName, avatar_url: profile.avatar_url });
     setEditing(false); setNotice('资料已保存'); router.refresh();
   };
@@ -258,7 +263,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     </div>
                   </div>
                   <label className="profile-field-label">昵称</label>
-                  <input className="profile-input" maxLength={40} value={profile.display_name} onChange={event => setProfile(value => ({...value, display_name:event.target.value}))} placeholder="输入昵称"/>
+                  <input className="profile-input" maxLength={MAX_DISPLAY_NAME_LENGTH * 2} value={profile.display_name} onChange={event => setProfile(value => ({...value, display_name:limitDisplayName(event.target.value)}))} placeholder="昵称（最多12个字符）"/>
                   <label className="profile-field-label">个人简介</label>
                   <textarea className="profile-input min-h-24 resize-none" maxLength={240} value={profile.bio} onChange={event => setProfile(value => ({...value, bio:event.target.value}))} placeholder="介绍一下自己…"/>
                   <div className="mt-4 grid grid-cols-2 gap-2">

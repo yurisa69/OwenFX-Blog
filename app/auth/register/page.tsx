@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { isSupportedRegistrationEmail, REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE } from '@/lib/registration-email';
 import PasswordInput from '@/components/PasswordInput';
+import { getDisplayNameLength, limitDisplayName, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -33,8 +34,8 @@ export default function RegisterPage() {
       setBusy(false);
       return;
     }
-    if (name.trim().length > 40) {
-      setError('用户名不能超过40个字符');
+    if (getDisplayNameLength(name.trim()) > MAX_DISPLAY_NAME_LENGTH) {
+      setError('用户名不能超过12个字符');
       setBusy(false);
       return;
     }
@@ -94,7 +95,7 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-bold">创建账号</h1>
             <p className="mb-6 mt-2 text-sm opacity-70">加入 OwenFX 社区</p>
             <form onSubmit={register} className="space-y-4">
-              <input required maxLength={40} className="admin-input w-full" placeholder="用户名" value={name} onChange={event => setName(event.target.value)} />
+              <input required maxLength={MAX_DISPLAY_NAME_LENGTH * 2} className="admin-input w-full" placeholder="用户名（最多12个字符）" value={name} onChange={event => setName(limitDisplayName(event.target.value))} />
               <input required type="email" autoComplete="email" className="admin-input w-full" placeholder="邮箱" value={email} onChange={event => setEmail(event.target.value)} />
               <PasswordInput required minLength={12} autoComplete="new-password" className="admin-input w-full" placeholder="密码（至少12位）" value={password} onChange={event => setPassword(event.target.value)} />
               {error && <p role="alert" className="text-sm text-red-500">{error}</p>}

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getDisplayNameLength, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
 import {
   isSupportedRegistrationEmail,
   REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE,
@@ -29,8 +30,8 @@ export async function POST(request: Request) {
   if (!name) {
     return NextResponse.json({ error: '请输入用户名' }, { status: 400 });
   }
-  if (name.length > 40) {
-    return NextResponse.json({ error: '用户名不能超过40个字符' }, { status: 400 });
+  if (getDisplayNameLength(name) > MAX_DISPLAY_NAME_LENGTH) {
+    return NextResponse.json({ error: '用户名不能超过12个字符' }, { status: 400 });
   }
 
   const supabase = await createClient();
