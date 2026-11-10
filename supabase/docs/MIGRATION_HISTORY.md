@@ -21,12 +21,13 @@ This document reconciles the production migration ledger with the SQL files curr
 | `20261107040934` | `import_reference_mock_articles` | File exists as a no-op historical placeholder; original SQL is unavailable and sample rows were subsequently removed |
 | `20261107045725` | `article_github_content_and_api_devices` | File exists in GitHub |
 | `20261107050640` | `restrict_api_devices_to_owner_scope` | File exists in GitHub |
+| `20261107060000` | `r2_unified_media_assets` | File exists in GitHub and the version is recorded in the production migration ledger |
 | `20261109164831` | `remove_legacy_verification_codes` | File exists in GitHub |
 | `20261110090913` | `remove_legacy_resource_click_policy` | SQL body recovered from the production change and added to GitHub in this update |
 
-## 2. Repository/production mismatch
+## 2. Historical SQL availability
 
-- GitHub contains `20261107060000_r2_unified_media_assets.sql`, but the production migration ledger has no matching version. Its effects are present in the production `media_assets` table and RLS policies. The repository SQL is retained; this document records the missing ledger entry. Do not blindly replay it against production.
+- The production migration ledger includes version `20261107060000` (`r2_unified_media_assets`), matching the GitHub file `20261107060000_r2_unified_media_assets.sql`. There is no missing production ledger entry for this migration. Its SQL is already applied; do not replay it against production.
 - The eight historical entries above cannot be reconstructed from migration names alone. Their original SQL has not been fabricated. Their corresponding files contain comments only and are **history-only placeholders**: they do not create tables, columns, policies, functions, or data. They exist only so `supabase migration list --remote` can reconcile the repository's version identifiers with the production ledger.
 - Never use these eight placeholders to bootstrap or restore a new project. They do not reproduce the schema changes from 2026-11-05 and 2026-11-06. The current production schema snapshot is stored separately in `supabase/schema/production-baseline.sql`, and the platform-specific dependencies are documented in `supabase/docs/PLATFORM_DEPENDENCIES.md`.
 - The `20261107040934` placeholder intentionally does not reinsert sample article data.
@@ -44,7 +45,6 @@ The `analytics_events` table and its other records were retained. The separate `
 ## 4. Reconciliation policy
 
 The production ledger is authoritative for which version identifiers have been applied. GitHub SQL files are authoritative only where their original SQL is actually available and verified. Missing historical SQL is documented as missing; it must not be guessed, retroactively applied, or marked as a new migration.
-
 
 ## 5. Fresh-project and restore warning
 
