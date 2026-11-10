@@ -5,7 +5,6 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import ArticleActionIcon from '@/components/ArticleActionIcon';
-import Avatar from '@/components/Avatar';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import { getDisplayNameLength, limitDisplayName, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
 
@@ -83,11 +82,6 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', close); document.body.style.overflow = oldOverflow; };
   }, [drawerOpen]);
-  useEffect(() => {
-    if (!drawerOpen || !user?.id) return;
-    router.prefetch('/settings');
-  }, [drawerOpen, router, user?.id]);
-
   useEffect(() => {
     if (!drawerOpen || !user?.id) return;
     let active = true;
@@ -259,7 +253,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   <div className="profile-edit-heading">
                     <div className="profile-avatar-ring profile-avatar-ring-edit">
                       <div className="profile-avatar-inner">
-                        <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
+                        {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
@@ -283,7 +277,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     <div className="profile-identity-main">
                       <div className="profile-avatar-ring profile-avatar-ring-compact">
                         <div className="profile-avatar-inner">
-                          <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
+                          {avatar ? <img src={avatar} alt="头像" className="h-full w-full object-cover"/> : <span>{(displayName || user.name || 'U').slice(0,1).toUpperCase()}</span>}
                         </div>
                       </div>
                       <div className="min-w-0 flex-1">

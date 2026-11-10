@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import PasswordInput from '@/components/PasswordInput';
-import Avatar from '@/components/Avatar';
 
 type AccountUser = { id: string; name: string; email?: string; avatarUrl: string | null };
 
 export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<AccountUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,6 +28,7 @@ export default function SettingsPage() {
     const supabase = getSupabaseBrowser();
     if (!supabase) {
       setError('账号服务暂不可用，请稍后重试。');
+      setLoading(false);
       return;
     }
 
@@ -38,6 +39,7 @@ export default function SettingsPage() {
         if (!active) return;
         if (signOutError) {
           setError('邮箱已验证，但自动退出登录失败。请手动退出后使用新邮箱和密码重新登录。');
+          setLoading(false);
           return;
         }
         router.replace('/auth/login?reason=email-updated');
@@ -57,28 +59,20 @@ export default function SettingsPage() {
       const metadataAvatar = typeof metadata.avatar_url === 'string'
         ? metadata.avatar_url
         : typeof metadata.picture === 'string' ? metadata.picture : null;
-      const account = {
-        id: data.user.id,
-        name: metadataName || data.user.email?.split('@')[0] || '用户',
-        email: data.user.email || '',
-        avatarUrl: metadataAvatar,
-      };
-      setUser(account);
-
-      // Profile details are supplementary; do not block the account forms on this query.
       const { data: profile } = await supabase
         .from('profiles')
         .select('display_name,avatar_url')
         .eq('id', data.user.id)
         .maybeSingle();
       if (!active) return;
-      if (profile) {
-        setUser(current => current ? {
-          ...current,
-          name: profile.display_name || current.name,
-          avatarUrl: profile.avatar_url || current.avatarUrl,
-        } : current);
-      }
+      const account = {
+        id: data.user.id,
+        name: profile?.display_name || metadataName || data.user.email?.split('@')[0] || '用户',
+        email: data.user.email || '',
+        avatarUrl: profile?.avatar_url || metadataAvatar,
+      };
+      setUser(account);
+      setLoading(false);
       const redirectError = new URLSearchParams(window.location.hash.slice(1)).get('error_description');
       if (redirectError) {
         setError('邮箱验证未完成：' + redirectError);
@@ -167,8 +161,8 @@ export default function SettingsPage() {
       setPasswordError('请完整填写当前密码和两次新密码。');
       return;
     }
-    if (newPassword.length < 12) {
-      setPasswordError('新密码至少需要 12 位。');
+    if (newPassword.length < 6) {
+      setPasswordError('新密码至少需要 6 位。');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -248,6 +242,49 @@ export default function SettingsPage() {
     router.refresh();
   };
 
+  if (loading) {
+    return (
+      <div className="account-settings-page account-settings-loading-shell" aria-busy="true" aria-label="正在加载账号设置">
+        <div className="account-settings-topline">
+          <span>OWENFX ACCOUNT</span>
+          <span className="account-settings-skeleton account-settings-skeleton-short" />
+        </div>
+        <section className="profile-identity-card account-settings-identity account-settings-skeleton-identity">
+          <div className="profile-identity-main">
+            <span className="account-settings-skeleton account-settings-skeleton-avatar" />
+            <div className="account-settings-skeleton-user">
+              <span className="account-settings-skeleton account-settings-skeleton-name" />
+              <span className="account-settings-skeleton account-settings-skeleton-email" />
+              <span className="account-settings-skeleton account-settings-skeleton-status" />
+            </div>
+          </div>
+          <span className="account-settings-skeleton account-settings-skeleton-button" />
+        </section>
+        {[1, 2].map(section => (
+          <section className="account-settings-card account-settings-skeleton-card" key={section}>
+            <div className="account-settings-skeleton-heading">
+              <span className="account-settings-skeleton account-settings-skeleton-title" />
+              <span className="account-settings-skeleton account-settings-skeleton-description" />
+            </div>
+            <div className="account-settings-skeleton-form">
+              <span className="account-settings-skeleton account-settings-skeleton-label" />
+              <span className="account-settings-skeleton account-settings-skeleton-input" />
+              {section === 2 && (
+                <>
+                  <span className="account-settings-skeleton account-settings-skeleton-label" />
+                  <span className="account-settings-skeleton account-settings-skeleton-input" />
+                  <span className="account-settings-skeleton account-settings-skeleton-label" />
+                  <span className="account-settings-skeleton account-settings-skeleton-input" />
+                </>
+              )}
+              <span className="account-settings-skeleton account-settings-skeleton-submit" />
+            </div>
+          </section>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="account-settings-page">
       <div className="account-settings-topline">
@@ -259,7 +296,9 @@ export default function SettingsPage() {
         <div className="profile-identity-main">
           <div className="profile-avatar-ring profile-avatar-ring-compact">
             <div className="profile-avatar-inner">
-              <Avatar src={user?.avatarUrl} alt="头像" fallback={(user?.name || 'U').slice(0, 1).toUpperCase()} priority />
+              {user?.avatarUrl
+                ? <img src={user.avatarUrl} alt="头像" className="h-full w-full object-cover" />
+                : <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>}
             </div>
           </div>
           <div className="min-w-0 flex-1">
@@ -289,7 +328,7 @@ export default function SettingsPage() {
         <form onSubmit={handleEmailChange} className="account-settings-form">
           {emailError && <p role="alert" className="account-settings-message is-error">{emailError}</p>}
           <label htmlFor="account-email">新邮箱地址</label>
-          <input id="account-email" className="admin-input" type="email" autoComplete="email" required disabled={!user} value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮箱地址" />
+          <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮箱地址" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={emailBusy || !user?.email}>
             {emailBusy ? '发送验证邮件中…' : '发送邮箱验证'}
           </button>
@@ -306,12 +345,12 @@ export default function SettingsPage() {
         </div>
         <form onSubmit={handlePasswordChange} className="account-settings-form">
           <label htmlFor="current-password">当前密码</label>
-          <PasswordInput id="current-password" className="admin-input" autoComplete="current-password" required disabled={!user} value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
+          <PasswordInput id="current-password" className="admin-input" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
           <label htmlFor="new-password">新密码</label>
-          <PasswordInput id="new-password" className="admin-input" autoComplete="new-password" minLength={12} required disabled={!user} value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="至少 12 位" />
+          <PasswordInput id="new-password" className="admin-input" autoComplete="new-password" minLength={6} required value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="至少 6 位" />
           <label htmlFor="confirm-password">确认新密码</label>
-          <PasswordInput id="confirm-password" className="admin-input" autoComplete="new-password" minLength={12} required disabled={!user} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="再次输入新密码（至少 12 位）" />
-          <button type="submit" className="profile-primary-action account-settings-submit" disabled={passwordBusy || !user}>
+          <PasswordInput id="confirm-password" className="admin-input" autoComplete="new-password" minLength={6} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="再次输入新密码" />
+          <button type="submit" className="profile-primary-action account-settings-submit" disabled={passwordBusy}>
             {passwordBusy ? '正在更新密码…' : '更新密码'}
           </button>
         </form>
