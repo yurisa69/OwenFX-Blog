@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
+import Avatar from '@/components/Avatar';
 
 type CommentAuthor = { display_name?: string | null; avatar_url?: string | null } | null;
 type CommentRow = {
@@ -132,7 +133,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       <div className="mb-5 flex flex-col items-center text-center">
         <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
           style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-          {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
+          <Avatar src={user?.avatar} alt="头像" fallback={initial} />
         </div>
         <p className={user ? "mt-2 max-w-full truncate text-sm font-semibold monet-waterlily-flow" : "mt-2 max-w-full truncate text-sm font-semibold"}
           style={!user ? { color: 'var(--text-secondary)' } : undefined}>
@@ -179,7 +180,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                 <article key={comment.id} className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs"
                     style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
-                    {author?.avatar_url ? <img src={author.avatar_url} alt="" className="h-full w-full object-cover" /> : name.slice(0, 1).toUpperCase()}
+                    <Avatar src={author?.avatar_url} alt="" fallback={name.slice(0, 1).toUpperCase()} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2">

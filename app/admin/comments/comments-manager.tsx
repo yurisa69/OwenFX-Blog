@@ -1,5 +1,6 @@
 'use client';
 
+import Avatar from '@/components/Avatar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 type CommentRow = {
@@ -97,7 +98,7 @@ export default function CommentsManager() {
           return <article key={row.id} className="rounded-xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                {row.author?.avatar_url ? <img src={row.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" /> : <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm" style={{ background: 'var(--bg-tertiary)' }}>{name.slice(0, 1).toUpperCase()}</div>}
+                <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full text-sm" style={{ background: 'var(--bg-tertiary)' }}><Avatar src={row.author?.avatar_url} alt="" fallback={name.slice(0, 1).toUpperCase()} /></div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{name}</p>
                   <p className="mt-0.5 text-xs opacity-60">{new Date(row.created_at).toLocaleString('zh-CN')}</p>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import PasswordInput from '@/components/PasswordInput';
+import Avatar from '@/components/Avatar';
 
 type AccountUser = { id: string; name: string; email?: string; avatarUrl: string | null };
 
@@ -258,9 +259,7 @@ export default function SettingsPage() {
         <div className="profile-identity-main">
           <div className="profile-avatar-ring profile-avatar-ring-compact">
             <div className="profile-avatar-inner">
-              {user?.avatarUrl
-                ? <img src={user.avatarUrl} alt="头像" className="h-full w-full object-cover" />
-                : <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>}
+              <Avatar src={user?.avatarUrl} alt="头像" fallback={(user?.name || 'U').slice(0, 1).toUpperCase()} priority />
             </div>
           </div>
           <div className="min-w-0 flex-1">
