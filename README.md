@@ -115,7 +115,10 @@ Next.js App Router（Vercel）
 │   ├── software/           # 软件列表与详情
 │   └── layout.tsx          # 全局布局
 ├── components/             # 页面与交互组件
-├── supabase/migrations/    # Supabase 数据库结构变更记录
+├── supabase/               # Supabase CLI 配置、迁移、结构快照与数据库文档
+│   ├── migrations/         # 增量 SQL 迁移
+│   ├── schema/             # 生产结构参考快照（不可直接对生产执行）
+│   └── docs/               # 迁移历史和数据库变更规范
 ├── content/articles/       # GitHub 管理的 Markdown 正文文件
 ├── docs/openapi/           # 外部文章导入 API Schema
 ├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
@@ -259,13 +262,76 @@ npm run dev
 | `npm run start` | 启动生产构建后的服务。 |
 | `npm run lint` | 执行 ESLint 检查。 |
 
-## Supabase 数据库说明
+## Supabase 数据库与迁移管理
 
-项目运行依赖 Supabase Auth 和多组业务数据表，例如用户资料、文章、分类、软件、软件网盘链接、云资源、赞赏设置、文章修订记录、审计日志和统计事件等。注册确认及其他认证邮件由 Supabase Auth 负责，不依赖业务验证码表。
+Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `public` schema 包含用户资料、文章、分类、标签、评论、文章互动、文章修订、软件目录、软件网盘下载链接、媒体元数据、站点设置、赞赏配置、审计日志和统计事件等业务对象。独立旧网盘资源模块已清理；不要重新引入 `cloud_resources`、`cloud_resource_links` 或 `resource_click` 业务逻辑。软件网盘下载入口继续使用 `software_download_links`。
 
-**数据库结构必须与当前 `app/` 下的 API 查询字段保持一致。** 仓库中的 `supabase/migrations/` 保存已纳入版本管理的数据库变更记录，但目前这些迁移并不等同于完整的生产数据库初始化脚本。正式部署或迁移环境前，仍需核对当前版本所需的表结构、字段、索引、RLS 策略和权限函数（例如管理员 / 内容编辑权限检查函数），确认迁移与目标数据库状态一致后再执行。
+### 数据库文件说明
+
+| 路径 | 用途 | 使用规则 |
+| --- | --- | --- |
+| `supabase/config.toml` | Supabase CLI 项目配置 | 不存放密钥；执行 CLI 操作前确认链接的是正确项目。 |
+| `supabase/migrations/` | 按时间戳排序的增量 SQL 变更 | 新数据库变更只新增迁移文件，不改写已在生产执行的迁移。 |
+| `supabase/schema/production-baseline.sql` | 2026-11-10 生产 `public` schema 结构参考快照 | 不包含业务数据；不是完整 Supabase 备份；严禁直接对生产执行。 |
+| `supabase/docs/MIGRATION_HISTORY.md` | 生产迁移账本与仓库文件差异 | 历史原始 SQL 缺失时如实记录，不猜测、不伪造。 |
+| `supabase/docs/DATABASE_CHANGE_POLICY.md` | 数据库变更、安全和验证规则 | 数据库操作以该文件为准。 |
+
+### 数据库与网站部署相互独立
+
+- 普通页面、样式、组件和 API 代码更新：只提交网站源码，由 GitHub → Vercel 自动部署，不执行数据库迁移。
+- 数据库结构变更：先检查现有表结构、代码引用、外键、索引、函数、触发器、授权和 RLS；再创建独立 SQL migration，审核后单独执行。
+- Vercel Build、Deployment Hook 和应用启动过程不得自动执行 SQL migration。
+- 数据库变更完成后，先验证生产结构、迁移账本、RLS 和相关业务查询，再部署依赖新结构的网站代码。
+
+### 新增数据库迁移的标准流程
+
+1. **检查**：确认目标 Supabase 项目、当前生产结构、迁移账本和相关应用代码；先确认变更是否真的需要数据库改动。
+2. **创建**：使用 Supabase CLI 创建新的时间戳迁移文件：
+
+   ```bash
+   supabase migration new add_example_feature
+   ```
+
+3. **编写与审核**：只处理一个逻辑变更；检查 SQL 是否保留现有数据、是否影响外键 / 索引 / RLS / 权限；删除表、列或数据必须先列出影响并获得明确批准。
+4. **验证**：优先在隔离的本地或测试数据库验证，不以生产库试错。确认 SQL 与目标项目当前状态匹配。
+5. **生产执行**：只有审核通过并明确批准后，才对正确的生产项目执行迁移。执行前再次检查待执行文件和目标项目；禁止将 `supabase db push` 放进自动部署流程。
+6. **复核**：检查迁移账本、表 / 字段 / 约束 / 索引 / 函数 / 触发器 / RLS / 授权，以及网站相关查询。
+7. **记录**：必要时更新结构参考快照和 `MIGRATION_HISTORY.md`。
+8. **部署网站**：数据库验证通过后，再按正常 GitHub → Vercel 流程部署应用代码。
+
+### 生产数据库安全规则
+
+- 禁止对生产数据库执行 `supabase db reset`、重建数据库或未经审核的破坏性 SQL。
+- 禁止自动部署时执行 migration；禁止在 Vercel 构建、部署钩子或 Next.js 启动时运行迁移。
+- 不得把数据库密码、Supabase Access Token、Service Role Key 或连接字符串提交到 GitHub。
+- 不导出生产用户、评论、文章或其他业务行数据到仓库；只允许经过审核的结构文件。
+- 不使用 `CASCADE` 规避依赖检查；删除表 / 列、清理数据或改变权限必须先评估影响并获得明确授权。
+- 已在生产执行的 migration 不得回头修改；需要修正时新增前向迁移。
+- 生产迁移账本只记录版本和名称，不代表能够恢复历史 SQL。缺失的历史 SQL必须标记为缺失，不能根据名称补写猜测版本。
+- `production-baseline.sql` 是结构参考，不是迁移脚本，不可对现有生产库执行。
+
+### 当前生产迁移历史提示
+
+截至 2026-11-10，生产迁移账本包含 13 条记录。部分较早的生产迁移没有对应的原始 SQL 文件；另有 R2 媒体迁移文件与生产迁移账本不完全一致。详细版本、差异和已执行的旧资源模块清理记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。
 
 不要为了让页面显示数据而关闭 RLS，也不要把 Service Role Key 放进浏览器端。
+
+## Supabase CLI 与迁移文件维护
+
+本地开发者需要 Node.js / npm；数据库维护者还需要 Supabase CLI。CLI 登录凭据只保存在本机，不写入仓库或 README。生产项目 Ref：`gjzxultalptqwqmpagzj`。
+
+```bash
+# 登录 Supabase（交互式授权）
+supabase login
+
+# 关联 OwenFX 生产项目
+supabase link --project-ref gjzxultalptqwqmpagzj
+
+# 查看本地与远程迁移版本
+supabase migration list --linked
+```
+
+> 上述命令只用于 CLI 登录、项目关联和迁移状态检查。日常网站代码更新不需要执行这些命令。生产数据库变更仍须遵守前文审核和单独批准流程；不要为了导出结构而在生产 VPS 上临时安装 Docker，也不要把 CLI Access Token 当作数据库密码。
 
 ## Cloudflare R2 配置说明
 
