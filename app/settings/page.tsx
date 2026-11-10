@@ -46,33 +46,50 @@ export default function SettingsPage() {
         router.refresh();
         return;
       }
-      const { data, error: authError } = await supabase.auth.getUser();
+      // Use the browser's existing Session for an immediate account identity.
+      // Do not block the settings page on getUser() or the profiles table query.
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (!active) return;
-      if (authError || !data.user) {
+      if (sessionError || !session?.user) {
         router.replace('/auth/login?next=%2Fsettings');
         return;
       }
-      const metadata = data.user.user_metadata as Record<string, unknown>;
+
+      const authUser = session.user;
+      const metadata = authUser.user_metadata as Record<string, unknown>;
       const metadataName = typeof metadata.display_name === 'string'
         ? metadata.display_name
         : typeof metadata.name === 'string' ? metadata.name : '';
       const metadataAvatar = typeof metadata.avatar_url === 'string'
         ? metadata.avatar_url
         : typeof metadata.picture === 'string' ? metadata.picture : null;
-      const { data: profile } = await supabase
+
+      // Render from Session metadata first; enrich with the database profile
+      // in the background so the whole page does not wait for this request.
+      setUser({
+        id: authUser.id,
+        name: metadataName || authUser.email?.split('@')[0] || '用户',
+        email: authUser.email || '',
+        avatarUrl: metadataAvatar,
+      });
+      setLoading(false);
+
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('display_name,avatar_url')
-        .eq('id', data.user.id)
+        .eq('id', authUser.id)
         .maybeSingle();
       if (!active) return;
-      const account = {
-        id: data.user.id,
-        name: profile?.display_name || metadataName || data.user.email?.split('@')[0] || '用户',
-        email: data.user.email || '',
-        avatarUrl: profile?.avatar_url || metadataAvatar,
-      };
-      setUser(account);
-      setLoading(false);
+      if (profileError) {
+        setError('个人资料暂时无法完整加载，请稍后重试。');
+      } else if (profile) {
+        setUser(current => current?.id === authUser.id ? {
+          ...current,
+          name: profile.display_name || current.name,
+          avatarUrl: profile.avatar_url || current.avatarUrl,
+        } : current);
+      }
+
       const redirectError = new URLSearchParams(window.location.hash.slice(1)).get('error_description');
       if (redirectError) {
         setError('邮箱验证未完成：' + redirectError);
