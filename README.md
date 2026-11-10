@@ -285,69 +285,55 @@ Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `p
 
 ### 使用电脑或 VPS 导出 / 检查数据库
 
-根据任务选择方式。**日常逻辑备份优先在可信任的电脑上使用官方 Supabase CLI；VPS 方式主要用于检查已有 PostgreSQL custom-format 归档、提取迁移账本和恢复历史迁移档案。** 两种方式都不能单独备份整个 Supabase 项目。
+电脑和 VPS 都可以作为数据库备份操作环境。两种环境均需要安装 **Docker** 和 **Supabase CLI**，并确保 Docker 服务正常运行。当前 VPS 已具备 Docker 和 Supabase CLI 环境，不需要重复安装。选择可信任、磁盘空间充足且访问权限受控的环境即可。
+
+无论在电脑还是 VPS 上执行，官方 Supabase CLI 的数据库导出流程和备份范围相同。导出的文件应保存在独立的备份目录中，并加密后存放到生产 Supabase 项目和生产 VPS 之外的位置。**电脑适合保存长期异地备份；VPS 可用于执行备份或检查已有归档，但不要把 VPS 本机作为唯一备份位置。**
 
 #### 方式 A：在电脑上使用 Supabase CLI 导出
 
-适用于 Windows、macOS 或 Linux 工作站。需要安装 Supabase CLI，并准备 Docker（CLI 的数据库导出流程会使用容器）。不要仅为了导出数据库而在生产 VPS 上临时安装 Docker。
+适用于 Windows、macOS 或 Linux 工作站。准备 Docker 和 Supabase CLI，并从 Supabase Dashboard → Connect 获取数据库连接字符串，在本机安全地设置为环境变量 `SUPABASE_DB_URL`。连接字符串包含数据库凭据，不要写入脚本、README、聊天记录或 GitHub。
 
-1. 在 Supabase Dashboard → Connect 中获取数据库连接字符串，在本机安全地设置为环境变量 `SUPABASE_DB_URL`。连接字符串包含数据库凭据，不要写入脚本、README、聊天记录或 GitHub。
-2. 在本机创建仅当前用户可访问的备份目录，并在该目录执行：
-
-   ```bash
-   mkdir -p ./owenfx-backup
-   chmod 700 ./owenfx-backup
-   supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/roles.sql --role-only
-   supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/schema.sql
-   supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/data.sql --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
-   ```
-
-3. 检查三个文件是否存在且非空，记录导出时间、项目 Ref、PostgreSQL 版本、文件大小和 SHA-256。
-4. 将备份加密后保存到独立于 Supabase 和生产 VPS 的安全位置。不要把 SQL 数据文件提交到 GitHub。
-
-`roles.sql`、`schema.sql` 和 `data.sql` 是逻辑导出，不是物理快照。CLI 导出不包含 Supabase 托管的 `auth`、`storage` 等 Schema，也不包含 R2 对象和所有 Dashboard 配置；其中 `data.sql` 可能包含用户及业务数据，必须按生产敏感数据保护。
-
-#### 方式 B：在 VPS 上检查 PostgreSQL custom-format 归档并提取迁移历史
-
-当已有 PostgreSQL custom-format dump 时，可在安装了兼容版本 PostgreSQL 客户端工具的 VPS 上使用 `pg_restore` 做只读检查。本次 OwenFX 历史迁移档案恢复使用的文件位于：
-
-- 原始归档：`/root/OwenFX-Backups/owenfx-production-full.dump`
-- 提取的迁移账本：`/root/OwenFX-Backups/migration-ledger.sql`
-- 恢复的 8 个历史 SQL：`/root/OwenFX-Backups/recovered-migrations/`
-- Termius SFTP 临时下载副本：`/tmp/OwenFX-Backups/recovered-migrations/`
-
-先列出归档目录，不恢复或执行任何 SQL：
+在本机创建仅当前用户可访问的备份目录，并在该目录执行：
 
 ```bash
-pg_restore --list /root/OwenFX-Backups/owenfx-production-full.dump
+mkdir -p ./owenfx-backup
+chmod 700 ./owenfx-backup
+supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/roles.sql --role-only
+supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/schema.sql
+supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/data.sql --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
 ```
 
-只提取 Supabase 迁移账本表的数据到独立 SQL 文件：
+检查导出文件是否存在且非空，记录导出时间、项目 Ref、PostgreSQL 版本、文件大小和 SHA-256。随后将备份加密并保存到独立于 Supabase 和生产 VPS 的安全位置。
 
-```bash
-pg_restore --data-only --schema=supabase_migrations --table=schema_migrations --file=/root/OwenFX-Backups/migration-ledger.sql /root/OwenFX-Backups/owenfx-production-full.dump
-```
+#### 方式 B：在 VPS 上使用 Supabase CLI 备份或检查归档
 
-迁移账本中的 `statements` 字段保存了当时记录的 SQL 文本。恢复历史文件时必须正确解析 PostgreSQL COPY 转义和文本数组，不能用简单的 `cut`、`awk` 或按逗号拆分来处理。每个恢复文件应按账本版本号命名，并同时生成 `manifest.json`，记录版本、迁移名称、字节数和 SHA-256。
+VPS 已安装 Docker 和 Supabase CLI，可以承担与电脑相同的官方 CLI 逻辑备份工作。操作前确认连接的是 OwenFX 正确的生产项目，并遵守与电脑端相同的凭据保护、文件权限、校验和异地保存要求。
 
-在恢复目录执行校验：
+VPS 也可用于检查已有的 PostgreSQL custom-format 归档，以及从归档中恢复迁移历史。**本次迁移文件恢复使用的是此前已经存在的数据库备份归档**；恢复过程不是重新连接生产数据库逐条导出迁移 SQL，也不是重新执行历史迁移。
 
-```bash
-cd /root/OwenFX-Backups/recovered-migrations
-sha256sum *.sql
-```
+#### 迁移文件恢复
 
-将输出与 `manifest.json` 中每个文件的 SHA-256 比较；全部一致才表示这些文件与本次恢复生成的档案一致。通过 Termius 下载后，还应在电脑本地重新计算 SHA-256，与同一 manifest 比较，以验证传输后的文件完整性。
+当 GitHub 仓库缺少历史迁移文件，而已有数据库备份归档中保留了 Supabase 迁移账本时，可以从归档中提取 `supabase_migrations.schema_migrations` 的迁移记录，再从记录的 `statements` 字段恢复对应的历史 SQL 文本。
 
-**重要边界：** 本节记录的是 OwenFX 本次已验证的归档检查和迁移历史提取流程，不代表推荐把对 Supabase 所有托管 Schema 的原始 `pg_dump` 当作受支持的完整备份或可直接恢复方案。custom-format 文件可用于检查归档目录和提取指定表数据；恢复到新 Supabase 项目前，仍必须遵循官方恢复文档并在隔离项目演练。不要把恢复出的历史 SQL 重新执行到现有生产数据库。
+恢复流程应包括：
+
+1. 检查备份归档是否可读取，并确认其中包含迁移账本。
+2. 从归档中提取迁移账本数据，保留原始备份，不直接修改归档。
+3. 按迁移版本和名称解析账本中的 SQL 文本，恢复为独立的迁移 SQL 文件。
+4. 为恢复档案生成校验清单，记录迁移版本、名称、文件大小和 SHA-256。
+5. 对恢复文件计算 SHA-256，并与校验清单逐项比对；文件传输到电脑后，再次校验以确认传输完整性。
+6. 将恢复的历史迁移文件与 GitHub 当前的 `supabase/migrations/` 逐项比对，确认没有覆盖或重复后，才决定是否补回仓库。
+
+恢复出的历史 SQL 仅用于补齐和核对迁移历史，**不得在现有生产数据库中重新执行**。校验清单 `manifest.json` 是恢复档案的完整性记录，不是迁移文件，不应放入 `supabase/migrations/`。
+
+**备份范围边界：** 官方 `supabase db dump` 是逻辑导出，不是物理快照，也不是完整 Supabase 项目备份。它不包含 Supabase 托管的 `auth`、`storage` 等 Schema，也不包含 R2 对象和所有 Dashboard 配置。PostgreSQL custom-format 归档可用于检查归档目录和提取指定数据；不得仅凭归档可读取就认定它是可直接恢复整个 Supabase 项目的完整备份。恢复演练必须在隔离项目或测试环境中进行。
 
 #### 两种方式的共同安全要求
 
-- VPS 和电脑都应使用专用、权限受限的备份目录；备份文件不得放在网站公开目录。
+- 电脑和 VPS 都应使用专用、权限受限的备份目录；备份文件不得放在网站公开目录。
 - 数据库密码、Supabase Access Token、Service Role Key 和连接字符串不得写入命令历史、源码或 README。
 - 不要为了方便下载而开放整个备份目录；只对明确需要下载的临时副本授予最小读取权限，下载后及时清理临时副本。
 - 逻辑备份、custom-format 归档、迁移历史 SQL、Auth 用户清单、R2 对象和平台配置是不同的备份对象，不能互相替代。
-- `manifest.json` 是校验清单，不是迁移文件；它可随恢复档案保留，但不应放进 `supabase/migrations/`。
 - 任何恢复演练都必须使用新的隔离项目或测试环境。不得在生产项目中试恢复、重放历史迁移或执行 `supabase db reset`。
 
 ### 数据库与网站部署相互独立
@@ -388,7 +374,7 @@ sha256sum *.sql
 
 ### 当前生产迁移历史提示
 
-截至 2026-11-10，生产迁移账本的历史核对发现 8 条较早迁移原始 SQL 曾在 GitHub 中缺失。2026-11-11 已从生产数据库备份归档中的迁移账本 `statements` 字段恢复这 8 份 SQL，并对恢复目录中的文件完成 8/8 SHA-256 校验；这些文件目前属于独立恢复档案，尚需与 GitHub 当前迁移文件逐项比对后再决定如何补回仓库。恢复档案不是待执行迁移，不得重放到现有生产数据库。详细版本、差异和已执行的旧资源模块清理记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。
+截至 2026-11-11，生产迁移历史核对发现部分历史迁移原始 SQL 曾在 GitHub 中缺失。已从数据库备份归档中的迁移账本 `statements` 字段恢复相应历史 SQL，并完成文件完整性校验；恢复档案仍需与 GitHub 当前迁移文件逐项比对后，再决定如何补回仓库。恢复档案仅用于补齐和核对迁移历史，不是待执行迁移，不得重放到现有生产数据库。详细差异和已执行的旧资源模块清理记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。
 
 不要为了让页面显示数据而关闭 RLS，也不要把 Service Role Key 放进浏览器端。
 
@@ -407,7 +393,7 @@ supabase link --project-ref gjzxultalptqwqmpagzj
 supabase migration list --linked
 ```
 
-> 上述命令只用于 CLI 登录、项目关联和迁移状态检查。日常网站代码更新不需要执行这些命令。生产数据库变更仍须遵守前文审核和单独批准流程；不要为了导出结构而在生产 VPS 上临时安装 Docker，也不要把 CLI Access Token 当作数据库密码。
+> 上述命令只用于 CLI 登录、项目关联和迁移状态检查。日常网站代码更新不需要执行这些命令。电脑或 VPS 执行数据库导出时均需要 Docker 和 Supabase CLI；当前 VPS 已安装 Docker，无需重复安装。生产数据库变更仍须遵守前文审核和单独批准流程，也不要把 CLI Access Token 当作数据库密码。
 
 ## Cloudflare R2 配置说明
 
