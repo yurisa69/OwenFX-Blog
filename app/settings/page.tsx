@@ -161,8 +161,8 @@ export default function SettingsPage() {
       setPasswordError('请完整填写当前密码和两次新密码。');
       return;
     }
-    if (newPassword.length < 6) {
-      setPasswordError('新密码至少需要 6 位。');
+    if (newPassword.length < 12) {
+      setPasswordError('新密码至少需要 12 位。');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -308,9 +308,9 @@ export default function SettingsPage() {
           <label htmlFor="current-password">当前密码</label>
           <PasswordInput id="current-password" className="admin-input" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
           <label htmlFor="new-password">新密码</label>
-          <PasswordInput id="new-password" className="admin-input" autoComplete="new-password" minLength={6} required value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="至少 6 位" />
+          <PasswordInput id="new-password" className="admin-input" autoComplete="new-password" minLength={12} required value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="至少 12 位" />
           <label htmlFor="confirm-password">确认新密码</label>
-          <PasswordInput id="confirm-password" className="admin-input" autoComplete="new-password" minLength={6} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="再次输入新密码" />
+          <PasswordInput id="confirm-password" className="admin-input" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="再次输入新密码（至少12位）" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={passwordBusy}>
             {passwordBusy ? '正在更新密码…' : '更新密码'}
           </button>
