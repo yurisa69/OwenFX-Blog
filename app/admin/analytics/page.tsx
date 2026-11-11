@@ -1,8 +1,12 @@
 import { requireAdmin } from '@/lib/admin-auth';
 
+function getAnalyticsSince() {
+  return new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+}
+
 export default async function AnalyticsPage() {
   const { supabase } = await requireAdmin();
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const since = getAnalyticsSince();
   const { data, error } = await supabase.from('analytics_events')
     .select('event_type,target_key,created_at,software_id')
     .neq('event_type', 'resource_click')

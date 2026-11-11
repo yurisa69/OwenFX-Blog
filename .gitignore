@@ -4,4 +4,6 @@ out
 .env.local
 .env
 *.log
+*.tsbuildinfo
 .DS_Store
+supabase/.temp/

@@ -170,6 +170,8 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [message, setMessage] = useState('');
   const [preview, setPreview] = useState(false);
 
+  // 不将 content 加入依赖：每次输入都会更新它，重新写入 innerHTML 会导致编辑光标跳动。
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (mode === 'rich' && richRef.current) richRef.current.innerHTML = markdownToHtml(content);
   }, [mode, preview]);
@@ -310,7 +312,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       </div>
     </div>
 
-    {preview ? <article className="admin-preview" dangerouslySetInnerHTML={{ __html: markdownToHtml(mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content) }} /> :
+    {preview ? <article className="admin-preview" dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }} /> :
       mode === 'markdown' ? <textarea value={content} onChange={event => setContent(event.target.value)} rows={22} className="admin-input font-mono text-sm leading-7" placeholder={'# 文章标题\n\n在这里编写 Markdown 内容…'} /> :
         <div className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex flex-wrap gap-1 border-b p-2" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
