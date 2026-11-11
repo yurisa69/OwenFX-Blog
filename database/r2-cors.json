@@ -1,20 +1,9 @@
 [
   {
-    "AllowedOrigins": [
-      "https://owenfx-blog.vercel.app",
-      "http://localhost:3000"
-    ],
-    "AllowedMethods": [
-      "PUT",
-      "GET",
-      "HEAD"
-    ],
-    "AllowedHeaders": [
-      "Content-Type"
-    ],
-    "ExposeHeaders": [
-      "ETag"
-    ],
+    "AllowedOrigins": ["https://你的域名.com", "https://*.vercel.app"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3600
   }
 ]

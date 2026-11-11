@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   try { host = referrer ? new URL(referrer).hostname.slice(0, 180) : null; } catch {}
   const row = {
     event_type: body.event_type,
+    resource_id: null,
     software_id: typeof body.software_id === 'string' ? body.software_id : null,
     article_id: typeof body.article_id === 'string' ? body.article_id : null,
     target_key: typeof body.target_key === 'string' ? body.target_key.slice(0, 120) : null,

@@ -1,955 +1,325 @@
+/**
+ * OwenFX Supabase database types.
+ *
+ * Source of truth: production project gjzxultalptqwqmpagzj.
+ * Verified against the live public schema on 2026-11-11.
+ *
+ * This file describes the database contract only. It does not apply schema
+ * changes. Text columns constrained by CHECK constraints remain string types,
+ * matching Supabase generated-type semantics (Postgres enums are separate).
+ */
+
 export type Json =
   | string
   | number
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
+
+type Relationship<
+  ForeignKeyName extends string,
+  Columns extends string,
+  ReferencedRelation extends string,
+  ReferencedColumns extends string,
+> = {
+  foreignKeyName: ForeignKeyName;
+  columns: [Columns];
+  isOneToOne: boolean;
+  referencedRelation: ReferencedRelation;
+  referencedColumns: [ReferencedColumns];
+};
+
+type Table<
+  Row extends Record<string, unknown>,
+  RequiredInsert extends keyof Row = never,
+  Relationships extends Relationship<string, string, string, string>[] = [],
+> = {
+  Row: Row;
+  Insert: Pick<Row, RequiredInsert> & Partial<Omit<Row, RequiredInsert>>;
+  Update: Partial<Row>;
+  Relationships: Relationships;
+};
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.18"
-  }
   public: {
     Tables: {
-      admin_members: {
-        Row: {
-          active: boolean
-          created_at: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      analytics_events: {
-        Row: {
-          article_id: string | null
-          created_at: string
-          event_type: string
-          id: number
-          referrer_host: string | null
-          software_id: string | null
-          target_key: string | null
-        }
-        Insert: {
-          article_id?: string | null
-          created_at?: string
-          event_type: string
-          id?: never
-          referrer_host?: string | null
-          software_id?: string | null
-          target_key?: string | null
-        }
-        Update: {
-          article_id?: string | null
-          created_at?: string
-          event_type?: string
-          id?: never
-          referrer_host?: string | null
-          software_id?: string | null
-          target_key?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "analytics_events_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "analytics_events_software_id_fkey"
-            columns: ["software_id"]
-            isOneToOne: false
-            referencedRelation: "software"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      api_devices: {
-        Row: {
-          active: boolean
-          created_at: string
-          expires_at: string | null
-          id: string
-          last_used_at: string | null
-          name: string
-          scopes: string[]
-          token_hash: string
-          user_id: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          last_used_at?: string | null
-          name: string
-          scopes?: string[]
-          token_hash: string
-          user_id: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          last_used_at?: string | null
-          name?: string
-          scopes?: string[]
-          token_hash?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      article_interactions: {
-        Row: {
-          article_id: string
-          created_at: string
-          id: string
-          interaction_type: string
-          user_id: string
-        }
-        Insert: {
-          article_id: string
-          created_at?: string
-          id?: string
-          interaction_type: string
-          user_id: string
-        }
-        Update: {
-          article_id?: string
-          created_at?: string
-          id?: string
-          interaction_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "article_interactions_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      article_revisions: {
-        Row: {
-          article_id: string
-          content_hash: string | null
-          content_json: Json | null
-          content_markdown: string
-          created_at: string
-          editor_id: string | null
-          excerpt: string
-          github_path: string | null
-          github_sha: string | null
-          id: string
-          title: string
-        }
-        Insert: {
-          article_id: string
-          content_hash?: string | null
-          content_json?: Json | null
-          content_markdown?: string
-          created_at?: string
-          editor_id?: string | null
-          excerpt?: string
-          github_path?: string | null
-          github_sha?: string | null
-          id?: string
-          title: string
-        }
-        Update: {
-          article_id?: string
-          content_hash?: string | null
-          content_json?: Json | null
-          content_markdown?: string
-          created_at?: string
-          editor_id?: string | null
-          excerpt?: string
-          github_path?: string | null
-          github_sha?: string | null
-          id?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "article_revisions_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      article_tags: {
-        Row: {
-          article_id: string
-          tag_id: string
-        }
-        Insert: {
-          article_id: string
-          tag_id: string
-        }
-        Update: {
-          article_id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "article_tags_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "article_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      articles: {
-        Row: {
-          author_id: string | null
-          category_id: string | null
-          content_hash: string | null
-          content_json: Json | null
-          content_markdown: string
-          cover_url: string | null
-          created_at: string
-          excerpt: string
-          featured: boolean
-          github_path: string | null
-          github_sha: string | null
-          id: string
-          legacy_author: string | null
-          legacy_id: string | null
-          published_at: string | null
-          seo_description: string | null
-          seo_title: string | null
-          slug: string
-          status: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          author_id?: string | null
-          category_id?: string | null
-          content_hash?: string | null
-          content_json?: Json | null
-          content_markdown?: string
-          cover_url?: string | null
-          created_at?: string
-          excerpt?: string
-          featured?: boolean
-          github_path?: string | null
-          github_sha?: string | null
-          id?: string
-          legacy_author?: string | null
-          legacy_id?: string | null
-          published_at?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
-          slug: string
-          status?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          author_id?: string | null
-          category_id?: string | null
-          content_hash?: string | null
-          content_json?: Json | null
-          content_markdown?: string
-          cover_url?: string | null
-          created_at?: string
-          excerpt?: string
-          featured?: boolean
-          github_path?: string | null
-          github_sha?: string | null
-          id?: string
-          legacy_author?: string | null
-          legacy_id?: string | null
-          published_at?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
-          slug?: string
-          status?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "articles_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_logs: {
-        Row: {
-          action: string
-          actor_id: string | null
-          created_at: string
-          details: Json
-          entity_id: string | null
-          entity_type: string
-          id: number
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          created_at?: string
-          details?: Json
-          entity_id?: string | null
-          entity_type: string
-          id?: never
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          created_at?: string
-          details?: Json
-          entity_id?: string | null
-          entity_type?: string
-          id?: never
-        }
-        Relationships: []
-      }
-      categories: {
-        Row: {
-          active: boolean
-          created_at: string
-          description: string | null
-          id: string
-          kind: string
-          name: string
-          slug: string
-          sort_order: number
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          description?: string | null
-          id?: string
-          kind: string
-          name: string
-          slug: string
-          sort_order?: number
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          description?: string | null
-          id?: string
-          kind?: string
-          name?: string
-          slug?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
-      comments: {
-        Row: {
-          article_id: string
-          author_id: string
-          body: string
-          created_at: string
-          id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          article_id: string
-          author_id: string
-          body: string
-          created_at?: string
-          id?: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          article_id?: string
-          author_id?: string
-          body?: string
-          created_at?: string
-          id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "comments_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comments_author_id_profiles_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      media_assets: {
-        Row: {
-          alt_text: string | null
-          bucket: string
-          byte_size: number
-          created_at: string
-          duration_seconds: number | null
-          entity_id: string | null
-          entity_type: string | null
-          etag: string | null
-          height: number | null
-          id: string
-          media_kind: string
-          mime_type: string
-          object_key: string
-          original_filename: string | null
-          owner_id: string | null
-          public_url: string | null
-          upload_status: string
-          width: number | null
-        }
-        Insert: {
-          alt_text?: string | null
-          bucket: string
-          byte_size: number
-          created_at?: string
-          duration_seconds?: number | null
-          entity_id?: string | null
-          entity_type?: string | null
-          etag?: string | null
-          height?: number | null
-          id?: string
-          media_kind?: string
-          mime_type: string
-          object_key: string
-          original_filename?: string | null
-          owner_id?: string | null
-          public_url?: string | null
-          upload_status?: string
-          width?: number | null
-        }
-        Update: {
-          alt_text?: string | null
-          bucket?: string
-          byte_size?: number
-          created_at?: string
-          duration_seconds?: number | null
-          entity_id?: string | null
-          entity_type?: string | null
-          etag?: string | null
-          height?: number | null
-          id?: string
-          media_kind?: string
-          mime_type?: string
-          object_key?: string
-          original_filename?: string | null
-          owner_id?: string | null
-          public_url?: string | null
-          upload_status?: string
-          width?: number | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string
-          display_name: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          display_name?: string
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          display_name?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      site_promotions: {
-        Row: {
-          active: boolean
-          body: string | null
-          ends_at: string | null
-          id: string
-          image_url: string | null
-          key: string
-          placement: string
-          starts_at: string | null
-          target_url: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          active?: boolean
-          body?: string | null
-          ends_at?: string | null
-          id?: string
-          image_url?: string | null
-          key: string
-          placement: string
-          starts_at?: string | null
-          target_url?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Update: {
-          active?: boolean
-          body?: string | null
-          ends_at?: string | null
-          id?: string
-          image_url?: string | null
-          key?: string
-          placement?: string
-          starts_at?: string | null
-          target_url?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      site_settings: {
-        Row: {
-          key: string
-          updated_at: string
-          updated_by: string | null
-          value: Json
-        }
-        Insert: {
-          key: string
-          updated_at?: string
-          updated_by?: string | null
-          value?: Json
-        }
-        Update: {
-          key?: string
-          updated_at?: string
-          updated_by?: string | null
-          value?: Json
-        }
-        Relationships: []
-      }
-      software: {
-        Row: {
-          category_id: string | null
-          created_at: string
-          description: string
-          developer: string | null
-          download_url: string | null
-          featured: boolean
-          featured_order: number
-          file_size: string | null
-          id: string
-          image_url: string | null
-          introduction_markdown: string
-          legacy_id: string | null
-          official_download_url: string | null
-          platform: string | null
-          published_at: string | null
-          screenshots: Json
-          slug: string
-          status: string
-          title: string
-          updated_at: string
-          version: string | null
-        }
-        Insert: {
-          category_id?: string | null
-          created_at?: string
-          description?: string
-          developer?: string | null
-          download_url?: string | null
-          featured?: boolean
-          featured_order?: number
-          file_size?: string | null
-          id?: string
-          image_url?: string | null
-          introduction_markdown?: string
-          legacy_id?: string | null
-          official_download_url?: string | null
-          platform?: string | null
-          published_at?: string | null
-          screenshots?: Json
-          slug: string
-          status?: string
-          title: string
-          updated_at?: string
-          version?: string | null
-        }
-        Update: {
-          category_id?: string | null
-          created_at?: string
-          description?: string
-          developer?: string | null
-          download_url?: string | null
-          featured?: boolean
-          featured_order?: number
-          file_size?: string | null
-          id?: string
-          image_url?: string | null
-          introduction_markdown?: string
-          legacy_id?: string | null
-          official_download_url?: string | null
-          platform?: string | null
-          published_at?: string | null
-          screenshots?: Json
-          slug?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          version?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "software_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      software_download_links: {
-        Row: {
-          access_code: string | null
-          active: boolean
-          created_at: string
-          id: string
-          label: string
-          provider: string
-          share_url: string
-          software_id: string
-          sort_order: number
-        }
-        Insert: {
-          access_code?: string | null
-          active?: boolean
-          created_at?: string
-          id?: string
-          label?: string
-          provider: string
-          share_url: string
-          software_id: string
-          sort_order?: number
-        }
-        Update: {
-          access_code?: string | null
-          active?: boolean
-          created_at?: string
-          id?: string
-          label?: string
-          provider?: string
-          share_url?: string
-          software_id?: string
-          sort_order?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "software_download_links_software_id_fkey"
-            columns: ["software_id"]
-            isOneToOne: false
-            referencedRelation: "software"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      software_tags: {
-        Row: {
-          software_id: string
-          tag_id: string
-        }
-        Insert: {
-          software_id: string
-          tag_id: string
-        }
-        Update: {
-          software_id?: string
-          tag_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "software_tags_software_id_fkey"
-            columns: ["software_id"]
-            isOneToOne: false
-            referencedRelation: "software"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "software_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      software_versions: {
-        Row: {
-          changelog: string | null
-          created_at: string
-          download_url: string
-          file_size: string | null
-          id: string
-          platform: string | null
-          published_at: string | null
-          software_id: string
-          version: string
-        }
-        Insert: {
-          changelog?: string | null
-          created_at?: string
-          download_url: string
-          file_size?: string | null
-          id?: string
-          platform?: string | null
-          published_at?: string | null
-          software_id: string
-          version: string
-        }
-        Update: {
-          changelog?: string | null
-          created_at?: string
-          download_url?: string
-          file_size?: string | null
-          id?: string
-          platform?: string | null
-          published_at?: string | null
-          software_id?: string
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "software_versions_software_id_fkey"
-            columns: ["software_id"]
-            isOneToOne: false
-            referencedRelation: "software"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      support_settings: {
-        Row: {
-          enabled: boolean
-          methods: Json
-          placement: string
-          updated_at: string
-        }
-        Insert: {
-          enabled?: boolean
-          methods?: Json
-          placement: string
-          updated_at?: string
-        }
-        Update: {
-          enabled?: boolean
-          methods?: Json
-          placement?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      tags: {
-        Row: {
-          active: boolean
-          created_at: string
-          id: string
-          name: string
-          slug: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          id?: string
-          name: string
-          slug: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          id?: string
-          name?: string
-          slug?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
+      admin_members: Table<{
+        user_id: string;
+        role: string;
+        active: boolean;
+        created_at: string;
+      }, 'user_id'>;
+
+      analytics_events: Table<{
+        id: number;
+        event_type: string;
+        article_id: string | null;
+        target_key: string | null;
+        referrer_host: string | null;
+        created_at: string;
+        software_id: string | null;
+      }, 'event_type', [
+        Relationship<'analytics_events_article_id_fkey', 'article_id', 'articles', 'id'>,
+        Relationship<'analytics_events_software_id_fkey', 'software_id', 'software', 'id'>,
+      ]>;
+
+      api_devices: Table<{
+        id: string;
+        user_id: string;
+        name: string;
+        token_hash: string;
+        scopes: string[];
+        active: boolean;
+        expires_at: string | null;
+        last_used_at: string | null;
+        created_at: string;
+      }, 'user_id' | 'name' | 'token_hash'>;
+
+      article_interactions: Table<{
+        id: string;
+        user_id: string;
+        article_id: string;
+        interaction_type: string;
+        created_at: string;
+      }, 'user_id' | 'article_id' | 'interaction_type', [
+        Relationship<'article_interactions_article_id_fkey', 'article_id', 'articles', 'id'>,
+      ]>;
+
+      article_revisions: Table<{
+        id: string;
+        article_id: string;
+        editor_id: string | null;
+        title: string;
+        excerpt: string;
+        content_markdown: string;
+        content_json: Json | null;
+        created_at: string;
+        github_path: string | null;
+        github_sha: string | null;
+        content_hash: string | null;
+      }, 'article_id' | 'title'>;
+
+      article_tags: Table<{
+        article_id: string;
+        tag_id: string;
+      }, 'article_id' | 'tag_id', [
+        Relationship<'article_tags_article_id_fkey', 'article_id', 'articles', 'id'>,
+        Relationship<'article_tags_tag_id_fkey', 'tag_id', 'tags', 'id'>,
+      ]>;
+
+      articles: Table<{
+        id: string;
+        legacy_id: string | null;
+        title: string;
+        slug: string;
+        excerpt: string;
+        content_markdown: string;
+        content_json: Json | null;
+        cover_url: string | null;
+        category_id: string | null;
+        author_id: string | null;
+        status: string;
+        featured: boolean;
+        seo_title: string | null;
+        seo_description: string | null;
+        published_at: string | null;
+        created_at: string;
+        updated_at: string;
+        legacy_author: string | null;
+        github_path: string | null;
+        github_sha: string | null;
+        content_hash: string | null;
+      }, 'title' | 'slug', [
+        Relationship<'articles_category_id_fkey', 'category_id', 'categories', 'id'>,
+      ]>;
+
+      audit_logs: Table<{
+        id: number;
+        actor_id: string | null;
+        action: string;
+        entity_type: string;
+        entity_id: string | null;
+        details: Json;
+        created_at: string;
+      }, 'action' | 'entity_type'>;
+
+      categories: Table<{
+        id: string;
+        kind: string;
+        name: string;
+        slug: string;
+        description: string | null;
+        sort_order: number;
+        active: boolean;
+        created_at: string;
+      }, 'kind' | 'name' | 'slug'>;
+
+      comments: Table<{
+        id: string;
+        article_id: string;
+        author_id: string;
+        body: string;
+        status: string;
+        created_at: string;
+        updated_at: string;
+      }, 'article_id' | 'author_id' | 'body', [
+        Relationship<'comments_article_id_fkey', 'article_id', 'articles', 'id'>,
+        Relationship<'comments_author_id_profiles_fkey', 'author_id', 'profiles', 'id'>,
+      ]>;
+
+      media_assets: Table<{
+        id: string;
+        owner_id: string | null;
+        bucket: string;
+        object_key: string;
+        public_url: string | null;
+        mime_type: string;
+        byte_size: number;
+        alt_text: string | null;
+        created_at: string;
+        media_kind: string;
+        original_filename: string | null;
+        entity_type: string | null;
+        entity_id: string | null;
+        upload_status: string;
+        width: number | null;
+        height: number | null;
+        duration_seconds: number | null;
+        etag: string | null;
+      }, 'bucket' | 'object_key' | 'mime_type' | 'byte_size'>;
+
+      profiles: Table<{
+        id: string;
+        display_name: string;
+        avatar_url: string | null;
+        created_at: string;
+        updated_at: string;
+        bio: string | null;
+      }, 'id'>;
+
+      site_promotions: Table<{
+        id: string;
+        key: string;
+        title: string;
+        target_url: string | null;
+        image_url: string | null;
+        body: string | null;
+        placement: string;
+        active: boolean;
+        starts_at: string | null;
+        ends_at: string | null;
+        updated_at: string;
+      }, 'key' | 'placement'>;
+
+      site_settings: Table<{
+        key: string;
+        value: Json;
+        updated_by: string | null;
+        updated_at: string;
+      }, 'key'>;
+
+      software: Table<{
+        id: string;
+        legacy_id: string | null;
+        title: string;
+        slug: string;
+        description: string;
+        category_id: string | null;
+        download_url: string | null;
+        image_url: string | null;
+        version: string | null;
+        file_size: string | null;
+        platform: string | null;
+        status: string;
+        featured: boolean;
+        updated_at: string;
+        created_at: string;
+        developer: string | null;
+        official_download_url: string | null;
+        introduction_markdown: string;
+        screenshots: Json;
+        featured_order: number;
+        published_at: string | null;
+      }, 'title' | 'slug', [
+        Relationship<'software_category_id_fkey', 'category_id', 'categories', 'id'>,
+      ]>;
+
+      software_download_links: Table<{
+        id: string;
+        software_id: string;
+        provider: string;
+        label: string;
+        share_url: string;
+        access_code: string | null;
+        sort_order: number;
+        active: boolean;
+        created_at: string;
+      }, 'software_id' | 'provider' | 'share_url', [
+        Relationship<'software_download_links_software_id_fkey', 'software_id', 'software', 'id'>,
+      ]>;
+
+      software_tags: Table<{
+        software_id: string;
+        tag_id: string;
+      }, 'software_id' | 'tag_id', [
+        Relationship<'software_tags_software_id_fkey', 'software_id', 'software', 'id'>,
+        Relationship<'software_tags_tag_id_fkey', 'tag_id', 'tags', 'id'>,
+      ]>;
+
+      software_versions: Table<{
+        id: string;
+        software_id: string;
+        version: string;
+        platform: string | null;
+        download_url: string;
+        file_size: string | null;
+        changelog: string | null;
+        published_at: string | null;
+        created_at: string;
+      }, 'software_id' | 'version' | 'download_url', [
+        Relationship<'software_versions_software_id_fkey', 'software_id', 'software', 'id'>,
+      ]>;
+
+      support_settings: Table<{
+        placement: string;
+        enabled: boolean;
+        methods: Json;
+        updated_at: string;
+      }, 'placement'>;
+
+      tags: Table<{
+        id: string;
+        name: string;
+        slug: string;
+        active: boolean;
+        created_at: string;
+      }, 'name' | 'slug'>;
+    };
+
+    Views: Record<never, never>;
+
     Functions: {
-      is_owenfx_admin: { Args: never; Returns: boolean }
-      is_owenfx_content_editor: { Args: never; Returns: boolean }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      is_owenfx_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      is_owenfx_content_editor: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+    };
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+    Enums: Record<never, never>;
+    CompositeTypes: Record<never, never>;
+  };
+};
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+export type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row'];
 
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+export type TablesInsert<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Insert'];
 
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
-
-
+export type TablesUpdate<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Update'];

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authorizeContentEditor } from '@/lib/admin-api';
 import { uploadToR2 } from '@/lib/r2';
-import { getR2ServerConfig } from '@/lib/r2-media';
 
 export const runtime = 'nodejs';
 
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
     const uploaded = await uploadToR2(file);
     const { error } = await auth.supabase.from('media_assets').insert({
       owner_id: auth.user.id,
-      bucket: getR2ServerConfig().bucket,
+      bucket: process.env.R2_BUCKET_NAME,
       object_key: uploaded.key,
       public_url: uploaded.url,
       mime_type: uploaded.contentType,

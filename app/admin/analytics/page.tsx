@@ -1,13 +1,13 @@
 import { requireAdmin } from '@/lib/admin-auth';
-import type { Tables } from '@/types/database';
 
 export default async function AnalyticsPage() {
   const { supabase } = await requireAdmin();
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase.from('analytics_events')
-    .select('*')
+    .select('event_type,target_key,created_at,software_id')
+    .neq('event_type', 'resource_click')
     .gte('created_at', since).order('created_at', { ascending: false }).limit(1000);
-  const events = ((data || []) as Tables<'analytics_events'>[]).filter(event => event.event_type !== 'resource_click');
+  const events = data || [];
   const count = (type: string) => events.filter(event => event.event_type === type).length;
   const totals = [
     ['近30天总点击', events.length],

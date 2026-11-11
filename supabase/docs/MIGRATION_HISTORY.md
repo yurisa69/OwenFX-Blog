@@ -24,8 +24,6 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261107060000` | `r2_unified_media_assets` | Existing GitHub migration; version is recorded in production |
 | `20261109164831` | `remove_legacy_verification_codes` | Existing GitHub migration |
 | `20261110090913` | `remove_legacy_resource_click_policy` | Existing GitHub migration |
-| `20261111081909` | `harden_software_publication_and_rls_access` | Applied: scheduled-publication RLS, admin policy roles, and row-independent auth checks |
-| `20261111081959` | `isolate_security_definer_membership_helpers` | Applied: private SECURITY DEFINER helpers with public SECURITY INVOKER wrappers |
 
 ## 2. Recovery and reconciliation
 

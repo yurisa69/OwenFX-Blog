@@ -138,12 +138,6 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
     { key: 'thunder', label: '迅雷' },
   ].map(provider => ({ ...provider, link: links.find((link: { provider: string }) => link.provider === provider.key) }));
 
-  const screenshots = Array.isArray(software.screenshots)
-    ? software.screenshots
-        .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-        .map(item => item.trim())
-    : [];
-
   const { data: relatedSoftware } = software.category_id
     ? await supabase.from('software')
         .select('id,title,slug,description,image_url,version')
@@ -257,11 +251,11 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
             {!software.official_download_url && links.length === 0 && <p className="col-span-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
           </div>
         </div>
-        {screenshots.length > 0 && (
+        {Array.isArray(software.screenshots) && software.screenshots.length > 0 && (
           <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
             <h2 className="mb-3 text-lg font-semibold">软件截图</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {screenshots.map((url, index) => (
+              {software.screenshots.map((url: string, index: number) => (
                 <a key={url + index} href={url} target="_blank" rel="noopener noreferrer"
                   className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--border-color)' }}>
                   <img src={url} alt={software.title + ' 截图 ' + (index + 1)} className="h-auto w-full object-cover" loading="lazy" />

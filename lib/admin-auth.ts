@@ -1,13 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-type SupabaseClientInstance = Awaited<ReturnType<typeof createClient>>;
-type AuthenticatedUser = NonNullable<
-  Awaited<ReturnType<SupabaseClientInstance['auth']['getUser']>>['data']['user']
->;
-type AdminContext = { supabase: SupabaseClientInstance; user: AuthenticatedUser };
-
-export async function requireContentEditor(): Promise<AdminContext> {
+export async function requireContentEditor() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login?next=/admin');
@@ -16,7 +10,7 @@ export async function requireContentEditor(): Promise<AdminContext> {
   return { supabase, user };
 }
 
-export async function requireAdmin(): Promise<AdminContext> {
+export async function requireAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login?next=/admin');
