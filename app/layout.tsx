@@ -32,45 +32,37 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
     const cookieStore = await cookies();
-    const hasSupabaseSessionCookie = cookieStore.getAll().some(({ name }) =>
-      /^sb-.+(?:-auth-token(?:\.\d+)?|-access-token|-refresh-token)$/.test(name)
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll() { return cookieStore.getAll() }, setAll() {} } }
     );
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const metadata = session.user.user_metadata as Record<string, unknown>;
+      const metadataAvatar = typeof metadata.avatar_url === 'string' ? metadata.avatar_url : typeof metadata.picture === 'string' ? metadata.picture : null;
+      const metadataName = typeof metadata.display_name === 'string' ? metadata.display_name : typeof metadata.name === 'string' ? metadata.name : null;
 
-    // Anonymous visitors do not need a Supabase auth client or a session lookup.
-    // Keep the existing account hydration path for requests carrying auth cookies.
-    if (hasSupabaseSessionCookie) {
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { cookies: { getAll() { return cookieStore.getAll() }, setAll() {} } }
-      );
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const metadata = session.user.user_metadata as Record<string, unknown>;
-        const metadataAvatar = typeof metadata.avatar_url === 'string' ? metadata.avatar_url : typeof metadata.picture === 'string' ? metadata.picture : null;
-        const metadataName = typeof metadata.display_name === 'string' ? metadata.display_name : typeof metadata.name === 'string' ? metadata.name : null;
-
-        // Read only the fields needed by the global account identity so the
-        // database avatar is already available in the first server-rendered HTML.
-        let profile: { display_name?: string | null; avatar_url?: string | null } | null = null;
-        try {
-          const { data } = await supabase
-            .from('profiles')
-            .select('display_name,avatar_url')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          profile = data;
-        } catch {
-          // Keep the authenticated Session metadata as a safe fallback.
-        }
-
-        initialUser = {
-          id: session.user.id,
-          name: profile?.display_name || metadataName || session.user.email?.split('@')[0] || '用户',
-          email: session.user.email,
-          avatar_url: profile?.avatar_url || metadataAvatar,
-        };
+      // Read only the fields needed by the global account identity so the
+      // database avatar is already available in the first server-rendered HTML.
+      let profile: { display_name?: string | null; avatar_url?: string | null } | null = null;
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('display_name,avatar_url')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        profile = data;
+      } catch {
+        // Keep the authenticated Session metadata as a safe fallback.
       }
+
+      initialUser = {
+        id: session.user.id,
+        name: profile?.display_name || metadataName || session.user.email?.split('@')[0] || '用户',
+        email: session.user.email,
+        avatar_url: profile?.avatar_url || metadataAvatar,
+      };
     }
   } catch {}
 
