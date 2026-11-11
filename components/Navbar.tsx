@@ -231,17 +231,42 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
     if (!file) return;
     setUploading(true); setNotice('');
     try {
-      const body = new FormData();
-      body.append('file', file);
-      const response = await fetch('/api/profile/avatar-upload', { method: 'POST', body });
-      const result = await response.json();
-      if (!response.ok || !result.url) throw new Error(result.error || '头像上传失败');
-      setProfile(current => ({ ...current, avatar_url: result.url }));
-      setNotice('头像上传成功，保存资料后生效');
+      const signedResponse = await fetch('/api/r2-upload/presign', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'avatar', fileName: file.name, contentType: file.type, size: file.size }),
+      });
+      const signed = await signedResponse.json();
+      if (!signedResponse.ok || !signed.uploadUrl || !signed.key) {
+        throw new Error(signed.error || '无法创建头像上传地址');
+      }
+
+      const uploadResponse = await fetch(signed.uploadUrl, {
+        method: 'PUT',
+        headers: signed.headers,
+        body: file,
+      });
+      if (!uploadResponse.ok) throw new Error('头像上传失败，请检查 R2 存储桶 CORS 配置');
+
+      const completeResponse = await fetch('/api/r2-upload/complete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'avatar', key: signed.key, fileName: file.name, alt: '用户头像' }),
+      });
+      const completed = await completeResponse.json();
+      const avatarUrl = completed.asset?.public_url;
+      if (!completeResponse.ok || !avatarUrl) {
+        throw new Error(completed.error || '头像登记或资料更新失败');
+      }
+
+      setProfile(current => ({ ...current, avatar_url: avatarUrl }));
+      setUser(current => current ? { ...current, avatar_url: avatarUrl } : current);
+      setNotice('头像已更新并立即生效；昵称和简介仍需点击“保存资料”保存。');
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '头像上传失败');
     } finally {
-      setUploading(false);      event.target.value = '';
+      setUploading(false);
+      event.target.value = '';
     }
   };
 

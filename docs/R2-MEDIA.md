@@ -20,7 +20,7 @@ OwenFX 的媒体二进制文件统一保存在 Cloudflare R2。Supabase 的 `pub
 2. 浏览器直接 PUT 文件到 R2，不经过 Vercel Function 文件代理，避免 Vercel 请求体大小限制。
 3. 浏览器调用 `POST /api/r2-upload/complete`。
 4. 服务端通过 R2 HeadObject 确认对象存在和实际大小，再写入 Supabase `media_assets`。
-5. 头像类型完成登记后同步更新 `profiles.avatar_url`。
+5. 头像类型完成登记后同步更新 `profiles.avatar_url`；个人资料面板立即显示新头像，昵称和简介仍由“保存资料”单独提交。
 
 签名 URL 默认 10 分钟过期。图片最大 20 MB；视频最大 250 MB。当前允许 JPG、PNG、WebP、GIF、AVIF、MP4、WebM、MOV。服务端密钥不会返回浏览器。
 
