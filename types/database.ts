@@ -51,18 +51,39 @@ export type Database = {
         created_at: string;
       }, 'user_id'>;
 
-      analytics_events: Table<{
-        id: number;
-        event_type: string;
-        article_id: string | null;
-        target_key: string | null;
-        referrer_host: string | null;
-        created_at: string;
-        software_id: string | null;
-      }, 'event_type', [
-        Relationship<'analytics_events_article_id_fkey', 'article_id', 'articles', 'id'>,
-        Relationship<'analytics_events_software_id_fkey', 'software_id', 'software', 'id'>,
-      ]>;
+      analytics_events: {
+        Row: {
+          id: number;
+          event_type: string;
+          article_id: string | null;
+          target_key: string | null;
+          referrer_host: string | null;
+          created_at: string;
+          software_id: string | null;
+        };
+        Insert: {
+          id?: number;
+          event_type: string;
+          article_id?: string | null;
+          target_key?: string | null;
+          referrer_host?: string | null;
+          created_at?: string;
+          software_id?: string | null;
+        };
+        Update: {
+          id?: number;
+          event_type?: string;
+          article_id?: string | null;
+          target_key?: string | null;
+          referrer_host?: string | null;
+          created_at?: string;
+          software_id?: string | null;
+        };
+        Relationships: [
+          Relationship<'analytics_events_article_id_fkey', 'article_id', 'articles', 'id'>,
+          Relationship<'analytics_events_software_id_fkey', 'software_id', 'software', 'id'>,
+        ];
+      };
 
       api_devices: Table<{
         id: string;
