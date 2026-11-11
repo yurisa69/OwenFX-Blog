@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authorizeAdmin } from '@/lib/admin-api';
+import type { Json } from '@/types/database';
 
 export async function GET() {
   const auth = await authorizeAdmin();
@@ -13,8 +14,8 @@ export async function PUT(req: Request) {
   const auth = await authorizeAdmin();
   if ('response' in auth) return auth.response;
   const body = await req.json().catch(() => null);
-  if (!body || !['article', 'software'].includes(body.placement) || typeof body.methods !== 'object') return NextResponse.json({ error: '参数无效' }, { status: 400 });
-  const methods: Record<string, unknown> = {};
+  if (!body || !['article', 'software'].includes(body.placement) || !body.methods || typeof body.methods !== 'object' || Array.isArray(body.methods)) return NextResponse.json({ error: '参数无效' }, { status: 400 });
+  const methods: Record<string, Json> = {};
   for (const key of ['alipay', 'wechat', 'usdc', 'usdt']) {
     const method = body.methods[key] || {};
     methods[key] = {
