@@ -1,11 +1,9 @@
--- HISTORY-ONLY PLACEHOLDER: original migration SQL is unavailable.
--- Production migration version: 20261105221158
--- Recorded migration name: software_analytics
---
--- This file contains no DDL or DML and intentionally performs no database changes.
--- It exists only to align the local migration version list with the existing
--- production migration ledger. Do NOT treat it as the original migration.
--- Do NOT use it to bootstrap, restore, or reconstruct a new database.
--- The production schema snapshot and recovery limitations are documented in:
---   supabase/schema/production-baseline.sql
---   supabase/docs/MIGRATION_HISTORY.md
+-- Reconciled analytics extension; resource_click was retired.
+ALTER TABLE public.analytics_events ADD COLUMN IF NOT EXISTS software_id UUID REFERENCES public.software(id) ON DELETE SET NULL;
+ALTER TABLE public.analytics_events DROP CONSTRAINT IF EXISTS analytics_events_event_type_check;
+ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_event_type_check CHECK(event_type IN ('software_click','wechat_click','ad_click','article_view'));
+CREATE INDEX IF NOT EXISTS analytics_events_software_idx ON public.analytics_events(software_id,created_at DESC);
+DROP POLICY IF EXISTS "Public insert analytics events" ON public.analytics_events;
+CREATE POLICY "Public insert analytics events" ON public.analytics_events FOR INSERT TO anon,authenticated WITH CHECK(event_type IN ('software_click','wechat_click','ad_click','article_view'));
+GRANT INSERT ON public.analytics_events TO anon,authenticated;
+GRANT SELECT ON public.analytics_events TO authenticated;

@@ -1,11 +1,5 @@
--- HISTORY-ONLY PLACEHOLDER: original migration SQL is unavailable.
--- Production migration version: 20261105221034
--- Recorded migration name: secure_verification_codes
---
--- This file contains no DDL or DML and intentionally performs no database changes.
--- It exists only to align the local migration version list with the existing
--- production migration ledger. Do NOT treat it as the original migration.
--- Do NOT use it to bootstrap, restore, or reconstruct a new database.
--- The production schema snapshot and recovery limitations are documented in:
---   supabase/schema/production-baseline.sql
---   supabase/docs/MIGRATION_HISTORY.md
+-- Historical migration retained for version-ledger alignment only.
+-- The original verification_codes table and its policies were retired by
+-- 20261109164831_remove_legacy_verification_codes.sql.
+-- The table is absent from the current production schema, so no DDL is
+-- restored here. Do not replay this file.
