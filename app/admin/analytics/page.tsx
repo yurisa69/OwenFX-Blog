@@ -4,7 +4,7 @@ export default async function AnalyticsPage() {
   const { supabase } = await requireAdmin();
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase.from('analytics_events')
-    .select('event_type,target_key,created_at,software_id')
+    .select('*')
     .gte('created_at', since).order('created_at', { ascending: false }).limit(1000);
   const events = (data || []).filter(event => event.event_type !== 'resource_click');
   const count = (type: string) => events.filter(event => event.event_type === type).length;
