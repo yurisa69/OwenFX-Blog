@@ -35,9 +35,9 @@ type Table<
   RequiredInsert extends keyof Row = never,
   Relationships extends Relationship<string, string, string, string>[] = [],
 > = {
-  Row: Row;
-  Insert: Pick<Row, RequiredInsert> & Partial<Omit<Row, RequiredInsert>>;
-  Update: Partial<Row>;
+  Row: Row & Record<string, unknown>;
+  Insert: (Pick<Row, RequiredInsert> & Partial<Omit<Row, RequiredInsert>>) & Record<string, unknown>;
+  Update: Partial<Row> & Record<string, unknown>;
   Relationships: Relationships;
 };
 
