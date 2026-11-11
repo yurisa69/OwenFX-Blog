@@ -106,7 +106,7 @@ export default function RegisterPage() {
         ) : (
           <>
             <h1 className="text-2xl font-bold">确认你的邮件地址</h1>
-            <p className="my-4 text-sm opacity-70">我们已向 <strong>{registeredEmail}</strong> 发送 OwenFX 注册确认邮件。请打开邮件并点击“确认注册”完成邮件地址验证。</p>
+            <p className="my-4 text-sm opacity-70">我们已向 <strong>{registeredEmail}</strong> 发送 OwenFX 注册确认邮件。请打开邮件并点击“确认注册”完成邮件验证。</p>
             <p className="mb-4 rounded-xl border p-3 text-sm opacity-80" style={{ borderColor: 'var(--border-color)' }}>完成验证后即可使用注册邮件地址和密码登录。如果没有收到邮件，请检查垃圾邮件文件夹。</p>
             {message && <p className="mb-3 text-sm" style={{ color: 'var(--success)' }}>{message}</p>}
             {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
