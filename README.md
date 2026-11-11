@@ -56,7 +56,7 @@
 为减少用户打开网站或进入个人中心时头像短暂空白、占位符闪烁的问题，当前头像采用**服务端优先读取数据库资料，客户端后台同步**的策略。
 
 1. **服务端首屏读取**：用户请求页面时，`app/layout.tsx` 先通过 Supabase Auth 获取当前 Session。仅对已登录用户查询 `profiles` 表中的 `avatar_url` 和 `display_name` 两个必要字段，并将结果作为初始用户资料传给全局 Navbar。
-2. **数据优先级**：优先使用 `profiles.avatar_url` 和 `profiles.display_name`；数据库记录不存在或查询失败时，回退到 Session 的 User Metadata（头像字段兼容 `avatar_url` / `picture`，昵称字段兼容 `display_name` / `name`），最后才使用邮箱前缀或通用昵称。
+2. **数据优先级**：优先使用 `profiles.avatar_url` 和 `profiles.display_name`；数据库记录不存在或查询失败时，回退到 Session 的 User Metadata（头像字段兼容 `avatar_url` / `picture`，昵称字段兼容 `display_name` / `name`），最后才使用邮件地址前缀或通用昵称。
 3. **图片直接渲染**：`components/Avatar.tsx` 在拿到有效头像 URL 后直接渲染图片，不等待图片加载事件或 `decode()` 完成，也不使用昵称首字母遮挡正在加载的图片。只有头像地址缺失或图片请求失败时，才显示昵称首字母占位。
 4. **客户端后台同步**：Navbar 在客户端继续同步 Session 与 Supabase 用户资料，更新资料面板状态并预加载头像；异步更新需检查组件生命周期和用户 ID，避免卸载后更新或将其他账号的资料写入当前用户状态。
 5. **性能与边界**：为了让数据库头像进入服务端首屏，已登录用户的页面请求会增加一次只查询必要字段的 Supabase 资料读取；未登录用户不执行该查询。不要把用户资料查询改成跨用户共享缓存，以免发生资料串用。头像 URL 已在首屏 HTML 中提供，并不代表图片文件本身无需网络加载；图片下载速度仍取决于头像源站和网络状况。
@@ -93,14 +93,14 @@ Next.js App Router（Vercel）
       |       文章封面、正文图片、头像及其他媒体文件
       |
       +---- Supabase Auth Email
-              注册确认、邀请、魔法链接、邮箱变更、密码重置与重新认证邮件
+              注册确认、邀请、魔法链接、邮件地址变更、密码重置与重新认证邮件
 ```
 
 - **Vercel**：运行 Next.js 网站和服务端 API。
 - **Supabase**：提供身份认证、文章 / 软件等业务元数据、文章修订索引、API 设备授权和权限相关能力；不保存新文章正文。
 - **GitHub**：保存文章 Markdown 正文文件，默认路径为 `content/articles/{slug}.md`。
 - **Cloudflare R2**：通过 S3 兼容接口保存文章图片、封面、头像和其他媒体对象；Supabase `media_assets` 仅保存文件元数据和 R2 对象引用。
-- **Supabase Auth Email**：统一发送注册确认、邀请、魔法链接、邮箱变更、密码重置和重新认证邮件；邮件主题与正文由 Supabase Auth Email Templates 管理。
+- **Supabase Auth Email**：统一发送注册确认、邀请、魔法链接、邮件地址变更、密码重置和重新认证邮件；邮件主题与正文由 Supabase Auth Email Templates 管理。
 
 ## 目录结构
 

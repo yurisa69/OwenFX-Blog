@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     if (authMessage.includes('password')) {
       return NextResponse.json({ error: '密码不符合要求，请检查后重试。' }, { status: 400 });
     }
-    return NextResponse.json({ error: '注册请求失败，请检查邮箱地址后重试。' }, { status: 400 });
+    return NextResponse.json({ error: '注册请求失败，请检查邮件地址后重试。' }, { status: 400 });
   }
 
   return NextResponse.json({ success: true });

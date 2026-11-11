@@ -17,7 +17,7 @@ export default function AuthLoginPage() {
     if (reason === 'password-updated') {
       setNotice('密码已更新，请使用新密码重新登录。');
     } else if (reason === 'email-updated') {
-      setNotice('邮箱已更新，请使用新邮箱和密码重新登录。');
+      setNotice('邮件地址已更新，请使用新邮件地址和密码重新登录。');
     }
   }, []);
 
@@ -31,7 +31,7 @@ export default function AuthLoginPage() {
         email: email.trim().toLowerCase(),
         password,
       });
-      if (authError) throw new Error('邮箱或密码错误');
+      if (authError) throw new Error('邮件地址或密码错误');
       const requested = new URLSearchParams(window.location.search).get('next') || '/';
       window.location.href = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/';
     } catch (err) {
@@ -47,7 +47,7 @@ export default function AuthLoginPage() {
         <p className="mb-6 mt-2 text-sm opacity-70">欢迎回来</p>
         {notice && <p role="status" className="mb-4 rounded-xl border p-3 text-sm" style={{ borderColor: 'var(--border-color)', color: 'var(--success)' }}>{notice}</p>}
         <form onSubmit={submit} className="space-y-4">
-          <input type="email" required autoComplete="email" className="admin-input w-full" placeholder="邮箱" value={email} onChange={event => setEmail(event.target.value)} />
+          <input type="email" required autoComplete="email" className="admin-input w-full" placeholder="邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
           <PasswordInput required autoComplete="current-password" className="admin-input w-full" placeholder="密码" value={password} onChange={event => setPassword(event.target.value)} />
           {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
           <div className="flex justify-end">

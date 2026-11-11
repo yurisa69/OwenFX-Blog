@@ -38,7 +38,7 @@ export default function SettingsPage() {
         const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
         if (!active) return;
         if (signOutError) {
-          setError('邮箱已验证，但自动退出登录失败。请手动退出后使用新邮箱和密码重新登录。');
+          setError('邮件地址已验证，但自动退出登录失败。请手动退出后使用新邮件地址和密码重新登录。');
           setLoading(false);
           return;
         }
@@ -92,7 +92,7 @@ export default function SettingsPage() {
 
       const redirectError = new URLSearchParams(window.location.hash.slice(1)).get('error_description');
       if (redirectError) {
-        setError('邮箱验证未完成：' + redirectError);
+        setError('邮件地址验证未完成：' + redirectError);
       }
     };
 
@@ -132,11 +132,11 @@ export default function SettingsPage() {
     setEmailError('');
     const nextEmail = email.trim().toLowerCase();
     if (!nextEmail) {
-      setEmailError('请输入新的邮箱地址。');
+      setEmailError('请输入新的邮件地址。');
       return;
     }
     if (nextEmail === (user?.email || '').toLowerCase()) {
-      setEmailError('新邮箱与当前邮箱相同。');
+      setEmailError('新邮件地址与当前邮件地址相同。');
       return;
     }
     const supabase = getSupabaseBrowser();
@@ -159,15 +159,15 @@ export default function SettingsPage() {
         authMessage.includes('email_exists') ||
         authMessage.includes('user_already_exists')
       ) {
-        setEmailError('该邮箱已有注册记录（可能尚未完成验证）。请先完成该邮箱原有的注册验证，或更换其他邮箱。');
+        setEmailError('该邮件地址已有注册记录（可能尚未完成验证）。请先完成该邮件地址原有的注册验证，或更换其他邮件地址。');
       } else if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
-        setEmailError('邮箱验证请求过于频繁，请稍后再试。');
+        setEmailError('邮件地址验证请求过于频繁，请稍后再试。');
       } else {
-        setEmailError('邮箱修改请求失败，请检查邮箱地址后稍后重试。');
+        setEmailError('邮件地址修改请求失败，请检查邮件地址后稍后重试。');
       }
       return;
     }
-    setNotice('验证邮件已发送。请按邮件提示完成验证，验证成功后邮箱才会更新。');
+    setNotice('验证邮件已发送。请按邮件提示完成验证，验证成功后邮件地址才会更新。');
   };
 
   const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
@@ -191,7 +191,7 @@ export default function SettingsPage() {
       return;
     }
     if (!user?.email) {
-      setPasswordError('当前账号没有可用于验证的邮箱，请重新登录后再试。');
+      setPasswordError('当前账号没有可用于验证的邮件地址，请重新登录后再试。');
       return;
     }
     const supabase = getSupabaseBrowser();
@@ -300,15 +300,15 @@ export default function SettingsPage() {
 
       <section className="account-settings-card">
         <div className="account-settings-card-heading">
-          <div><span className="account-settings-index">01</span><h2>更改邮箱</h2></div>
-          <p>提交新邮箱后，需要通过验证邮件确认变更。</p>
+          <div><span className="account-settings-index">01</span><h2>更改邮件地址</h2></div>
+          <p>提交新邮件地址后，需要通过验证邮件确认变更。</p>
         </div>
         <form onSubmit={handleEmailChange} className="account-settings-form">
           {emailError && <p role="alert" className="account-settings-message is-error">{emailError}</p>}
-          <label htmlFor="account-email">新邮箱地址</label>
-          <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮箱地址" />
+          <label htmlFor="account-email">新邮件地址</label>
+          <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮件地址" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={emailBusy || !user?.email}>
-            {emailBusy ? '发送验证邮件中…' : '发送邮箱验证'}
+            {emailBusy ? '发送验证邮件中…' : '发送邮件地址验证'}
           </button>
         </form>
       </section>

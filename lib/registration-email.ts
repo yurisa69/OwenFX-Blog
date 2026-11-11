@@ -1,4 +1,4 @@
-export const REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE = '本站暂不支持此邮箱注册';
+export const REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE = '本站暂不支持此邮件地址注册';
 export const SUPPORTED_REGISTRATION_EMAIL_DOMAINS = [
   'gmail.com','outlook.com','hotmail.com','live.com','icloud.com','me.com','mac.com','yahoo.com',
   'proton.me','protonmail.com','aol.com','zoho.com','yandex.com','qq.com','foxmail.com','163.com',

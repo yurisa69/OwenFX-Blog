@@ -96,7 +96,7 @@ export default function RegisterPage() {
             <p className="mb-6 mt-2 text-sm opacity-70">加入 OwenFX 社区</p>
             <form onSubmit={register} className="space-y-4">
               <input required maxLength={MAX_DISPLAY_NAME_LENGTH * 2} className="admin-input w-full" placeholder="用户名（最多12个字符）" value={name} onChange={event => setName(limitDisplayName(event.target.value))} />
-              <input required type="email" autoComplete="email" className="admin-input w-full" placeholder="邮箱" value={email} onChange={event => setEmail(event.target.value)} />
+              <input required type="email" autoComplete="email" className="admin-input w-full" placeholder="邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
               <PasswordInput required minLength={12} autoComplete="new-password" className="admin-input w-full" placeholder="密码（至少12位）" value={password} onChange={event => setPassword(event.target.value)} />
               {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
               <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '注册中…' : '注册并发送确认邮件'}</button>
@@ -105,9 +105,9 @@ export default function RegisterPage() {
           </>
         ) : (
           <>
-            <h1 className="text-2xl font-bold">确认你的邮箱</h1>
-            <p className="my-4 text-sm opacity-70">我们已向 <strong>{registeredEmail}</strong> 发送 OwenFX 注册确认邮件。请打开邮件并点击“确认注册”完成邮箱验证。</p>
-            <p className="mb-4 rounded-xl border p-3 text-sm opacity-80" style={{ borderColor: 'var(--border-color)' }}>完成验证后即可使用注册邮箱和密码登录。如果没有收到邮件，请检查垃圾邮件文件夹。</p>
+            <h1 className="text-2xl font-bold">确认你的邮件地址</h1>
+            <p className="my-4 text-sm opacity-70">我们已向 <strong>{registeredEmail}</strong> 发送 OwenFX 注册确认邮件。请打开邮件并点击“确认注册”完成邮件地址验证。</p>
+            <p className="mb-4 rounded-xl border p-3 text-sm opacity-80" style={{ borderColor: 'var(--border-color)' }}>完成验证后即可使用注册邮件地址和密码登录。如果没有收到邮件，请检查垃圾邮件文件夹。</p>
             {message && <p className="mb-3 text-sm" style={{ color: 'var(--success)' }}>{message}</p>}
             {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
             <button type="button" disabled={busy} onClick={resend} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '发送中…' : '重新发送确认邮件'}</button>

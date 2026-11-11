@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '联系我们 — OwenFX',
-  description: '通过邮箱、Telegram 或 X 与 OwenFX 联系。',
+  description: '通过邮件、Telegram 或 X 与 OwenFX 联系。',
 };
 
 const contacts = [
   {
-    label: '邮箱',
-    value: '联系邮箱暂未配置',
+    label: '邮件',
+    value: '联系邮件暂未配置',
     color: '#818cf8',
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
