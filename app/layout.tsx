@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
     const cookieStore = await cookies();
-    const supabase = createServerClient<Database>(
+    const supabase = createServerClient<Database, 'public'>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { getAll() { return cookieStore.getAll() }, setAll() {} } }

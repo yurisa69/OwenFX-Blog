@@ -7,7 +7,7 @@ export function createServiceClient() {
   if (!url || !serviceKey) {
     throw new Error('缺少 Supabase 服务端配置：NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
   }
-  return createSupabaseClient<Database>(url, serviceKey, {
+  return createSupabaseClient<Database, 'public'>(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
