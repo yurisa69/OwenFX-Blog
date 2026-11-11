@@ -5,9 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import ScrollToTop from '@/components/ScrollToTop';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import type { Database } from '@/types/database';
+import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -32,12 +30,7 @@ const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient<Database, 'public'>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll() { return cookieStore.getAll() }, setAll() {} } }
-    );
+    const supabase = await createSupabaseServerClient();
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       const metadata = session.user.user_metadata as Record<string, unknown>;
