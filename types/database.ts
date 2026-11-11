@@ -1,3 +1,5 @@
+import type { GenericSchema } from '@supabase/supabase-js'
+
 export type Json =
   | string
   | number
@@ -951,3 +953,8 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+
+type Assert<T extends true> = T
+// Keep the generated schema structurally compatible with the Supabase client types.
+type PublicSchemaCompatibility = Assert<Database['public'] extends GenericSchema ? true : false>
