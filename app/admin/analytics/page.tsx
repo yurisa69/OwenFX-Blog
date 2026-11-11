@@ -1,4 +1,5 @@
 import { requireAdmin } from '@/lib/admin-auth';
+import type { Tables } from '@/types/database';
 
 export default async function AnalyticsPage() {
   const { supabase } = await requireAdmin();
@@ -6,7 +7,7 @@ export default async function AnalyticsPage() {
   const { data, error } = await supabase.from('analytics_events')
     .select('*')
     .gte('created_at', since).order('created_at', { ascending: false }).limit(1000);
-  const events = (data || []).filter(event => event.event_type !== 'resource_click');
+  const events = ((data || []) as Tables<'analytics_events'>[]).filter(event => event.event_type !== 'resource_click');
   const count = (type: string) => events.filter(event => event.event_type === type).length;
   const totals = [
     ['近30天总点击', events.length],
