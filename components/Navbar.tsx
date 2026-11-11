@@ -160,7 +160,8 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
   }, [user?.id]);
 
   useEffect(() => {
-    if (!drawerOpen || !user?.id) return;
+    const userId = user?.id;
+    if (!drawerOpen || !userId) return;
     let active = true;
     const loadActivity = async () => {
       const supabase = getSupabaseBrowser();
@@ -170,15 +171,15 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
       const [likes, bookmarks, comments] = await Promise.all([
         supabase.from('article_interactions')
           .select('id,created_at,article:articles(id,title,slug)')
-          .eq('user_id', user.id).eq('interaction_type', 'like')
+          .eq('user_id', userId).eq('interaction_type', 'like')
           .order('created_at', { ascending: false }).limit(50),
         supabase.from('article_interactions')
           .select('id,created_at,article:articles(id,title,slug)')
-          .eq('user_id', user.id).eq('interaction_type', 'bookmark')
+          .eq('user_id', userId).eq('interaction_type', 'bookmark')
           .order('created_at', { ascending: false }).limit(50),
         supabase.from('comments')
           .select('id,body,status,created_at,article:articles(id,title,slug)')
-          .eq('author_id', user.id)
+          .eq('author_id', userId)
           .order('created_at', { ascending: false }).limit(50),
       ]);
       if (!active) return;
