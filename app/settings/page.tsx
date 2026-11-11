@@ -308,7 +308,7 @@ export default function SettingsPage() {
           <label htmlFor="account-email">新邮件地址</label>
           <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮件地址" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={emailBusy || !user?.email}>
-            {emailBusy ? '发送验证邮件中…' : '发送邮件地址验证'}
+            {emailBusy ? '发送验证邮件中…' : '发送邮件验证'}
           </button>
         </form>
       </section>
