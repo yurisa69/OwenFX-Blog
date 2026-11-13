@@ -10,6 +10,7 @@ const navGroups = [
     title: '内容创作',
     items: [
       { label: '文章管理', href: '/admin/articles', icon: '▤' },
+      { label: '同步任务', href: '/admin/article-sync', icon: '↻' },
       { label: 'AI 文章导入', href: '/admin/integrations', icon: '✧' },
     ],
   },

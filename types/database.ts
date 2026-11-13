@@ -340,6 +340,7 @@ export type Database = {
       };
       create_article_sync_job: { Args: { p_id: string; p_idempotency_key: string; p_operation: string; p_article_id: string | null; p_actor_id: string | null; p_target_path: string; p_content_hash: string; p_metadata: Json }; Returns: Json };
       get_article_sync_job: { Args: { p_id: string }; Returns: Json };
+      list_article_sync_jobs: { Args: { p_limit?: number; p_state?: string | null }; Returns: Json };
       claim_article_sync_job: { Args: { p_id: string; p_lease_token: string; p_lease_seconds?: number }; Returns: Json };
       update_article_sync_job: { Args: { p_id: string; p_state: string; p_github_sha: string | null; p_last_error: string | null; p_article_id: string | null; p_lease_token: string }; Returns: boolean };
       acquire_article_sync_lock: { Args: { p_article_id: string; p_job_id: string; p_lease_token: string; p_lease_seconds?: number }; Returns: boolean };
