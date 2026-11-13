@@ -19,6 +19,9 @@ export default function SettingsPage() {
   const [emailBusy, setEmailBusy] = useState(false);
   const [passwordBusy, setPasswordBusy] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
+  const [sessionsBusy, setSessionsBusy] = useState(false);
+  const [sessionNotice, setSessionNotice] = useState('');
+  const [sessionError, setSessionError] = useState('');
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -241,6 +244,27 @@ export default function SettingsPage() {
     router.refresh();
   };
 
+  const handleRevokeOtherSessions = async () => {
+    if (!window.confirm('确定撤销此账号在其他所有设备上的登录会话吗？当前设备会保持登录。')) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) {
+      setSessionError('账号服务暂不可用，请稍后重试。');
+      setSessionNotice('');
+      return;
+    }
+
+    setSessionsBusy(true);
+    setSessionNotice('');
+    setSessionError('');
+    const { error: revokeError } = await supabase.auth.signOut({ scope: 'others' });
+    setSessionsBusy(false);
+    if (revokeError) {
+      setSessionError('撤销其他设备的登录会话失败，请稍后重试。');
+      return;
+    }
+    setSessionNotice('已请求撤销其他所有设备的登录会话，当前设备保持登录。其他设备上尚未过期的访问令牌可能在到期前仍短暂有效。');
+  };
+
   const handleLogout = async () => {
     if (!window.confirm('确定退出当前 OwenFX 账号吗？')) return;
     const supabase = getSupabaseBrowser();
@@ -298,9 +322,33 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {(sessionNotice || sessionError) && (
+        <div role="status" className={sessionError ? 'account-settings-message is-error' : 'account-settings-message'}>
+          {sessionError || sessionNotice}
+        </div>
+      )}
+
       <section className="account-settings-card">
         <div className="account-settings-card-heading">
-          <div><span className="account-settings-index">01</span><h2>更改邮件地址</h2></div>
+          <div><span className="account-settings-index">01</span><h2>登录设备</h2></div>
+          <p>撤销其他设备的登录状态，当前浏览器会话会保留。</p>
+        </div>
+        <div className="account-settings-session-summary">
+          <div>
+            <strong>当前设备</strong>
+            <p>当前正在使用的浏览器会话</p>
+          </div>
+          <span>保持登录</span>
+        </div>
+        <p className="account-settings-session-note">Supabase 当前支持保留本设备并撤销其他全部会话，暂不支持通过此客户端逐台撤销。撤销后，其他设备的访问令牌可能在过期前仍短暂有效。</p>
+        <button type="button" className="profile-logout-action account-settings-session-action" onClick={handleRevokeOtherSessions} disabled={sessionsBusy}>
+          {sessionsBusy ? '正在撤销其他设备…' : '撤销其他所有设备'}
+        </button>
+      </section>
+
+      <section className="account-settings-card">
+        <div className="account-settings-card-heading">
+          <div><span className="account-settings-index">02</span><h2>更改邮件地址</h2></div>
           <p>提交新邮件地址后，需要通过验证邮件确认变更。</p>
         </div>
         <form onSubmit={handleEmailChange} className="account-settings-form">
@@ -318,7 +366,7 @@ export default function SettingsPage() {
       )}
       <section className="account-settings-card">
         <div className="account-settings-card-heading">
-          <div><span className="account-settings-index">02</span><h2>更改密码</h2></div>
+          <div><span className="account-settings-index">03</span><h2>更改密码</h2></div>
           <p>为保护账号安全，修改前需要验证当前密码。</p>
         </div>
         <form onSubmit={handlePasswordChange} className="account-settings-form">
