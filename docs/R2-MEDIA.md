@@ -19,10 +19,12 @@ OwenFX 的媒体二进制文件统一保存在 Cloudflare R2。Supabase 的 `pub
 1. 浏览器向 `POST /api/r2-upload/presign` 请求短时有效的签名 PUT URL。
 2. 浏览器直接 PUT 文件到 R2，不经过 Vercel Function 文件代理，避免 Vercel 请求体大小限制。
 3. 浏览器调用 `POST /api/r2-upload/complete`。
-4. 服务端通过 R2 HeadObject 确认对象存在和实际大小，再写入 Supabase `media_assets`。
+4. 服务端通过 R2 HeadObject 确认对象存在、实际大小、文件类型和 `Cache-Control`，再写入 Supabase `media_assets`。
 5. 头像类型完成登记后同步更新 `profiles.avatar_url`。
 
-签名 URL 默认 10 分钟过期。图片最大 20 MB；视频最大 250 MB。当前允许 JPG、PNG、WebP、GIF、AVIF、MP4、WebM、MOV。服务端密钥不会返回浏览器。
+浏览器 PUT 请求必须同时发送签名响应中的 `Content-Type` 和 `Cache-Control` 请求头；CORS `AllowedHeaders` 必须允许这两个请求头。
+
+签名 URL 默认 10 分钟过期。图片最大 20 MB；视频最大 250 MB。当前允许 JPG、PNG、WebP、GIF、AVIF、MP4、WebM、MOV。每个对象使用 UUID 唯一路径，上传时设置 `Cache-Control: public, max-age=31536000, immutable`，适合长期 CDN 缓存；服务端会在登记前校验该元数据。服务端密钥不会返回浏览器。
 
 ## Vercel 环境变量
 
@@ -48,7 +50,7 @@ OwenFX 的媒体二进制文件统一保存在 Cloudflare R2。Supabase 的 `pub
       "http://localhost:3000"
     ],
     "AllowedMethods": ["PUT", "GET", "HEAD"],
-    "AllowedHeaders": ["Content-Type"],
+    "AllowedHeaders": ["Content-Type", "Cache-Control"],
     "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3600
   }

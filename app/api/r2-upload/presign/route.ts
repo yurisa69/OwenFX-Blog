@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createR2UploadUrl, mediaObjectKey, validateMediaInput, type MediaKind } from '@/lib/r2-media';
+import { createR2UploadUrl, mediaObjectKey, validateMediaInput, R2_MEDIA_CACHE_CONTROL, type MediaKind } from '@/lib/r2-media';
 
 export const runtime = 'nodejs';
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       publicUrl: signed.publicUrl,
       bucket: signed.bucket,
       expiresIn: signed.expiresIn,
-      headers: { 'Content-Type': contentType },
+      headers: { 'Content-Type': contentType, 'Cache-Control': R2_MEDIA_CACHE_CONTROL },
       fileName,
       kind,
     });

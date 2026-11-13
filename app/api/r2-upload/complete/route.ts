@@ -1,7 +1,7 @@
 import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getR2ServerConfig, validateMediaInput, type MediaKind } from '@/lib/r2-media';
+import { getR2ServerConfig, validateMediaInput, R2_MEDIA_CACHE_CONTROL, type MediaKind } from '@/lib/r2-media';
 
 export const runtime = 'nodejs';
 
@@ -50,6 +50,9 @@ export async function POST(request: Request) {
     const head = await s3.send(new HeadObjectCommand({ Bucket: cfg.bucket, Key: key }));
     const contentType = head.ContentType || '';
     const byteSize = Number(head.ContentLength || 0);
+    if (head.CacheControl !== R2_MEDIA_CACHE_CONTROL) {
+      return NextResponse.json({ error: 'R2 对象缓存策略校验失败，请重新上传文件' }, { status: 400 });
+    }
     let detected: ReturnType<typeof validateMediaInput>;
     try {
       detected = validateMediaInput(contentType, byteSize);

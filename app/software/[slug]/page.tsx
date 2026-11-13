@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import TrackLink from '@/components/TrackLink';
@@ -114,13 +115,18 @@ function sortSoftwareTags(tags: string[]) {
     .map(({ tag }) => tag);
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
+const getPublishedSoftware = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data: software } = await supabase.from('software')
-    .select('title,slug,description,image_url')
+    .select('id,title,slug,description,developer,version,file_size,platform,image_url,category_id,category:categories!software_category_id_fkey(name),official_download_url,introduction_markdown,screenshots,updated_at,tags:software_tags(tag:tags(name)),software_download_links(id,provider,label,share_url,access_code,sort_order,active)')
     .eq('slug', slug).eq('status', 'published')
     .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`).maybeSingle();
+  return software;
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const software = await getPublishedSoftware(slug);
   if (!software) return { robots: { index: false, follow: false } };
 
   const title = software.title;
@@ -146,10 +152,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function SoftwareDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data: software } = await supabase.from('software')
-    .select('id,title,slug,description,developer,version,file_size,platform,image_url,category_id,category:categories!software_category_id_fkey(name),official_download_url,introduction_markdown,screenshots,updated_at,tags:software_tags(tag:tags(name)),software_download_links(id,provider,label,share_url,access_code,sort_order,active)')
-    .eq('slug', slug).eq('status', 'published')
-    .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`).maybeSingle();
+  const software = await getPublishedSoftware(slug);
   if (!software) notFound();
 
   const category = Array.isArray(software.category) ? software.category[0] : software.category;

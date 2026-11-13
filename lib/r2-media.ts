@@ -1,5 +1,7 @@
 import { createHash, createHmac, randomUUID } from 'node:crypto';
 
+export const R2_MEDIA_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 250 * 1024 * 1024;
 const TYPES: Record<string, { ext: string; kind: 'image' | 'video' }> = {
@@ -81,14 +83,14 @@ export function createR2UploadUrl(key: string, contentType: string, expiresIn = 
     'X-Amz-Credential': `${cfg.accessKeyId}/${scope}`,
     'X-Amz-Date': amzDate,
     'X-Amz-Expires': String(expiresIn),
-    'X-Amz-SignedHeaders': 'content-type;host',
+    'X-Amz-SignedHeaders': 'cache-control;content-type;host',
   };
   const canonicalQuery = Object.entries(params)
     .map(([keyName, value]) => [encode(keyName), encode(value)] as const)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([keyName, value]) => `${keyName}=${value}`).join('&');
-  const canonicalHeaders = `content-type:${contentType.trim()}\nhost:${host}\n`;
-  const canonicalRequest = ['PUT', canonicalUri, canonicalQuery, canonicalHeaders, 'content-type;host', 'UNSIGNED-PAYLOAD'].join('\n');
+  const canonicalHeaders = `cache-control:${R2_MEDIA_CACHE_CONTROL}\ncontent-type:${contentType.trim()}\nhost:${host}\n`;
+  const canonicalRequest = ['PUT', canonicalUri, canonicalQuery, canonicalHeaders, 'cache-control;content-type;host', 'UNSIGNED-PAYLOAD'].join('\n');
   const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, sha256(canonicalRequest)].join('\n');
   const dateKey = hmac(`AWS4${cfg.secretAccessKey}`, dateStamp);
   const regionKey = hmac(dateKey, region);
