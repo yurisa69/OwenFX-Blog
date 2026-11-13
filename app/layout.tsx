@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Caramel, Geist, Geist_Mono, Splash } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -12,12 +12,6 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 const splash = Splash({ variable: '--font-splash', subsets: ['latin'], weight: '400', display: 'swap' });
 const caramel = Caramel({ variable: '--font-caramel', subsets: ['latin'], weight: '400', display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  userScalable: true,
-};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
