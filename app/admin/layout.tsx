@@ -96,9 +96,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
 
       <style>{`
-        .admin-sidebar{transform:translateY(-2px);overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
-        .admin-brand-header{position:relative}
-        .admin-brand{display:inline-flex;align-items:baseline;white-space:nowrap;gap:0}
+        .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+        .admin-brand-header{position:relative;transform:translateY(-2px)}
+        .admin-brand{display:inline-flex;align-items:baseline;white-space:nowrap;gap:0}.admin-sidebar nav,.admin-sidebar>div:last-child{transform:translateY(-4px)}
         .admin-brand-owen,.admin-brand-x,.admin-brand-studio{font-family:var(--font-splash),cursive;font-weight:400}.admin-brand-owen{font-size:1.55em;letter-spacing:-.055em;line-height:.8}.admin-brand-f{position:relative;top:.08em;font-family:var(--font-caramel),cursive;font-size:1.9em;font-weight:400;line-height:.65}.admin-brand-x{font-size:1em;letter-spacing:-.06em}.admin-brand-studio{margin-left:.08em;font-size:1.12em;letter-spacing:-.035em}
         @media(min-width:768px){.admin-brand-header{margin-left:-16px;margin-top:-16px;padding:0 0 20px 0}.admin-brand{transform:translate(10px,-26px) scale(1.2);transform-origin:left center}.admin-brand-owen{font-size:1.7em}.admin-brand-f{font-size:2.15em;top:.1em}.admin-brand-x{font-size:1em}.admin-brand-studio{font-size:1.22em;margin-left:.1em}}
         .admin-sidebar-link{display:flex;min-width:0;min-height:40px;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:8px 10px;color:var(--text-secondary);font-size:13px;transition:background .18s,border-color .18s,color .18s}
