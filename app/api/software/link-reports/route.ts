@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { createRateLimitBucketKey, readLimitedRequestBody } from '@/lib/api-rate-limit';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+
+export const runtime = 'nodejs';
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const allowedReasons = ['expired', 'not_found', 'password_invalid', 'access_denied', 'other'];
@@ -21,7 +24,19 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: '请先登录后提交反馈。' }, { status: 401 });
 
-  const input = await request.json().catch(() => null);
+  const raw = await readLimitedRequestBody(request, 4096);
+  if (raw === null) return NextResponse.json({ error: '请求内容过大。' }, { status: 413 });
+
+  let input: Record<string, unknown> | null = null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      input = parsed as Record<string, unknown>;
+    }
+  } catch {
+    input = null;
+  }
+
   const softwareId = typeof input?.softwareId === 'string' ? input.softwareId : '';
   const downloadLinkId = typeof input?.downloadLinkId === 'string' ? input.downloadLinkId : '';
   const reason = typeof input?.reason === 'string' ? input.reason : '';
@@ -34,14 +49,6 @@ export async function POST(request: Request) {
   if (details.length > 800) return NextResponse.json({ error: '补充说明最多 800 字。' }, { status: 400 });
 
   const service = createServiceClient();
-  const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { count, error: rateError } = await service.from('software_link_reports')
-    .select('id', { count: 'exact', head: true })
-    .eq('reporter_id', user.id)
-    .gte('created_at', cutoff);
-  if (rateError) return NextResponse.json({ error: '反馈服务暂时不可用。' }, { status: 503 });
-  if ((count || 0) >= 5) return NextResponse.json({ error: '每个账号每小时最多提交 5 条反馈。' }, { status: 429 });
-
   const now = new Date().toISOString();
   const { data: software, error: softwareError } = await service.from('software')
     .select('id,title,status,published_at').eq('id', softwareId).maybeSingle();
@@ -54,6 +61,20 @@ export async function POST(request: Request) {
     .select('id,provider,share_url').eq('id', downloadLinkId)
     .eq('software_id', softwareId).eq('active', true).maybeSingle();
   if (linkError || !link) return NextResponse.json({ error: '该下载链接不存在或已停用。' }, { status: 404 });
+
+  const bucketKey = createRateLimitBucketKey('software-link-report', user.id);
+  const { data: withinLimit, error: rateError } = await service.rpc('consume_api_rate_limit', {
+    p_bucket_key: bucketKey,
+    p_limit: 5,
+    p_window_seconds: 3600,
+  });
+  if (rateError) return NextResponse.json({ error: '反馈服务暂时不可用。' }, { status: 503 });
+  if (withinLimit !== true) {
+    return NextResponse.json({ error: '每个账号每小时最多提交 5 条反馈。' }, {
+      status: 429,
+      headers: { 'Retry-After': '3600' },
+    });
+  }
 
   const { error: insertError } = await service.from('software_link_reports').insert({
     software_id: software.id,

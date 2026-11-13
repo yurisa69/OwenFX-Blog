@@ -1,5 +1,5 @@
 -- OwenFX production public-schema structural baseline
--- Captured: 2026-11-10 | PostgreSQL 17.11
+-- Captured: 2026-11-13 | PostgreSQL 17.11
 -- Project ref: gjzxultalptqwqmpagzj
 -- Structure only; no application rows, Auth users, or business data are included.
 -- Scope: public tables, constraints, indexes, functions, RLS policies and table grants.
@@ -577,11 +577,51 @@ END;
 $function$
 
 
+-- FUNCTION: public.consume_api_rate_limit(text, integer, integer)
+CREATE OR REPLACE FUNCTION public.consume_api_rate_limit(
+  p_bucket_key text,
+  p_limit integer DEFAULT 60,
+  p_window_seconds integer DEFAULT 60
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SET search_path = pg_catalog, private
+AS $function$
+DECLARE
+  v_count integer;
+  v_window_seconds integer := greatest(1, least(coalesce(p_window_seconds, 60), 86400));
+  v_limit integer := greatest(1, least(coalesce(p_limit, 60), 1000));
+BEGIN
+  IF p_bucket_key IS NULL OR p_bucket_key !~ '^[0-9a-f]{64}$' THEN
+    RETURN false;
+  END IF;
+
+  INSERT INTO private.api_rate_limits (bucket_key, window_started_at, request_count, updated_at)
+  VALUES (p_bucket_key, now(), 1, now())
+  ON CONFLICT (bucket_key) DO UPDATE
+  SET
+    window_started_at = CASE
+      WHEN private.api_rate_limits.window_started_at <= now() - make_interval(secs => v_window_seconds)
+      THEN now()
+      ELSE private.api_rate_limits.window_started_at
+    END,
+    request_count = CASE
+      WHEN private.api_rate_limits.window_started_at <= now() - make_interval(secs => v_window_seconds)
+      THEN 1
+      ELSE private.api_rate_limits.request_count + 1
+    END,
+    updated_at = now()
+  RETURNING request_count INTO v_count;
+
+  RETURN v_count <= v_limit;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.consume_api_rate_limit(text, integer, integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.consume_api_rate_limit(text, integer, integer) TO service_role;
+
 -- POLICY: public.analytics_events."Admins read analytics events"
 CREATE POLICY "Admins read analytics events" ON public.analytics_events AS PERMISSIVE FOR SELECT TO authenticated USING (is_owenfx_admin());
-
--- POLICY: public.analytics_events."Public insert analytics events"
-CREATE POLICY "Public insert analytics events" ON public.analytics_events AS PERMISSIVE FOR INSERT TO anon, authenticated WITH CHECK ((event_type = ANY (ARRAY['software_click'::text, 'wechat_click'::text, 'ad_click'::text, 'article_view'::text])));
 
 -- POLICY: public.api_devices."content editors manage own api devices"
 CREATE POLICY "content editors manage own api devices" ON public.api_devices AS PERMISSIVE FOR ALL TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) AND is_owenfx_content_editor())) WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND is_owenfx_content_editor()));
@@ -802,7 +842,7 @@ ALTER TABLE public.tags ENABLE ROW LEVEL SECURITY;
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.admin_members TO anon;
 
 -- GRANT: anon.analytics_events
-GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.analytics_events TO anon;
+GRANT DELETE, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.analytics_events TO anon;
 
 -- GRANT: anon.api_devices
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.api_devices TO anon;
@@ -862,7 +902,7 @@ GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE pub
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.admin_members TO authenticated;
 
 -- GRANT: authenticated.analytics_events
-GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.analytics_events TO authenticated;
+GRANT DELETE, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.analytics_events TO authenticated;
 
 -- GRANT: authenticated.api_devices
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.api_devices TO authenticated;

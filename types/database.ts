@@ -332,6 +332,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      consume_api_rate_limit: {
+        Args: { p_bucket_key: string; p_limit?: number; p_window_seconds?: number };
+        Returns: boolean;
+      };
     };
 
     Enums: Record<never, never>;

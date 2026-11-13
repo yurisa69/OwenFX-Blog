@@ -30,10 +30,13 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113033935` | `comment_spam_moderation_service_role_policies` | Applied to production; matching SQL file tracked in GitHub |
 | `20261113051047` | `add_software_link_reports` | Additive feedback table with admin-only RLS; applied to production |
 | `20261113051500` | `restrict_software_link_report_privileges` | Restrict authenticated grants to SELECT / UPDATE and index the download-link foreign key; applied to production |
+| `20261113054024` | `add_atomic_api_rate_limits` | Add private atomic API rate-limit storage, service-role-only RPC, and server-only analytics writes; applied to production |
 
 At the snapshot date, all 20 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
+
+The `20261113054024` migration adds `private.api_rate_limits` and a service-role-only atomic rate-limit RPC. It also removes direct `anon` / `authenticated` inserts into `analytics_events`; the application server now validates and records analytics events. Existing analytics rows are retained. The private rate-limit table is outside the public-schema baseline.
 
 ## 2. Recovery and reconciliation
 
