@@ -133,7 +133,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title,
     description,
     alternates: { canonical: canonicalPath },
-    openGraph: { type: 'website', title, description, url: canonicalUrl, images },
+    openGraph: { type: 'website', siteName: 'OwenFX', locale: 'zh_CN', title, description, url: canonicalUrl, images },
     twitter: {
       card: images ? 'summary_large_image' : 'summary',
       title,

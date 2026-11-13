@@ -47,6 +47,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: 'article',
+      siteName: 'OwenFX',
+      locale: 'zh_CN',
       title,
       description,
       url: canonicalUrl,
@@ -66,7 +68,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const columns = 'id,title,slug,excerpt,seo_title,seo_description,cover_url,github_path,published_at,created_at,updated_at,legacy_author,category:categories!articles_category_id_fkey(name),tags:article_tags(tag:tags(name))';
+  const columns = 'id,title,slug,excerpt,seo_title,seo_description,cover_url,github_path,github_sha,published_at,created_at,updated_at,legacy_author,category:categories!articles_category_id_fkey(name),tags:article_tags(tag:tags(name))';
   const { data: articleById } = await supabase.from('articles').select(columns)
     .eq('id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
   const { data: articleByLegacyId } = articleById
@@ -76,7 +78,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const article = articleById || articleByLegacyId;
   if (!article?.github_path) notFound();
 
-  const file = await readMarkdownFile(article.github_path);
+  const file = await readMarkdownFile(article.github_path, article.github_sha || undefined);
   if (!file) notFound();
 
   const category = Array.isArray(article.category) ? article.category[0] : article.category;
