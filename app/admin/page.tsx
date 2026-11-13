@@ -28,6 +28,7 @@ export default async function AdminHome() {
       description: '使用 Markdown 或富文本编写、预览、管理草稿并发布文章。',
       links: [
         { label: '文章管理', href: '/admin/articles', detail: '编辑文章、草稿和发布版本' },
+        { label: '写文章', href: '/admin/articles/new', detail: '进入文章编辑器创作内容' },
         { label: 'AI 文章导入', href: '/admin/integrations', detail: '管理外部写作工具的导入授权' },
       ],
     },
