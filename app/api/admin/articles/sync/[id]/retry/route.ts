@@ -65,6 +65,22 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       });
       return NextResponse.json({ error: 'GitHub 正文尚未写入。请通过原始请求携带正文重试。', requires_original_request: true }, { status: 409 });
     }
+    if (file && hashMarkdown(file.content) !== job.content_hash
+      && job.operation === 'update'
+      && String(metadata.previous_path || '') === String(job.target_path)
+      && typeof metadata.previous_blob_sha === 'string'
+      && file.sha === metadata.previous_blob_sha
+      && (job.state === 'pending' || job.state === 'failed')) {
+      // The same-slug target is still exactly the base file. No GitHub write happened, so
+      // return control to PATCH with the original Markdown body instead of marking a conflict.
+      await updateArticleSyncJob(service, id, claimed.leaseToken, 'failed', {
+        error: 'GitHub 文件仍是编辑器提交时的基准版本；需要原始保存请求重新执行正文更新。',
+      });
+      return NextResponse.json({
+        error: 'GitHub 正文尚未写入，需要原始保存请求携带正文重试。',
+        requires_original_request: true,
+      }, { status: 409 });
+    }
     if (!file || hashMarkdown(file.content) !== job.content_hash) {
       await updateArticleSyncJob(service, id, claimed.leaseToken, 'conflict', {
         error: 'GitHub 当前文件不存在或内容哈希与任务预期不一致；为避免覆盖新版本，已停止自动补偿。',

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
@@ -33,6 +34,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const excerpt = typeof input?.excerpt === 'string' ? input.excerpt.trim().slice(0, 300) : '';
   const status = input?.status === 'published' ? 'published' : 'draft';
   const expectedBlobSha = typeof input?.github_blob_sha === 'string' && input.github_blob_sha.length > 0 ? input.github_blob_sha : null;
+  const requestId = typeof input?.request_id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.request_id)
+    ? input.request_id : randomUUID();
   if (!expectedBlobSha) return NextResponse.json({ error: '编辑器缺少文章版本标识，请刷新页面后重试。' }, { status: 428 });
   if (!title || title.length > 160 || !slugPattern.test(slug) || slug.length > 180) return NextResponse.json({ error: '请检查标题和 Slug 格式' }, { status: 400 });
   if (status === 'published' && !content.trim()) return NextResponse.json({ error: '发布前请先填写文章正文' }, { status: 400 });
@@ -60,14 +63,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (!current || current.sha !== expectedBlobSha) {
       return NextResponse.json({ error: '文章已被其他编辑操作更新，请刷新页面并重新载入最新内容。' }, { status: 409 });
     }
-    job = await createArticleSyncJob(service, {
-      idempotencyKey: `admin:update:${id}:${previous.updated_at}:${expectedBlobSha}:${path}:${contentHash}`,
-      operation: 'update', articleId: id, actorId: auth.user.id, targetPath: path, contentHash,
+    const baseIdempotencyKey = `admin:update:${id}:${previous.updated_at}:${expectedBlobSha}:${path}:${contentHash}`;
+    const syncJobInput = {
+      operation: 'update' as const, articleId: id, actorId: auth.user.id, targetPath: path, contentHash,
       metadata: { title, slug, excerpt, status, editor_id: auth.user.id,
         published_at: publishedAt, base_github_sha: previous.github_sha, previous_path: previous.github_path,
         previous_blob_sha: expectedBlobSha, base_article_updated_at: previous.updated_at,
         base_article_sync_job_id: previous.sync_job_id, author_id: previous.author_id, category_id: previous.category_id },
-    });
+    };
+    job = await createArticleSyncJob(service, { ...syncJobInput, idempotencyKey: baseIdempotencyKey });
+    // Conflict jobs are terminal. Only after revalidating the article's current GitHub SHA above,
+    // create a request-scoped attempt so a stale terminal job cannot block a legitimate new save.
+    if (job.state === 'conflict') {
+      job = await createArticleSyncJob(service, {
+        ...syncJobInput,
+        idempotencyKey: `${baseIdempotencyKey}:attempt:${requestId}`,
+      });
+    }
     if (job.state === 'completed') {
       const latest = await readMarkdownFileFresh(path);
       if (!latest || hashMarkdown(latest.content) !== contentHash) {
@@ -96,17 +108,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     let commitSha = job.github_sha;
     let blobSha = '';
     const latest = await readMarkdownFileFresh(path);
-    if (latest) {
-      if (hashMarkdown(latest.content) !== contentHash) {
-        await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: 'GitHub 文件哈希与任务不符' });
-        return NextResponse.json({ error: 'GitHub 目标文件已存在不同内容，已停止自动覆盖', sync_job_id: job.id }, { status: 409 });
-      }
+    if (latest && hashMarkdown(latest.content) === contentHash) {
+      // The GitHub write may have succeeded before a previous request failed to update Supabase.
+      // Recognize that exact content and resume metadata synchronization without another write.
       blobSha = latest.sha;
       commitSha = job.github_sha || await readLatestMarkdownCommitSha(path, latest.sha);
       if (!commitSha) throw new Error('GitHub 正文存在，但无法确认对应提交 SHA；请稍后重试');
       if (job.state !== 'github_written' || !job.github_sha) {
         await updateArticleSyncJob(service, job.id, lease.leaseToken, 'github_written', { githubSha: commitSha });
       }
+    } else if (latest && previous.github_path === path && latest.sha === expectedBlobSha && job.state !== 'github_written') {
+      // Same-slug edits target the existing article file. Its old content is expected; update it
+      // only when its blob SHA still matches the editor's freshly validated base version.
+      const saved = await writeMarkdownFile(path, content, `Update article: ${title}`, { expectedBlobSha });
+      commitSha = saved.commitSha;
+      blobSha = saved.blobSha;
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'github_written', { githubSha: commitSha });
+    } else if (latest) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: 'GitHub 文件版本与文章基准版本不符' });
+      return NextResponse.json({ error: 'GitHub 目标文件已发生其他变化，已停止自动覆盖', sync_job_id: job.id }, { status: 409 });
     } else {
       if (job.state === 'github_written') {
         await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '任务标记 GitHub 已写入，但目标文件不存在' });

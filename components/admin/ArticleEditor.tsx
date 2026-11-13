@@ -179,7 +179,8 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     const finalContent = mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content;
     try {
       const saveUrl = initial.id ? `/api/admin/articles/${initial.id}` : '/api/admin/articles';
-      const saveBody = JSON.stringify({ title, slug, excerpt, content_markdown: finalContent, status: nextStatus, ...(initial.id ? { github_blob_sha: githubBlobSha } : {}) });
+      const requestId = crypto.randomUUID();
+      const saveBody = JSON.stringify({ title, slug, excerpt, content_markdown: finalContent, status: nextStatus, ...(initial.id ? { github_blob_sha: githubBlobSha, request_id: requestId } : {}) });
       let response = await fetch(saveUrl, {
         method: initial.id ? 'PATCH' : 'POST',
         headers: { 'content-type': 'application/json' },
