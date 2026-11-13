@@ -192,6 +192,16 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
         if (retryResponse.ok) {
           response = retryResponse;
           result = { ...retryResult, id: retryResult.article_id };
+        } else if (retryResult.requires_original_request === true) {
+          response = await fetch(saveUrl, {
+            method: initial.id ? 'PATCH' : 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: saveBody,
+          });
+          result = await response.json();
+          if (!response.ok) {
+            throw new Error(`${result.error || '原始保存请求重试失败'}（任务 ID：${result.sync_job_id || result.sync_job_id === '' ? result.sync_job_id : '未知'}）`);
+          }
         } else {
           throw new Error(`${result.error || '保存失败'}；自动同步恢复未完成：${retryResult.error || '请稍后重试'}（任务 ID：${result.sync_job_id}）`);
         }

@@ -76,3 +76,35 @@ export async function updateArticleSyncJob(
   if (error) throw new Error(`更新文章同步任务失败：${error.message}`);
   if (data !== true) throw new Error('同步任务租约已失效或状态转换不允许');
 }
+
+
+export async function acquireArticleSyncLock(
+  service: ServiceClient,
+  articleId: string,
+  jobId: string,
+  leaseToken: string,
+) {
+  const { data, error } = await service.rpc('acquire_article_sync_lock', {
+    p_article_id: articleId,
+    p_job_id: jobId,
+    p_lease_token: leaseToken,
+    p_lease_seconds: 300,
+  });
+  if (error) throw new Error(`获取文章同步锁失败：${error.message}`);
+  return data === true;
+}
+
+export async function releaseArticleSyncLock(
+  service: ServiceClient,
+  articleId: string,
+  jobId: string,
+  leaseToken: string,
+) {
+  const { data, error } = await service.rpc('release_article_sync_lock', {
+    p_article_id: articleId,
+    p_job_id: jobId,
+    p_lease_token: leaseToken,
+  });
+  if (error) throw new Error(`释放文章同步锁失败：${error.message}`);
+  return data === true;
+}

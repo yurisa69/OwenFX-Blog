@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
 import { articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, writeMarkdownFile } from '@/lib/github-articles';
-import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob } from '@/lib/article-sync';
+import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string; revisionId: string }> }) {
@@ -10,7 +10,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if ('response' in auth) return auth.response;
   const { id, revisionId } = await params;
   const { data: article } = await auth.supabase.from('articles')
-    .select('id,title,slug,excerpt,status,github_path,github_sha,published_at,author_id,category_id,sync_job_id')
+    .select('id,title,slug,excerpt,status,github_path,github_sha,published_at,author_id,category_id,sync_job_id,updated_at')
     .eq('id', id).maybeSingle();
   if (!article) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   const { data: revision } = await auth.supabase.from('article_revisions')
@@ -29,6 +29,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   const service = createServiceClient();
   let job;
   let lease;
+  let articleLockAcquired = false;
   try {
     const current = await readMarkdownFileFresh(path);
     job = await createArticleSyncJob(service, {
@@ -37,12 +38,28 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       metadata: { title: article.title, slug: article.slug, excerpt: revision.excerpt,
         status: article.status, editor_id: auth.user.id,
         published_at: article.published_at, author_id: article.author_id, category_id: article.category_id,
-        base_article_sync_job_id: article.sync_job_id, restored_revision_id: revisionId,
-        base_github_sha: current?.sha || null },
+        base_article_sync_job_id: article.sync_job_id, base_article_updated_at: article.updated_at,
+        previous_path: article.github_path, previous_blob_sha: current?.sha || null,
+        restored_revision_id: revisionId, base_github_sha: current?.sha || null },
     });
     if (job.state === 'completed') return NextResponse.json({ success: true, sync_job_id: job.id, duplicate: true });
     lease = await claimArticleSyncJob(service, job.id);
     if (!lease) return NextResponse.json({ error: '该同步任务正在处理中，请稍后重试', sync_job_id: job.id }, { status: 409 });
+    const lockAcquired = await acquireArticleSyncLock(service, id, job.id, lease.leaseToken);
+    if (!lockAcquired) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'failed', { error: '该文章正由另一个同步任务处理，请稍后重试。' });
+      return NextResponse.json({ error: '该文章正由另一个同步任务处理，请稍后重试。', sync_job_id: job.id }, { status: 409 });
+    }
+    articleLockAcquired = true;
+    const { data: lockedArticle, error: lockedArticleError } = await service.from('articles')
+      .select('updated_at,sync_job_id,github_path').eq('id', id).maybeSingle();
+    if (lockedArticleError) throw new Error(lockedArticleError.message);
+    const baseJobId = typeof job.metadata.base_article_sync_job_id === 'string' ? job.metadata.base_article_sync_job_id : null;
+    if (!lockedArticle || lockedArticle.updated_at !== article.updated_at
+      || lockedArticle.sync_job_id !== baseJobId || lockedArticle.github_path !== article.github_path) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '文章基准版本已变化，拒绝执行旧恢复任务。' });
+      return NextResponse.json({ error: '文章已被其他同步任务更新，请刷新后重试。', sync_job_id: job.id }, { status: 409 });
+    }
     const metadata = job.metadata && typeof job.metadata === 'object' && !Array.isArray(job.metadata)
       ? job.metadata as Record<string, unknown> : {};
     let commitSha = job.github_sha;
@@ -71,11 +88,16 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       await updateArticleSyncJob(service, job.id, lease.leaseToken, 'github_written', { githubSha: commitSha });
     }
 
-    const { error } = await service.from('articles').update({
+    const { data: updatedArticle, error } = await service.from('articles').update({
       github_path: path, github_sha: commitSha, content_hash: contentHash,
       updated_at: new Date().toISOString(), sync_job_id: job.id,
-    }).eq('id', id);
+    }).eq('id', id).eq('updated_at', article.updated_at)
+      .eq('sync_job_id', article.sync_job_id).select('id').maybeSingle();
     if (error) throw new Error(`GitHub 已恢复正文，但元数据同步失败：${error.message}`);
+    if (!updatedArticle) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '文章元数据版本条件不匹配，拒绝覆盖。' });
+      return NextResponse.json({ error: '文章元数据已变化，已停止旧恢复任务。', sync_job_id: job.id }, { status: 409 });
+    }
     const revisionValues = {
       article_id: id, editor_id: auth.user.id, title: article.title, excerpt: revision.excerpt,
       content_markdown: '', github_path: path, github_sha: commitSha, content_hash: contentHash, sync_job_id: job.id,
@@ -103,5 +125,10 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     const message = error instanceof Error ? error.message : '恢复同步失败';
     if (job && lease) { try { await updateArticleSyncJob(service, job.id, lease.leaseToken, 'failed', { error: message }); } catch {} }
     return NextResponse.json({ error: message, sync_pending: Boolean(job), sync_job_id: job?.id }, { status: 502 });
+  } finally {
+    if (articleLockAcquired && job?.id && lease?.leaseToken) {
+      try { await releaseArticleSyncLock(service, id, job.id, lease.leaseToken); }
+      catch (releaseError) { console.error('[article-sync-lock-release]', releaseError); }
+    }
   }
 }

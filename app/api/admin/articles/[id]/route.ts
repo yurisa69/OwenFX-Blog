@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
 import { articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
-import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob } from '@/lib/article-sync';
+import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -41,7 +41,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
   const { data: previous, error: readError } = await auth.supabase.from('articles')
-    .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at,author_id,category_id,updated_at')
+    .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at,author_id,category_id,updated_at,sync_job_id')
     .eq('id', id).maybeSingle();
   if (readError || !previous) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   if (!previous.github_path) return NextResponse.json({ error: '文章缺少 GitHub 正文路径，请先检查文章记录。' }, { status: 409 });
@@ -54,6 +54,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const publishedAt = status === 'published' ? (previous.published_at || new Date().toISOString()) : null;
   let job;
   let lease;
+  let articleLockAcquired = false;
   try {
     const current = await readMarkdownFileFresh(previous.github_path);
     if (!current || current.sha !== expectedBlobSha) {
@@ -64,7 +65,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       operation: 'update', articleId: id, actorId: auth.user.id, targetPath: path, contentHash,
       metadata: { title, slug, excerpt, status, editor_id: auth.user.id,
         published_at: publishedAt, base_github_sha: previous.github_sha, previous_path: previous.github_path,
-        author_id: previous.author_id, category_id: previous.category_id },
+        previous_blob_sha: expectedBlobSha, base_article_updated_at: previous.updated_at,
+        base_article_sync_job_id: previous.sync_job_id, author_id: previous.author_id, category_id: previous.category_id },
     });
     if (job.state === 'completed') {
       const latest = await readMarkdownFileFresh(path);
@@ -75,6 +77,21 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
     lease = await claimArticleSyncJob(service, job.id);
     if (!lease) return NextResponse.json({ error: '该同步任务正在处理中，请稍后重试', sync_job_id: job.id }, { status: 409 });
+
+    const lockAcquired = await acquireArticleSyncLock(service, id, job.id, lease.leaseToken);
+    if (!lockAcquired) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'failed', { error: '该文章正由另一个同步任务处理，请稍后重试。' });
+      return NextResponse.json({ error: '该文章正由另一个同步任务处理，请稍后重试。', sync_job_id: job.id }, { status: 409 });
+    }
+    articleLockAcquired = true;
+    const { data: lockedArticle, error: lockedArticleError } = await service.from('articles')
+      .select('updated_at,sync_job_id,github_path').eq('id', id).maybeSingle();
+    if (lockedArticleError) throw new Error(lockedArticleError.message);
+    if (!lockedArticle || lockedArticle.updated_at !== previous.updated_at
+      || lockedArticle.sync_job_id !== previous.sync_job_id || lockedArticle.github_path !== previous.github_path) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '文章基准版本已变化，拒绝执行旧任务。' });
+      return NextResponse.json({ error: '文章已被其他同步任务更新，请刷新后重试。', sync_job_id: job.id }, { status: 409 });
+    }
 
     let commitSha = job.github_sha;
     let blobSha = '';
@@ -101,12 +118,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       await updateArticleSyncJob(service, job.id, lease.leaseToken, 'github_written', { githubSha: commitSha });
     }
 
-    const { error } = await service.from('articles').update({
+    let articleUpdate = service.from('articles').update({
       title, slug, excerpt, status, github_path: path, github_sha: commitSha,
       content_hash: contentHash, published_at: publishedAt, updated_at: new Date().toISOString(),
       sync_job_id: job.id,
-    }).eq('id', id);
+    }).eq('id', id).eq('updated_at', previous.updated_at);
+    articleUpdate = previous.sync_job_id
+      ? articleUpdate.eq('sync_job_id', previous.sync_job_id)
+      : articleUpdate.is('sync_job_id', null);
+    const { data: updatedArticle, error } = await articleUpdate.select('id').maybeSingle();
     if (error) throw new Error(`正文已提交 GitHub，但文章元数据同步失败：${error.message}`);
+    if (!updatedArticle) {
+      await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '文章元数据版本条件不匹配，拒绝覆盖。' });
+      return NextResponse.json({ error: '文章元数据已变化，已停止旧任务写入。', sync_job_id: job.id }, { status: 409 });
+    }
     const revisionValues = {
       article_id: id, editor_id: auth.user.id, title, excerpt, content_markdown: '',
       github_path: path, github_sha: commitSha, content_hash: contentHash, sync_job_id: job.id,
@@ -143,6 +168,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       try { await updateArticleSyncJob(service, job.id, lease.leaseToken, 'failed', { error: message }); } catch {}
     }
     return NextResponse.json({ error: message, sync_pending: Boolean(job), sync_job_id: job?.id }, { status: 502 });
+  } finally {
+    if (articleLockAcquired && job?.id && lease?.leaseToken) {
+      try { await releaseArticleSyncLock(service, id, job.id, lease.leaseToken); }
+      catch (releaseError) { console.error('[article-sync-lock-release]', releaseError); }
+    }
   }
 }
 
