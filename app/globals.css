@@ -366,7 +366,7 @@ html.theme-switching .six-star-spin {
   background-size: 100% 100%, 240% 100% !important;
   color: var(--confirm-action-text) !important;
   box-shadow: var(--confirm-action-shadow) !important;
-  animation: drawer-ring-flow 5.8s linear infinite; opacity: 1;
+  animation: drawer-ring-flow 6s linear infinite; opacity: 1;
 }
 .uiverse-btn-primary:hover {
   color: var(--confirm-action-hover-text) !important;
@@ -388,7 +388,7 @@ html.theme-switching .six-star-spin {
 
 
 /* Reference OwenFX owner gradient and article support button treatment. */
-.monet-waterlily-flow{display:inline-block;color:transparent;background:linear-gradient(90deg,#f9a8d4,#c4b5fd,#99f6e4,#93c5fd,#fbcfe8,#f9a8d4);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 8px rgba(196,181,253,.28));animation:site-owner-flow 5.8s linear infinite}
+.monet-waterlily-flow{display:inline-block;color:transparent;background:linear-gradient(90deg,#f9a8d4,#c4b5fd,#99f6e4,#93c5fd,#fbcfe8,#f9a8d4);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 8px rgba(196,181,253,.28));animation:site-owner-flow 6s linear infinite}
 .support-trigger{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 18px;border:1px solid var(--border-color);border-radius:999px;background:var(--accent-bg);color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s,transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
 .support-trigger:hover{border-color:rgba(129,140,248,.42);color:var(--text-primary);box-shadow:0 0 24px rgba(129,140,248,.16);transform:translateY(-1px)}
 .support-trigger:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(129,140,248,.18)}
