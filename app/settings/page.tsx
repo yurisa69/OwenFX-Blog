@@ -162,18 +162,6 @@ export default function SettingsPage() {
         return;
       }
       requestSucceeded = true;
-      if (
-        authMessage.includes('already registered') ||
-        authMessage.includes('already been registered') ||
-        authMessage.includes('email_exists') ||
-        authMessage.includes('user_already_exists')
-      ) {
-        setEmailError('该邮件地址已有注册记录（可能尚未完成验证）。请先完成该邮件地址原有的注册验证，或更换其他邮件地址。');
-      } else if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
-        setEmailError('邮件地址验证请求过于频繁，请稍后再试。');
-      } else {
-        setEmailError('邮件地址修改请求失败，请检查邮件地址后稍后重试。');
-      }
     } catch {
       setEmailError('网络请求失败，请检查网络连接后重试。');
     } finally {
