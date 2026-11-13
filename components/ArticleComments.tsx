@@ -9,7 +9,7 @@ type CommentRow = {
   id: string;
   author_id: string;
   body: string;
-  status: 'approved' | 'pending' | 'rejected';
+  status: 'approved' | 'pending' | 'rejected' | 'spam';
   created_at: string;
   author?: CommentAuthor | CommentAuthor[] | null;
 };
@@ -30,6 +30,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState('');
 
@@ -105,24 +106,30 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
     setSubmitting(true);
     setNotice('');
-    const { data: isAdmin } = await supabase.rpc('is_owenfx_admin');
-    const isSiteAdmin = isAdmin === true;
-    const { data, error } = await supabase.from('comments').insert({
-      article_id: articleId,
-      author_id: session.user.id,
-      body,
-      ...(isSiteAdmin ? { status: 'approved' } : {}),
-    }).select('id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)').single();
-    setSubmitting(false);
-
-    if (error || !data) {
-      setNotice('评论提交失败，请稍后重试。');
-      return;
+    try {
+      const response = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ articleId, body, website: honeypot }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.comment) {
+        throw new Error(result.error || '评论提交失败，请稍后重试。');
+      }
+      const submitted = result.comment as CommentRow;
+      if (submitted.status === 'approved' || submitted.status === 'pending') {
+        setComments(current => [submitted, ...current]);
+      }
+      setCommentText('');
+      setHoneypot('');
+      setNotice(submitted.status === 'approved'
+        ? '评论已发布并公开显示。'
+        : '评论已提交，审核通过后会公开显示。');
+    } catch (cause) {
+      setNotice(cause instanceof Error ? cause.message : '评论提交失败，请稍后重试。');
+    } finally {
+      setSubmitting(false);
     }
-
-    setComments(current => [data as unknown as CommentRow, ...current]);
-    setCommentText('');
-    setNotice(isSiteAdmin ? '评论已发布并公开显示。' : '评论已提交，审核通过后会公开显示。');
   };
 
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
@@ -141,6 +148,10 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       </div>
 
       <div className="mb-5 space-y-2">
+        <input type="text" name="website" value={honeypot}
+          onChange={event => setHoneypot(event.target.value)} tabIndex={-1}
+          autoComplete="off" aria-hidden="true"
+          className="absolute -left-[10000px] h-px w-px opacity-0" />
         <textarea value={commentText} onChange={event => setCommentText(Array.from(event.target.value).slice(0, 600).join(''))}
           placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"

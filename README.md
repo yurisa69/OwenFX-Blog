@@ -69,6 +69,7 @@
 ### 管理与安全
 
 - 管理接口会检查登录状态及站长 / 内容编辑权限。
+- 评论系统使用 Akismet 与本地规则自动识别垃圾评论；后台支持垃圾评论、软删除、恢复和永久删除。
 - 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2，并将媒体元数据写入 `media_assets`。
 - ChatGPT 等外部工具可通过受控 API 设备令牌导入文章草稿；令牌可在「管理后台 → AI 导入」创建和撤销。
 - 图片上传限制为 JPG、PNG、WebP、GIF、AVIF，单张不超过 10 MB。
@@ -195,6 +196,30 @@ cp .env.example .env.local
 6. 导入只会创建草稿；管理员进入编辑器检查后，才可保存或正式发布。重复请求必须复用相同 `request_id`。
 
 API 设备可在「AI 导入」页面撤销。接口要求 Bearer Token，并检查设备状态、有效期和 `articles:import` 权限。不要把授权令牌提交到 GitHub 或放进前端代码。
+
+### 反垃圾评论与评论管理
+
+评论提交由 Next.js 服务端 API 统一处理，浏览器端不再直接写入评论表。
+
+- **Akismet**：通过官方 `comment-check` API 判断评论是否为垃圾内容；服务端先验证 API Key，再发送评论检测请求。
+- **本地规则**：识别隐藏 honeypot 字段、过多外链、危险 HTML / 脚本标记、明确广告引流模式及短时间重复评论。
+- **自动处理**：Akismet 判定正常且未命中本地复核规则的评论自动通过；垃圾评论进入「垃圾评论」；检测服务不可用或结果不确定时进入「待审核」，不会因此误放行。
+- **频率限制**：同一登录用户每 10 分钟最多提交 5 条评论；超出部分进入垃圾评论队列。站长 / 管理员评论保留自动通过行为。
+- **后台管理**：支持全部、待审核、已通过、已拒绝、垃圾评论、已删除六种分类；提供通过、拒绝、标记垃圾、软删除、恢复和永久删除。
+- **Akismet 误判反馈**：管理员恢复被 Akismet 判定为垃圾的评论时，会向 Akismet 提交 ham 反馈；标记垃圾时会提交 spam 反馈。相关检测上下文仅保存在受限的服务端表中，不向普通用户开放。
+- **隐私边界**：为进行垃圾检测，服务端会向 Akismet 发送评论正文、作者昵称 / 邮箱、提交者 IP、浏览器 User-Agent、来源页和文章永久链接。Akismet API Key 只保存在服务端环境变量中，不得使用 `NEXT_PUBLIC_` 前缀。
+
+环境变量：
+
+| 变量 | 是否需要 | 用途 |
+| --- | --- | --- |
+| `AKISMET_API_KEY` | 建议配置 | Akismet 服务端 API Key。未配置或服务异常时，普通评论自动进入待审核，不会直接公开。 |
+
+在 Vercel 项目 `owenfx-blog` 的 Environment Variables 中添加 `AKISMET_API_KEY`，至少选择 Production；本地开发则填写在未提交的 `.env.local`。修改后重新部署。不要将真实 Key 写入 GitHub、README、聊天记录或客户端代码。
+
+演示格式（虚构值）：
+
+- `AKISMET_API_KEY`：<code><font color="#f85149">"</font>DEMO_ONLY_REPLACE_WITH_REAL_AKISMET_KEY<font color="#f85149">"</font></code>
 
 ### Cloudflare R2
 

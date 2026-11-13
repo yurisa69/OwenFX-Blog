@@ -163,6 +163,11 @@ export type Database = {
         status: string;
         created_at: string;
         updated_at: string;
+        moderation_source: string | null;
+        moderation_reason: string | null;
+        moderation_previous_status: string | null;
+        deleted_at: string | null;
+        deleted_by: string | null;
       }, 'article_id' | 'author_id' | 'body', [
         Relationship<'comments_article_id_fkey', 'article_id', 'articles', 'id'>,
         Relationship<'comments_author_id_profiles_fkey', 'author_id', 'profiles', 'id'>,

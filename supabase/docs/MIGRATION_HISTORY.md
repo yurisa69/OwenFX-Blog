@@ -2,7 +2,7 @@
 
 Project: `gjzxultalptqwqmpagzj`  
 Database engine: PostgreSQL 17.11  
-Snapshot date: 2026-11-11
+Snapshot date: 2026-11-13
 
 This document reconciles the production migration ledger with the SQL files tracked in GitHub. The eight earlier historical SQL files listed below were recovered from the supplied `owenfx-Backup.zip` archive, whose SQL checksums match its manifest. They were reviewed against the live production schema and selectively reconciled: retired database objects and policies were not restored. Two additional migrations were restored to GitHub from the historical repository commit and are also present in the production migration ledger. These files are historical records, not instructions to replay migrations against production.
 
@@ -26,8 +26,12 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261110090913` | `remove_legacy_resource_click_policy` | Existing GitHub migration |
 | `20261111081909` | `harden_software_publication_and_rls_access` | Restored from historical commit; matching version is recorded in production |
 | `20261111081959` | `isolate_security_definer_membership_helpers` | Restored from historical commit; matching version is recorded in production |
+| `20261113033924` | `comment_spam_moderation` | Applied to production; matching SQL file tracked in GitHub |
+| `20261113033935` | `comment_spam_moderation_service_role_policies` | Applied to production; matching SQL file tracked in GitHub |
 
-At the snapshot date, all 16 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
+At the snapshot date, all 18 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
+
+The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 
 ## 2. Recovery and reconciliation
 
