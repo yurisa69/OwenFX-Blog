@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
   const service = createServiceClient();
   const { data: article, error: articleError } = await service.from('articles')
-    .select('id,slug').eq('id', articleId).eq('status', 'published').maybeSingle();
+    .select('id').eq('id', articleId).eq('status', 'published').maybeSingle();
   if (articleError || !article) return NextResponse.json({ error: '文章不存在或暂不接受评论。' }, { status: 404 });
 
   const { data: isAdmin } = await supabase.rpc('is_owenfx_admin');
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
   const ip = getClientIp(request);
   const blog = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
-  const permalink = new URL(`/articles/${encodeURIComponent(article.slug)}`, blog).toString();
+  const permalink = new URL(`/articles/${encodeURIComponent(article.id)}`, blog).toString();
   const { data: profile } = await service.from('profiles').select('display_name').eq('id', user.id).maybeSingle();
   const payload: AkismetCommentPayload = {
     blog, user_ip: ip,
