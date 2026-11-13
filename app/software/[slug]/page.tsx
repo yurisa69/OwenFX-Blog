@@ -157,7 +157,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         <div className="mb-4 flex flex-col items-center text-center">
           <div className="software-icon-frame mb-3 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
             {software.image_url
-              ? <img src={software.image_url} alt={software.title + ' 图标'} className="h-full w-full object-cover" />
+              ? <img src={software.image_url} alt={software.title + ' 图标'} width={96} height={96} loading="eager" fetchPriority="high" decoding="async" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
               : <span className="text-3xl font-bold" style={{ color: 'var(--accent)' }}>{software.title.slice(0, 1)}</span>}
           </div>
           <div className="min-w-0 flex-1">

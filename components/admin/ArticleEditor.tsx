@@ -19,7 +19,7 @@ function escapeHtml(value: string) {
 
 function inlineMarkdown(value: string) {
   return value
-    .replace(/!\[([^\]]*)\]\((https?:\/\/[^ )]+)\)/g, '<img src="$2" alt="$1" />')
+    .replace(/!\[([^\]]*)\]\((https?:\/\/[^ )]+)\)/g, '<img src="$2" alt="$1" loading="lazy" decoding="async" referrerpolicy="no-referrer" />')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^ )]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
@@ -242,7 +242,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
           setContent(value => `${value}${value ? '\n\n' : ''}![${alt}](${url})`);
         } else if (richRef.current) {
           richRef.current.focus();
-          document.execCommand('insertHTML', false, `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" />`);
+          document.execCommand('insertHTML', false, `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />`);
           setContent(htmlToMarkdown(richRef.current.innerHTML));
         }
         setMessage('图片已直传 R2，并插入文章');

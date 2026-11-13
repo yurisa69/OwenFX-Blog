@@ -328,7 +328,7 @@ html.theme-switching .six-star-spin {
 
 
 /* GitHub Markdown article rendering */
-.article-content img{max-width:100%;height:auto;border-radius:12px;margin:1rem auto}
+.article-content img{display:block;max-width:100%;height:auto;border-radius:12px;margin:1rem auto}
 .article-content pre{overflow-x:auto;padding:1rem;border-radius:12px;background:var(--bg-secondary)}
 .article-content blockquote{border-left:3px solid var(--accent);padding-left:1rem;color:var(--text-secondary)}
 .article-content table{width:100%;border-collapse:collapse;min-width:520px}
