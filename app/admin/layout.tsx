@@ -87,7 +87,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>内容管理中心 · 统一管理文章创作、软件资源与网站运营。</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Link href="/admin/articles/new" className="uiverse-btn uiverse-btn-primary">写文章</Link>
               <Link href="/admin/integrations" className="uiverse-btn uiverse-btn-primary">AI 导入</Link>
               <Link href="/admin/software" className="uiverse-btn uiverse-btn-primary">添加软件</Link>
             </div>
