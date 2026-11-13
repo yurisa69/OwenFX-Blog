@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import PasswordInput from '@/components/PasswordInput';
+import {
+  isSupportedRegistrationEmail,
+  REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE,
+} from '@/lib/registration-email';
 
 type AccountUser = { id: string; name: string; email?: string; avatarUrl: string | null };
 
@@ -139,20 +143,25 @@ export default function SettingsPage() {
       setEmailError('新邮件地址与当前邮件地址相同。');
       return;
     }
-    const supabase = getSupabaseBrowser();
-    if (!supabase) {
-      setEmailError('账号服务暂不可用，请稍后重试。');
+    if (!isSupportedRegistrationEmail(nextEmail)) {
+      setEmailError(REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE);
       return;
     }
 
     setEmailBusy(true);
-    const { error: updateError } = await supabase.auth.updateUser(
-      { email: nextEmail },
-      { emailRedirectTo: window.location.origin + '/settings?emailChange=success' }
-    );
-    setEmailBusy(false);
-    if (updateError) {
-      const authMessage = updateError.message.toLowerCase();
+    let requestSucceeded = false;
+    try {
+      const response = await fetch('/api/auth/update-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: nextEmail }),
+      });
+      const result = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) {
+        setEmailError(result?.error || '邮件地址修改请求失败，请稍后重试。');
+        return;
+      }
+      requestSucceeded = true;
       if (
         authMessage.includes('already registered') ||
         authMessage.includes('already been registered') ||
@@ -165,9 +174,14 @@ export default function SettingsPage() {
       } else {
         setEmailError('邮件地址修改请求失败，请检查邮件地址后稍后重试。');
       }
-      return;
+    } catch {
+      setEmailError('网络请求失败，请检查网络连接后重试。');
+    } finally {
+      setEmailBusy(false);
     }
-    setNotice('验证邮件已发送。请按邮件提示完成验证，验证成功后邮件地址才会更新。');
+    if (requestSucceeded) {
+      setNotice('验证邮件已发送。请按邮件提示完成验证，验证成功后邮件地址才会更新。');
+    }
   };
 
   const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
