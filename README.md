@@ -9,9 +9,9 @@
 
 | 项目 | 当前配置 |
 | --- | --- |
-| Web 框架 | Next.js 15.5.7（App Router） |
-| 开发语言 | TypeScript |
-| UI | React 19 + Tailwind CSS 4 |
+| Web 框架 | Next.js 16.4.6（App Router） |
+| 开发语言 | TypeScript 6.0.3 |
+| UI | React 19.3.1 + Tailwind CSS 4.3.5 |
 | 用户认证 / 数据库 | Supabase |
 | 对象存储 | Cloudflare R2（S3 兼容 API） |
 | 邮件发送 | Supabase Auth 邮件模板 |
@@ -124,6 +124,7 @@ Next.js App Router（Vercel）
 ├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
 ├── public/                 # 静态资源
 ├── .env.example            # 环境变量模板
+├── .nvmrc                  # Node.js 主版本（24）
 ├── next.config.ts
 ├── package.json
 └── tsconfig.json
@@ -236,8 +237,8 @@ API 设备可在「AI 导入」页面撤销。接口要求 Bearer Token，并检
 
 ### 环境要求
 
-- Node.js：建议使用 Node.js 20 LTS。
-- npm：随 Node.js 安装。
+- Node.js：使用 Node.js 24.x；仓库根目录的 `.nvmrc` 指定主版本 `24`。
+- npm：使用随 Node.js 安装的 npm，并通过 `package-lock.json` 锁定依赖版本。
 - Git：用于克隆和同步仓库。
 
 ### 启动项目
@@ -247,7 +248,7 @@ git clone https://github.com/yurisa69/OwenFX-Blog.git
 cd OwenFX-Blog
 
 cp .env.example .env.local
-npm install
+npm ci
 npm run dev
 ```
 
@@ -374,7 +375,7 @@ VPS 也可用于检查已有的 PostgreSQL custom-format 归档，以及从归�
 
 ### 当前生产迁移历史提示
 
-截至 2026-11-11，生产迁移历史核对发现部分历史迁移原始 SQL 曾在 GitHub 中缺失。已从数据库备份归档中的迁移账本 `statements` 字段恢复相应历史 SQL，并完成文件完整性校验；恢复档案仍需与 GitHub 当前迁移文件逐项比对后，再决定如何补回仓库。恢复档案仅用于补齐和核对迁移历史，不是待执行迁移，不得重放到现有生产数据库。详细差异和已执行的旧资源模块清理记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。
+截至 2026-11-11，生产迁移历史中曾存在部分历史 SQL 文件缺失的情况。相关恢复、校验及与生产结构的核对记录见 [`supabase/docs/MIGRATION_HISTORY.md`](supabase/docs/MIGRATION_HISTORY.md)。此前缺失的迁移文件已从历史提交恢复并纳入仓库。所有历史迁移 SQL 均用于迁移历史归档与审计，不得在现有生产数据库中重新执行。
 
 不要为了让页面显示数据而关闭 RLS，也不要把 Service Role Key 放进浏览器端。
 
