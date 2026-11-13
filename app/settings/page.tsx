@@ -274,6 +274,14 @@ export default function SettingsPage() {
         <Link href="/" className="account-settings-back">返回首页 &gt;</Link>
       </div>
 
+      <header className="account-settings-header">
+        <div className="account-settings-symbol" aria-hidden="true">⚙</div>
+        <div>
+          <h1>账号设置</h1>
+          <p>管理登录邮件地址、密码与账号安全</p>
+        </div>
+      </header>
+
       <section className="profile-identity-card account-settings-identity" aria-label="当前账号">
         <div className="profile-identity-main">
           <div className="profile-avatar-ring profile-avatar-ring-compact">
