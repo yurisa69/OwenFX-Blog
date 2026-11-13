@@ -67,7 +67,39 @@ export default function IntegrationDevices() {
       return;
     }
     await load();
-    setMessage('授权已撤销');
+    setMessage('授权已撤销；之后可以恢复，或永久删除。');
+  }
+
+  async function restore(id: string) {
+    if (!window.confirm('确定恢复这项授权？恢复后该密钥将重新具备文章导入权限。')) return;
+    const response = await fetch('/api/admin/integrations/devices', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setMessage(result.error || '恢复失败');
+      return;
+    }
+    await load();
+    setMessage('授权已恢复');
+  }
+
+  async function deleteRevoked(id: string) {
+    if (!window.confirm('确定永久删除这条已撤销的授权记录？删除后无法恢复。')) return;
+    const response = await fetch('/api/admin/integrations/devices', {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, action: 'delete' }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setMessage(result.error || '删除失败');
+      return;
+    }
+    await load();
+    setMessage('授权记录已永久删除');
   }
 
   async function copyToken() {
@@ -80,7 +112,7 @@ export default function IntegrationDevices() {
   return <div className="space-y-5">
     <section className="admin-panel space-y-3">
       <h2 className="font-semibold">创建 ChatGPT 导入授权</h2>
-      <p className="text-sm opacity-70">每个授权仅允许导入文章草稿，默认 365 天过期。密钥只在创建时显示一次，可以随时撤销。</p>
+      <p className="text-sm opacity-70">每个授权仅允许导入文章草稿，默认 365 天过期。密钥只在创建时显示一次；撤销后可恢复，已撤销的记录也可以永久删除。</p>
       <form onSubmit={createDevice} className="flex flex-wrap gap-2">
         <input className="admin-input min-w-[220px] flex-1" value={name} onChange={event => setName(event.target.value)} maxLength={100} required aria-label="设备名称"/>
         <button className="uiverse-btn uiverse-btn-primary" disabled={busy}>{busy ? '创建中…' : '创建授权密钥'}</button>
@@ -114,13 +146,22 @@ Content-Type: application/json
 
     <section className="admin-panel space-y-3">
       <h2 className="font-semibold">已授权设备</h2>
-      {!devices.length ? <p className="text-sm opacity-60">尚未创建导入授权。</p> : devices.map(device => <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
-        <div>
-          <p className="font-medium text-sm">{device.name}</p>
-          <p className="text-xs opacity-60">{device.scopes.join(', ')} · {device.last_used_at ? `最近使用 ${new Date(device.last_used_at).toLocaleString('zh-CN')}` : '尚未使用'} · {device.expires_at ? `有效期至 ${new Date(device.expires_at).toLocaleDateString('zh-CN')}` : '无过期时间'}</p>
-        </div>
-        <button type="button" disabled={!device.active} className="admin-nav-link" onClick={() => void revoke(device.id)}>{device.active ? '撤销授权' : '已撤销'}</button>
-      </div>)}
+      {!devices.length ? <p className="text-sm opacity-60">尚未创建导入授权。</p> : devices.map(device => {
+        const expired = Boolean(device.expires_at && new Date(device.expires_at).getTime() <= Date.now());
+        const status = device.active ? (expired ? '已过期' : '已启用') : '已撤销';
+        return <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="min-w-0">
+            <p className="font-medium text-sm">{device.name} <span className="ml-2 text-xs opacity-65">{status}</span></p>
+            <p className="text-xs opacity-60">{device.scopes.join(', ')} · {device.last_used_at ? `最近使用 ${new Date(device.last_used_at).toLocaleString('zh-CN')}` : '尚未使用'} · {device.expires_at ? `有效期至 ${new Date(device.expires_at).toLocaleDateString('zh-CN')}` : '无过期时间'}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {device.active ? <button type="button" className="admin-nav-link" onClick={() => void revoke(device.id)}>撤销授权</button> : <>
+              {!expired && <button type="button" className="admin-nav-link" onClick={() => void restore(device.id)}>恢复授权</button>}
+              <button type="button" className="admin-nav-link" onClick={() => void deleteRevoked(device.id)}>永久删除</button>
+            </>}
+          </div>
+        </div>;
+      })}
     </section>
     <p className="text-sm" aria-live="polite">{message}</p>
   </div>;
