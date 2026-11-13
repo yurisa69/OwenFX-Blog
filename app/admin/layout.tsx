@@ -88,8 +88,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </div>
             <div className="flex flex-wrap gap-2">
               <Link href="/admin/articles/new" className="uiverse-btn uiverse-btn-primary">写文章</Link>
-              <Link href="/admin/integrations" className="admin-nav-link">AI 导入</Link>
-              <Link href="/admin/software" className="admin-nav-link">添加软件</Link>
+              <Link href="/admin/integrations" className="uiverse-btn uiverse-btn-primary">AI 导入</Link>
+              <Link href="/admin/software" className="uiverse-btn uiverse-btn-primary">添加软件</Link>
             </div>
           </header>
           {children}
