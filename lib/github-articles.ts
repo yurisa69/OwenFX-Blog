@@ -81,8 +81,30 @@ export async function readMarkdownFile(path: string, ref?: string): Promise<{ co
   return { content: await response.text(), sha: '' };
 }
 
-export async function writeMarkdownFile(path: string, content: string, message: string) {
+export async function readLatestMarkdownCommitSha(path: string, expectedBlobSha: string): Promise<string | null> {
+  const { owner, repo, branch } = getRepositoryConfig();
+  const query = new URLSearchParams({ path, sha: branch, per_page: '1' });
+  const response = await githubRequest(`https://api.github.com/repos/${owner}/${repo}/commits?${query.toString()}`);
+  if (!response.ok) throw new Error(`读取 GitHub 文章提交记录失败（HTTP ${response.status}）`);
+  const commits = await response.json() as Array<{ sha?: string }>;
+  const latestFile = await readMarkdownFileFresh(path);
+  if (!latestFile || latestFile.sha !== expectedBlobSha) {
+    throw new Error('读取 GitHub 提交记录期间，文章正文版本发生变化；请重新尝试。');
+  }
+  return typeof commits[0]?.sha === 'string' ? commits[0].sha : null;
+}
+
+export async function writeMarkdownFile(
+  path: string,
+  content: string,
+  message: string,
+  options: { expectedBlobSha: string | null },
+) {
   const existing = await readMarkdownFileFresh(path);
+  const actualBlobSha = existing?.sha || null;
+  if (actualBlobSha !== options.expectedBlobSha) {
+    throw new Error('文章版本已在其他位置更新，请刷新编辑器后再保存，避免覆盖新内容。');
+  }
   const { branch } = getConfig();
   const response = await githubRequest(apiUrl(path), {
     method: 'PUT',

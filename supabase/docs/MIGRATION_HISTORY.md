@@ -31,18 +31,26 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113051047` | `add_software_link_reports` | Additive feedback table with admin-only RLS; applied to production |
 | `20261113051500` | `restrict_software_link_report_privileges` | Restrict authenticated grants to SELECT / UPDATE and index the download-link foreign key; applied to production |
 | `20261113054024` | `add_atomic_api_rate_limits` | Add private atomic API rate-limit storage, service-role-only RPC, and server-only analytics writes; applied to production |
+| `20261113082045` | `article_sync_recovery_jobs` | Applied to production; SQL archive reconstructed from live schema and function metadata |
+| `20261113083555` | `harden_article_sync_jobs` | Applied to production; SQL archive reconstructed from live lease and RPC definitions |
 
-At the snapshot date, all 21 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
+At the snapshot date, the production ledger contains 23 migration versions. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two article-sync migration files are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; they are not claimed to be byte-for-byte copies of the SQL originally applied.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 
 The `20261113054024` migration adds `private.api_rate_limits` and a service-role-only atomic rate-limit RPC. It also removes direct `anon` / `authenticated` inserts into `analytics_events`; the application server now validates and records analytics events. Existing analytics rows are retained. The private rate-limit table is outside the public-schema baseline.
+
+- `20261113082045_article_sync_recovery_jobs.sql` documents the `sync_job_id` columns and indexes, private durable job table, RLS, and service-role RPC contract.
+- `20261113083555_harden_article_sync_jobs.sql` documents the lease columns, atomic claim function, idempotency payload checks, and lease-bound state transitions.
+- These two files were reconstructed after direct production application and must not be replayed against the existing production database.
 
 ## 2. Recovery and reconciliation
 
 - The supplied archive contains eight earlier SQL files and a manifest. All eight SQL checksums match the manifest.
 - Those recovered files were compared with the current production tables, columns, constraints, and RLS policies. Only objects that remain part of the current schema were retained.
 - The two migrations dated 2026-11-11 were restored to GitHub from the historical repository commit. Their version identifiers and names match the corresponding entries in the production migration ledger.
+- `20261113082045_article_sync_recovery_jobs.sql` documents the additive `sync_job_id` columns and indexes, private durable job table, RLS, and initial service-role RPCs.
+- `20261113083555_harden_article_sync_jobs.sql` documents the lease columns, atomic claim function, idempotency payload checks, and lease-bound state transitions. Both files were reconstructed after production application from verified live metadata; they are archival records and must not be replayed against the existing production database.
 - `20261105221034_secure_verification_codes.sql` intentionally contains comments only. The `verification_codes` table was removed by the later `remove_legacy_verification_codes` migration and is absent from production.
 - `20261105221137_resource_monetization.sql` retains `site_promotions`, `site_settings`, and the original analytics-event foundation. It excludes `cloud_resources`, `cloud_resource_links`, `analytics_events.resource_id`, `resource_click`, and all associated indexes and policies because those objects were retired.
 - `20261105221158_software_analytics.sql` retains `software_id` and the currently supported event types: `software_click`, `wechat_click`, `ad_click`, and `article_view`. It does not restore `resource_click`.

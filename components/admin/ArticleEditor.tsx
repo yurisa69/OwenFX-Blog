@@ -11,6 +11,7 @@ type Draft = {
   excerpt?: string;
   content_markdown?: string;
   status?: string;
+  github_blob_sha?: string | null;
 };
 
 function escapeHtml(value: string) {
@@ -77,6 +78,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [excerpt, setExcerpt] = useState(initial.excerpt || '');
   const [content, setContent] = useState(initial.content_markdown || '');
   const [status, setStatus] = useState(initial.status === 'published' ? 'published' : 'draft');
+  const [githubBlobSha, setGithubBlobSha] = useState(initial.github_blob_sha || '');
   const [busy, setBusy] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -176,14 +178,27 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     setMessage('');
     const finalContent = mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content;
     try {
-      const response = await fetch(initial.id ? `/api/admin/articles/${initial.id}` : '/api/admin/articles', {
+      const saveUrl = initial.id ? `/api/admin/articles/${initial.id}` : '/api/admin/articles';
+      const saveBody = JSON.stringify({ title, slug, excerpt, content_markdown: finalContent, status: nextStatus, ...(initial.id ? { github_blob_sha: githubBlobSha } : {}) });
+      let response = await fetch(saveUrl, {
         method: initial.id ? 'PATCH' : 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title, slug, excerpt, content_markdown: finalContent, status: nextStatus }),
+        body: saveBody,
       });
-      const result = await response.json();
+      let result = await response.json();
+      if (!response.ok && result.sync_pending && typeof result.sync_job_id === 'string') {
+        const retryResponse = await fetch(`/api/admin/articles/sync/${encodeURIComponent(result.sync_job_id)}/retry`, { method: 'POST' });
+        const retryResult = await retryResponse.json();
+        if (retryResponse.ok) {
+          response = retryResponse;
+          result = { ...retryResult, id: retryResult.article_id };
+        } else {
+          throw new Error(`${result.error || '保存失败'}；自动同步恢复未完成：${retryResult.error || '请稍后重试'}（任务 ID：${result.sync_job_id}）`);
+        }
+      }
       if (!response.ok) throw new Error(result.error || '保存失败');
       setStatus(nextStatus);
+      if (typeof result.github_blob_sha === 'string') setGithubBlobSha(result.github_blob_sha);
       setMessage(nextStatus === 'published' ? '文章已发布' : '草稿已保存');
       if (!initial.id && result.id) router.replace(`/admin/articles/${result.id}`);
       router.refresh();

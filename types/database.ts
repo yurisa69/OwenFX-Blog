@@ -98,6 +98,7 @@ export type Database = {
         github_path: string | null;
         github_sha: string | null;
         content_hash: string | null;
+        sync_job_id: string | null;
       }, 'article_id' | 'title'>;
 
       article_tags: Table<{
@@ -130,6 +131,7 @@ export type Database = {
         github_path: string | null;
         github_sha: string | null;
         content_hash: string | null;
+        sync_job_id: string | null;
       }, 'title' | 'slug', [
         Relationship<'articles_category_id_fkey', 'category_id', 'categories', 'id'>,
       ]>;
@@ -336,6 +338,10 @@ export type Database = {
         Args: { p_bucket_key: string; p_limit?: number; p_window_seconds?: number };
         Returns: boolean;
       };
+      create_article_sync_job: { Args: { p_id: string; p_idempotency_key: string; p_operation: string; p_article_id: string | null; p_actor_id: string | null; p_target_path: string; p_content_hash: string; p_metadata: Json }; Returns: Json };
+      get_article_sync_job: { Args: { p_id: string }; Returns: Json };
+      claim_article_sync_job: { Args: { p_id: string; p_lease_token: string; p_lease_seconds?: number }; Returns: Json };
+      update_article_sync_job: { Args: { p_id: string; p_state: string; p_github_sha: string | null; p_last_error: string | null; p_article_id: string | null; p_lease_token: string }; Returns: boolean };
     };
 
     Enums: Record<never, never>;
