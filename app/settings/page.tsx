@@ -220,10 +220,11 @@ export default function SettingsPage() {
       ) {
         setPasswordError('新密码不能与当前密码相同。');
       } else if (
-        authMessage.includes('password') &&
-        (authMessage.includes('weak') || authMessage.includes('strength') || authMessage.includes('too short'))
+        authMessage.includes('password should contain at least one character of each') ||
+        (authMessage.includes('password') &&
+          (authMessage.includes('weak') || authMessage.includes('strength') || authMessage.includes('too short')))
       ) {
-        setPasswordError('新密码未满足安全要求，请更换更复杂的密码。');
+        setPasswordError('新密码必须同时包含小写字母、大写字母、数字和至少一个特殊符号。');
       } else if (authMessage.includes('rate limit') || authMessage.includes('too many requests')) {
         setPasswordError('操作过于频繁，请稍后重试。');
       } else {
