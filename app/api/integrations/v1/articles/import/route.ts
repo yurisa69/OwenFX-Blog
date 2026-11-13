@@ -76,10 +76,10 @@ export async function POST(request: Request) {
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
   if (!requestIdPattern.test(requestId)) return NextResponse.json({ error: 'request_id 必须为 8 至 120 位字母、数字或 . _ : -' }, { status: 400 });
 
-  const idempotencyKey = `chatgpt:${requestId}`;
+  const legacyIdempotencyKey = `chatgpt:${requestId}`;
   const taskIdempotencyKey = `chatgpt:${device.id}:${requestId}`;
   const { data: prior } = await service.from('articles').select('id,slug,status,sync_job_id')
-    .eq('legacy_id', idempotencyKey).maybeSingle();
+    .eq('legacy_id', legacyIdempotencyKey).maybeSingle();
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
   if (prior) {
     if (!prior.sync_job_id) {
