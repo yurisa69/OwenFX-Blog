@@ -29,7 +29,7 @@ const navGroups = [
       { label: '评论管理', href: '/admin/comments', icon: '◌' },
       { label: '用户管理', href: null, icon: '♙' },
       { label: '赞赏设置', href: '/admin/support', icon: '⚙' },
-      { label: '网盘失效反馈', href: '/admin/link-reports', icon: '' },
+      { label: '失效反馈', href: '/admin/link-reports', icon: '\u2601' },
     ],
   },
 ];
