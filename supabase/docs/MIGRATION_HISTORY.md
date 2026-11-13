@@ -35,8 +35,9 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113083555` | `harden_article_sync_jobs` | Applied to production; SQL archive reconstructed from live lease and RPC definitions |
 | `20261113092735` | `article_sync_article_locks` | Additive per-article sync lease table and service-role-only acquire/release RPCs |
 | `20261113092747` | `release_failed_article_sync_leases` | Release task leases on failed/conflict/completed transitions to allow immediate safe retry |
+| `20261113092936` | `article_sync_locks_service_role_policy` | Add an explicit service-role-only RLS policy for the private lock table |
 
-At the snapshot date, the production ledger contains 25 migration versions. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the two newer article-sync migrations are tracked with the SQL applied to production.
+At the snapshot date, the production ledger contains 26 migration versions. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the three newer article-sync migrations are tracked with the SQL applied to production.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 
@@ -55,6 +56,7 @@ The `20261113054024` migration adds `private.api_rate_limits` and a service-role
 - `20261113083555_harden_article_sync_jobs.sql` documents the lease columns, atomic claim function, idempotency payload checks, and lease-bound state transitions. Both files were reconstructed after production application from verified live metadata; they are archival records and must not be replayed against the existing production database.
 - `20261113092735_article_sync_article_locks.sql` adds a private per-article lease table and service-role-only RPCs. The lease serializes distinct sync jobs for the same article across GitHub and Supabase operations.
 - `20261113092747_release_failed_article_sync_leases.sql` releases a task lease when a task enters `failed`, allowing the original idempotent request to reclaim and resume it immediately.
+- `20261113092936_article_sync_locks_service_role_policy.sql` adds an explicit RLS policy limited to `service_role`; the private lock table remains inaccessible to `anon` and `authenticated`.
 - `20261105221034_secure_verification_codes.sql` intentionally contains comments only. The `verification_codes` table was removed by the later `remove_legacy_verification_codes` migration and is absent from production.
 - `20261105221137_resource_monetization.sql` retains `site_promotions`, `site_settings`, and the original analytics-event foundation. It excludes `cloud_resources`, `cloud_resource_links`, `analytics_events.resource_id`, `resource_click`, and all associated indexes and policies because those objects were retired.
 - `20261105221158_software_analytics.sql` retains `software_id` and the currently supported event types: `software_click`, `wechat_click`, `ad_click`, and `article_view`. It does not restore `resource_click`.
