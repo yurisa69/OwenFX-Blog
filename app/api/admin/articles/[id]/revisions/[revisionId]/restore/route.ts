@@ -55,8 +55,9 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       .select('updated_at,sync_job_id,github_path').eq('id', id).maybeSingle();
     if (lockedArticleError) throw new Error(lockedArticleError.message);
     const baseJobId = typeof job.metadata.base_article_sync_job_id === 'string' ? job.metadata.base_article_sync_job_id : null;
-    if (!lockedArticle || lockedArticle.updated_at !== article.updated_at
-      || lockedArticle.sync_job_id !== baseJobId || lockedArticle.github_path !== article.github_path) {
+    if (!lockedArticle || (lockedArticle.sync_job_id !== job.id && lockedArticle.sync_job_id !== baseJobId)
+      || (lockedArticle.sync_job_id !== job.id && lockedArticle.updated_at !== article.updated_at)
+      || lockedArticle.github_path !== article.github_path) {
       await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '文章基准版本已变化，拒绝执行旧恢复任务。' });
       return NextResponse.json({ error: '文章已被其他同步任务更新，请刷新后重试。', sync_job_id: job.id }, { status: 409 });
     }
@@ -88,11 +89,14 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       await updateArticleSyncJob(service, job.id, lease.leaseToken, 'github_written', { githubSha: commitSha });
     }
 
-    const { data: updatedArticle, error } = await service.from('articles').update({
+    let articleUpdate = service.from('articles').update({
       github_path: path, github_sha: commitSha, content_hash: contentHash,
       updated_at: new Date().toISOString(), sync_job_id: job.id,
-    }).eq('id', id).eq('updated_at', article.updated_at)
-      .eq('sync_job_id', article.sync_job_id).select('id').maybeSingle();
+    }).eq('id', id).eq('updated_at', lockedArticle.updated_at);
+    articleUpdate = lockedArticle.sync_job_id
+      ? articleUpdate.eq('sync_job_id', lockedArticle.sync_job_id)
+      : articleUpdate.is('sync_job_id', null);
+    const { data: updatedArticle, error } = await articleUpdate.select('id').maybeSingle();
     if (error) throw new Error(`GitHub 已恢复正文，但元数据同步失败：${error.message}`);
     if (!updatedArticle) {
       await updateArticleSyncJob(service, job.id, lease.leaseToken, 'conflict', { error: '文章元数据版本条件不匹配，拒绝覆盖。' });

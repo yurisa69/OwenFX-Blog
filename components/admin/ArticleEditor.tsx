@@ -200,7 +200,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
           });
           result = await response.json();
           if (!response.ok) {
-            throw new Error(`${result.error || '原始保存请求重试失败'}（任务 ID：${result.sync_job_id || result.sync_job_id === '' ? result.sync_job_id : '未知'}）`);
+            throw new Error(`${result.error || '原始保存请求重试失败'}（任务 ID：${typeof result.sync_job_id === 'string' ? result.sync_job_id : '未知'}）`);
           }
         } else {
           throw new Error(`${result.error || '保存失败'}；自动同步恢复未完成：${retryResult.error || '请稍后重试'}（任务 ID：${result.sync_job_id}）`);
