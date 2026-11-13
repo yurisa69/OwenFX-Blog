@@ -42,9 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <aside className="admin-sidebar md:sticky md:top-24 md:flex md:w-[248px] md:shrink-0 md:flex-col md:self-start">
           <div className="admin-brand-header border-b px-5 py-5" style={{ borderColor: 'var(--border-color)' }}>
-            <Link href="/admin" className="admin-brand text-xl font-bold tracking-tight md:text-2xl" style={{ color: 'var(--text-primary)' }}>
+            <Link href="/admin" className="admin-brand text-2xl font-bold tracking-tight md:text-3xl" style={{ color: 'var(--text-primary)' }}>
               <span className="admin-brand-owen">Owen</span><span className="admin-brand-f">F</span><span className="admin-brand-x">X</span>{' '}
-              <span className="gradient-text admin-brand-studio">Studio</span>
+              <span className="gradient-text admin-brand-studio"><span className="admin-brand-studio-initial">S</span>tudio</span>
             </Link>
           </div>
 
@@ -97,10 +97,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       <style>{`
         .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
-        .admin-brand-header{position:relative}
-        .admin-brand{display:inline-flex;align-items:baseline;white-space:nowrap;gap:0}
-        .admin-brand-owen,.admin-brand-x,.admin-brand-studio{font-family:var(--font-splash),cursive;font-weight:400}.admin-brand-owen{font-size:1.55em;letter-spacing:-.055em;line-height:.8}.admin-brand-f{position:relative;top:.08em;font-family:var(--font-caramel),cursive;font-size:1.9em;font-weight:400;line-height:.65}.admin-brand-x{font-size:1em;letter-spacing:-.06em}.admin-brand-studio{margin-left:.08em;font-size:1.12em;letter-spacing:-.035em}
-        @media(min-width:768px){.admin-brand-header{margin-left:-16px;margin-top:-16px;padding:0 0 20px 0}.admin-brand-owen{font-size:1.7em}.admin-brand-f{font-size:2.15em;top:.1em}.admin-brand-x{font-size:1em}.admin-brand-studio{font-size:1.22em;margin-left:.1em}}
+        .admin-brand-header{position:relative;display:flex;justify-content:center}
+        .admin-brand{display:inline-flex;width:100%;align-items:baseline;justify-content:center;white-space:nowrap;gap:0}
+        .admin-brand-owen,.admin-brand-x,.admin-brand-studio{font-family:var(--font-splash),cursive;font-weight:400}.admin-brand-owen{font-size:1.55em;letter-spacing:-.055em;line-height:.8}.admin-brand-f{position:relative;top:.08em;font-family:var(--font-caramel),cursive;font-size:1.9em;font-weight:400;line-height:.65}.admin-brand-x{font-size:1em;letter-spacing:-.06em}.admin-brand-studio{margin-left:.08em;font-size:1.18em;letter-spacing:-.035em}.admin-brand-studio-initial{display:inline-block;font-size:1.3em;line-height:.7;vertical-align:-.04em}
+        @media(min-width:768px){.admin-brand-header{margin-left:-16px;margin-top:-16px;padding:0 0 20px 0}.admin-brand-owen{font-size:1.7em}.admin-brand-f{font-size:2.15em;top:.1em}.admin-brand-x{font-size:1em}.admin-brand-studio{font-size:1.28em;margin-left:.1em}.admin-brand-studio-initial{font-size:1.38em}}
         .admin-sidebar-link{display:flex;min-width:0;min-height:40px;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:8px 10px;color:var(--text-secondary);font-size:13px;transition:background .18s,border-color .18s,color .18s}
         .admin-sidebar-link:hover{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
         .admin-sidebar-icon{display:inline-flex;width:20px;flex:0 0 20px;align-items:center;justify-content:center;font-size:15px;color:var(--text-tertiary)}
