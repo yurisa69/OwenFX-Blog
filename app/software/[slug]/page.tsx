@@ -164,6 +164,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
       return tag?.name || '';
     })
     .filter(Boolean));
+  const platforms = formatPlatforms(software.platform);
   const links = [...(software.software_download_links || [])]
     .filter((link: { active?: boolean }) => link.active !== false)
     .sort((a, b) => a.sort_order - b.sort_order);
@@ -194,7 +195,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
     url: new URL(`/software/${encodeURIComponent(software.slug)}`, siteUrl).toString(),
     ...(software.image_url ? { image: software.image_url } : {}),
     ...(categoryName ? { applicationCategory: categoryName } : {}),
-    ...(software.platform ? { operatingSystem: software.platform } : {}),
+    ...(platforms.length ? { operatingSystem: platforms.join(', ') } : {}),
     ...(software.version ? { softwareVersion: software.version } : {}),
     ...(software.official_download_url ? { downloadUrl: software.official_download_url } : {}),
   };
@@ -240,7 +241,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           {software.developer && <span>开发者：{software.developer}</span>}
           {software.version && <span>版本：{software.version}</span>}
           {software.file_size && <span>大小：{software.file_size}</span>}
-          {software.platform && formatPlatforms(software.platform).length > 0 && <span>平台：{formatPlatforms(software.platform).join('、')}</span>}
+          {platforms.length > 0 && <span>平台：{platforms.join('、')}</span>}
           {software.updated_at && <span>更新：{new Date(software.updated_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Shanghai' })}</span>}
         </div>
 

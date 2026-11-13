@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownCacheTag, articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
 
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
       });
     }
     await updateArticleSyncJob(service, job.id, lease.leaseToken, 'completed', { articleId: data.id, githubSha: commitSha });
-    if (status === 'published') revalidateTag('github-articles', { expire: 0 });
+    if (status === 'published') revalidateTag(articleMarkdownCacheTag(path), { expire: 0 });
     return NextResponse.json({ id: data.id, github_path: path, github_sha: commitSha, github_blob_sha: blobSha, sync_job_id: job.id }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : '文章同步失败';

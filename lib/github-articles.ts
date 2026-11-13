@@ -68,13 +68,17 @@ export async function readMarkdownFileFresh(path: string, ref?: string): Promise
   return { content: await response.text(), sha: '' };
 }
 
+export function articleMarkdownCacheTag(path: string) {
+  return `github-article:${path}`;
+}
+
 export async function readMarkdownFile(path: string, ref?: string): Promise<{ content: string; sha: string } | null> {
   const { owner, repo, branch } = getRepositoryConfig();
   const targetRef = ref || branch;
   const rawPath = path.split('/').map(encodeURIComponent).join('/');
   const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(targetRef)}/${rawPath}`;
   const response = await fetch(rawUrl, {
-    next: { revalidate: 300, tags: ['github-articles'] },
+    next: { revalidate: 300, tags: ['github-articles', articleMarkdownCacheTag(path)] },
   });
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`读取公开 GitHub 文章失败（HTTP ${response.status}）`);

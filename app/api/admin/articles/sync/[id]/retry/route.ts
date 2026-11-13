@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { deleteMarkdownFile, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh } from '@/lib/github-articles';
+import { articleMarkdownCacheTag, deleteMarkdownFile, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh } from '@/lib/github-articles';
 import { claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
 
@@ -169,7 +169,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
         }
       } catch (cleanupError) { console.error('[article-file-cleanup]', cleanupError); }
     }
-    revalidateTag('github-articles', { expire: 0 });
+    revalidateTag(articleMarkdownCacheTag(String(job.target_path)), { expire: 0 });
+    if (previousPath && previousPath !== String(job.target_path)) revalidateTag(articleMarkdownCacheTag(previousPath), { expire: 0 });
     return NextResponse.json({ success: true, article_id: resolvedArticleId, state: 'completed', github_blob_sha: file.sha });
   } catch (error) {
     const message = error instanceof Error ? error.message : '补偿失败';

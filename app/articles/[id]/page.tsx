@@ -94,6 +94,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     '@type': 'Article',
     headline: article.title,
     description: article.seo_description || article.excerpt || undefined,
+    inLanguage: 'zh-CN',
+    ...(categoryName ? { articleSection: categoryName } : {}),
+    ...(tags.length ? { keywords: tags } : {}),
     datePublished: article.published_at || article.created_at,
     dateModified: article.updated_at || article.published_at || article.created_at,
     mainEntityOfPage: {

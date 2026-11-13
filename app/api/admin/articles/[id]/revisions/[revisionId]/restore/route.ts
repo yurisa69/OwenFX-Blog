@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownCacheTag, articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, writeMarkdownFile } from '@/lib/github-articles';
 import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
 
@@ -123,7 +123,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       });
     }
     await updateArticleSyncJob(service, job.id, lease.leaseToken, 'completed', { articleId: id, githubSha: commitSha });
-    revalidateTag('github-articles', { expire: 0 });
+    revalidateTag(articleMarkdownCacheTag(path), { expire: 0 });
     return NextResponse.json({ success: true, github_path: path, github_sha: commitSha, sync_job_id: job.id });
   } catch (error) {
     const message = error instanceof Error ? error.message : '恢复同步失败';

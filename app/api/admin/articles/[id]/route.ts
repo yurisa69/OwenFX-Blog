@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownCacheTag, articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
 
@@ -153,7 +153,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       });
     }
     await updateArticleSyncJob(service, job.id, lease.leaseToken, 'completed', { articleId: id, githubSha: commitSha });
-    revalidateTag('github-articles', { expire: 0 });
+    revalidateTag(articleMarkdownCacheTag(path), { expire: 0 });
+    if (previous.github_path !== path) revalidateTag(articleMarkdownCacheTag(previous.github_path), { expire: 0 });
 
     if (previous.github_path !== path) {
       try {
@@ -180,9 +181,11 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   const auth = await authorizeContentEditor();
   if ('response' in auth) return auth.response;
   const { id } = await params;
-  const { error } = await auth.supabase.from('articles').update({ status: 'archived', updated_at: new Date().toISOString() }).eq('id', id);
+  const { data: archived, error } = await auth.supabase.from('articles')
+    .update({ status: 'archived', updated_at: new Date().toISOString() })
+    .eq('id', id).select('github_path').maybeSingle();
   if (error) return NextResponse.json({ error: '归档失败' }, { status: 400 });
   await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: 'article.archive', entity_type: 'article', entity_id: id });
-  revalidateTag('github-articles', { expire: 0 });
+  if (archived?.github_path) revalidateTag(articleMarkdownCacheTag(archived.github_path), { expire: 0 });
   return NextResponse.json({ success: true });
 }
