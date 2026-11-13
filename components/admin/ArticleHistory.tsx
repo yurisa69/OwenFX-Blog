@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatChineseDateTime } from '@/lib/date';
 
 type Revision = {
   id: string;
@@ -19,7 +20,7 @@ export default function ArticleHistory({ articleId, revisions }: { articleId: st
   const [message, setMessage] = useState('');
 
   async function restore(revision: Revision) {
-    if (!window.confirm(`确定恢复到 ${new Date(revision.created_at).toLocaleString('zh-CN')} 的版本吗？当前正文会保留在 GitHub 历史中。`)) return;
+    if (!window.confirm(`确定恢复到 ${formatChineseDateTime(revision.created_at)} 的版本吗？当前正文会保留在 GitHub 历史中。`)) return;
     setBusyId(revision.id);
     setMessage('');
     try {
@@ -41,7 +42,7 @@ export default function ArticleHistory({ articleId, revisions }: { articleId: st
     {!revisions.length ? <p className="text-sm opacity-60">暂无历史版本记录。</p> : revisions.map(revision => (
       <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
         <div className="min-w-0">
-          <p className="font-medium text-sm">{new Date(revision.created_at).toLocaleString('zh-CN')}</p>
+          <p className="font-medium text-sm">{formatChineseDateTime(revision.created_at)}</p>
           <p className="text-xs opacity-65">{revision.github_sha ? revision.github_sha.slice(0, 12) : '缺少 GitHub Commit'} · {revision.github_path || '无文件路径'}</p>
           {revision.content_hash && <p className="text-xs opacity-45">SHA-256：{revision.content_hash.slice(0, 16)}…</p>}
         </div>

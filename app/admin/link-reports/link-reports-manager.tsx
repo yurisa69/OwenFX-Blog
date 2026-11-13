@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { formatChineseDateTime } from '@/lib/date';
 
 type Report = {
   id: string;
@@ -88,7 +89,7 @@ function ReportCard({ report, busy, onSave }: {
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="font-semibold">{report.software_title} · {report.provider}</h2>
-          <p className="mt-1 text-xs opacity-60">{reasonLabels[report.reason] || report.reason} · {new Date(report.created_at).toLocaleString('zh-CN')}</p>
+          <p className="mt-1 text-xs opacity-60">{reasonLabels[report.reason] || report.reason} · {formatChineseDateTime(report.created_at)}</p>
         </div>
         <span className="rounded-full border px-2.5 py-1 text-xs" style={{ borderColor: 'var(--border-color)' }}>{statusLabels[report.status] || report.status}</span>
       </div>

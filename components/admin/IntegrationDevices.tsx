@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { formatChineseDateLocal, formatChineseDateTime } from '@/lib/date';
 
 type Device = {
   id: string;
@@ -152,7 +153,7 @@ Content-Type: application/json
         return <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
           <div className="min-w-0">
             <p className="font-medium text-sm">{device.name} <span className="ml-2 text-xs opacity-65">{status}</span></p>
-            <p className="text-xs opacity-60">{device.scopes.join(', ')} · {device.last_used_at ? `最近使用 ${new Date(device.last_used_at).toLocaleString('zh-CN')}` : '尚未使用'} · {device.expires_at ? `有效期至 ${new Date(device.expires_at).toLocaleDateString('zh-CN')}` : '无过期时间'}</p>
+            <p className="text-xs opacity-60">{device.scopes.join(', ')} · {device.last_used_at ? `最近使用 ${formatChineseDateTime(device.last_used_at)}` : '尚未使用'} · {device.expires_at ? `有效期至 ${formatChineseDateLocal(device.expires_at)}` : '无过期时间'}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {device.active ? <button type="button" className="admin-nav-link" onClick={() => void revoke(device.id)}>撤销授权</button> : <>

@@ -8,6 +8,7 @@ import ArticleActionIcon from '@/components/ArticleActionIcon';
 import Avatar from '@/components/Avatar';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import { getDisplayNameLength, limitDisplayName, MAX_DISPLAY_NAME_LENGTH } from '@/lib/display-name';
+import { formatChineseDateLocal } from '@/lib/date';
 
 type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null };
 type Profile = { display_name: string; bio: string; avatar_url: string | null };
@@ -386,7 +387,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                       ) : (profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
                         <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
                           <span className="profile-activity-item-mark">{profileTab === 'likes' ? <ArticleActionIcon type="like" /> : <ArticleActionIcon type="bookmark" />}</span>
-                          <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{new Date(item.created_at).toLocaleDateString('zh-CN')}</small></span>
+                          <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{formatChineseDateLocal(item.created_at)}</small></span>
                           <span className="profile-activity-arrow">›</span>
                         </Link>
                       ))
@@ -394,7 +395,7 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                       <div className="profile-list-empty">还没有发表过评论</div>
                     ) : profileComments.map(item => (
                       <article key={item.id} className="profile-comment-item">
-                        <div className="profile-comment-meta"><span>{new Date(item.created_at).toLocaleDateString('zh-CN')}</span><span>{item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '未通过' : '审核中'}</span></div>
+                        <div className="profile-comment-meta"><span>{formatChineseDateLocal(item.created_at)}</span><span>{item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '未通过' : '审核中'}</span></div>
                         <p>{item.body}</p>
                         {item.article?.slug && <Link href={'/articles/' + item.article.slug} onClick={() => setDrawerOpen(false)}>查看文章 ›</Link>}
                       </article>

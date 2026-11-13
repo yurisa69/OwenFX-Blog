@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { formatChineseDateTime } from '@/lib/date';
 
 type CommentStatus = 'pending' | 'approved' | 'rejected' | 'spam' | 'deleted';
 type CommentRow = {
@@ -163,7 +164,7 @@ export default function CommentsManager() {
                 {row.author?.avatar_url ? <img src={row.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" /> : <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm" style={{ background: 'var(--bg-tertiary)' }}>{name.slice(0, 1).toUpperCase()}</div>}
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{name}</p>
-                  <p className="mt-0.5 text-xs opacity-60">{new Date(row.created_at).toLocaleString('zh-CN')}</p>
+                  <p className="mt-0.5 text-xs opacity-60">{formatChineseDateTime(row.created_at)}</p>
                 </div>
               </div>
               <span className="rounded-full px-2.5 py-1 text-xs" style={{ background: row.status === 'pending' || row.status === 'spam' ? 'var(--accent-bg)' : 'var(--bg-tertiary)', color: row.status === 'pending' || row.status === 'spam' ? 'var(--accent)' : 'var(--text-secondary)' }}>

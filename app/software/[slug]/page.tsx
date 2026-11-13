@@ -7,6 +7,7 @@ import TrackLink from '@/components/TrackLink';
 import SoftwareLinkReportButton from '@/components/SoftwareLinkReportButton';
 import SoftwareSupport from '@/components/SoftwareSupport';
 import ArticleContent from '@/components/ArticleContent';
+import { formatChineseDate } from '@/lib/date';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
@@ -242,7 +243,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           {software.version && <span>版本：{software.version}</span>}
           {software.file_size && <span>大小：{software.file_size}</span>}
           {platforms.length > 0 && <span>平台：{platforms.join('、')}</span>}
-          {software.updated_at && <span>更新：{new Date(software.updated_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Shanghai' })}</span>}
+          {software.updated_at && <span>更新：{formatChineseDate(software.updated_at, 'Asia/Shanghai')}</span>}
         </div>
 
         {(software.description || software.introduction_markdown) && (

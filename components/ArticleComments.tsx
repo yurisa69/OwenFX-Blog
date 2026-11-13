@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
+import { formatChineseDateLocal } from '@/lib/date';
 
 type CommentAuthor = { display_name?: string | null; avatar_url?: string | null } | null;
 type CommentRow = {
@@ -21,7 +22,7 @@ function getAuthor(author: CommentRow['author']): CommentAuthor {
 
 function formatDate(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('zh-CN');
+  return Number.isNaN(date.getTime()) ? '' : formatChineseDateLocal(date);
 }
 
 export default function ArticleComments({ articleId }: { articleId: string }) {

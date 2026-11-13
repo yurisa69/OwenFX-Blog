@@ -1,4 +1,5 @@
 import { requireAdmin } from '@/lib/admin-auth';
+import { formatChineseDateTime } from '@/lib/date';
 
 function getAnalyticsSince() {
   return new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -22,6 +23,6 @@ export default async function AnalyticsPage() {
   return <div className="space-y-4">
     <p className="text-sm opacity-60">统计范围：最近30天；当前展示最近1000条事件记录。</p>
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{totals.map(([label, value]) => <div className="admin-panel" key={String(label)}><p className="text-sm opacity-70">{label}</p><p className="mt-2 text-3xl font-bold">{error ? '—' : value}</p></div>)}</div>
-    <section className="admin-panel"><h2 className="mb-3 font-semibold">最近点击记录</h2>{error ? <p className="text-sm text-red-500">统计读取失败，请检查 analytics_events 权限。</p> : events.length === 0 ? <p className="text-sm opacity-60">暂无点击记录。</p> : <div className="space-y-2">{events.slice(0, 40).map((event, index) => <div key={index} className="flex flex-wrap items-center justify-between gap-2 border-t py-2 text-sm" style={{ borderColor: 'var(--border-color)' }}><span>{event.event_type === 'software_click' ? '软件下载' : event.event_type === 'wechat_click' ? '公众号' : event.event_type === 'ad_click' ? '广告' : event.event_type}</span><span className="text-xs opacity-60">{event.target_key || '—'} · {new Date(event.created_at).toLocaleString('zh-CN')}</span></div>)}</div>}</section>
+    <section className="admin-panel"><h2 className="mb-3 font-semibold">最近点击记录</h2>{error ? <p className="text-sm text-red-500">统计读取失败，请检查 analytics_events 权限。</p> : events.length === 0 ? <p className="text-sm opacity-60">暂无点击记录。</p> : <div className="space-y-2">{events.slice(0, 40).map((event, index) => <div key={index} className="flex flex-wrap items-center justify-between gap-2 border-t py-2 text-sm" style={{ borderColor: 'var(--border-color)' }}><span>{event.event_type === 'software_click' ? '软件下载' : event.event_type === 'wechat_click' ? '公众号' : event.event_type === 'ad_click' ? '广告' : event.event_type}</span><span className="text-xs opacity-60">{event.target_key || '—'} · {formatChineseDateTime(event.created_at)}</span></div>)}</div>}</section>
   </div>;
 }

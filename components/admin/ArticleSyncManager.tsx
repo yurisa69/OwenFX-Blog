@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { formatChineseDateTime } from '@/lib/date';
 
 type SyncState = 'pending' | 'github_written' | 'failed' | 'conflict' | 'completed';
 
@@ -41,7 +42,7 @@ function formatDate(value: string | null) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? '—'
-    : date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+    : formatChineseDateTime(date, 'Asia/Shanghai');
 }
 
 export default function ArticleSyncManager() {
