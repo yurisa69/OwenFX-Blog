@@ -133,7 +133,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (previous.github_path !== path) {
       try {
         const oldFile = await readMarkdownFileFresh(previous.github_path);
-        if (oldFile?.sha === expectedBlobSha) await deleteMarkdownFile(previous.github_path, oldFile.sha, `Move article to ${path}`);
+        if (oldFile && oldFile.sha === expectedBlobSha) await deleteMarkdownFile(previous.github_path, oldFile.sha, `Move article to ${path}`);
       } catch (cleanupError) { console.error('[article-file-cleanup]', cleanupError); }
     }
     return NextResponse.json({ success: true, github_path: path, github_sha: commitSha, github_blob_sha: blobSha, sync_job_id: job.id });
