@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { markdownToHtml } from '@/lib/markdown';
 
 type Draft = {
   id?: string;
@@ -17,95 +18,6 @@ function escapeHtml(value: string) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function inlineMarkdown(value: string) {
-  return value
-    .replace(/!\[([^\]]*)\]\((https?:\/\/[^ )]+)\)/g, '<img src="$2" alt="$1" loading="lazy" decoding="async" referrerpolicy="no-referrer" />')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^ )]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>');
-}
-
-function markdownToHtml(source: string) {
-  const lines = source.replace(/\r\n/g, '\n').split('\n');
-  const output: string[] = [];
-  let index = 0;
-
-  while (index < lines.length) {
-    const line = lines[index];
-    if (!line.trim()) { index += 1; continue; }
-
-    if (line.trim().startsWith('```')) {
-      const code: string[] = [];
-      index += 1;
-      while (index < lines.length && !lines[index].trim().startsWith('```')) {
-        code.push(lines[index]);
-        index += 1;
-      }
-      output.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
-      index += 1;
-      continue;
-    }
-
-    const heading = line.match(/^(#{1,6})\s+(.+)$/);
-    if (heading) {
-      const level = heading[1].length;
-      output.push(`<h${level}>${inlineMarkdown(escapeHtml(heading[2]))}</h${level}>`);
-      index += 1;
-      continue;
-    }
-
-    if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
-      output.push('<hr>');
-      index += 1;
-      continue;
-    }
-
-    if (line.includes('|') && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[index + 1])) {
-      const cells = (row: string) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
-      const header = cells(line);
-      index += 2;
-      const rows: string[][] = [];
-      while (index < lines.length && lines[index].includes('|') && lines[index].trim()) {
-        rows.push(cells(lines[index]));
-        index += 1;
-      }
-      output.push(`<table><thead><tr>${header.map(cell => `<th>${inlineMarkdown(escapeHtml(cell))}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${header.map((_, cellIndex) => `<td>${inlineMarkdown(escapeHtml(row[cellIndex] || ''))}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
-      continue;
-    }
-
-    if (/^\s*>/.test(line)) {
-      const quote: string[] = [];
-      while (index < lines.length && /^\s*>/.test(lines[index])) {
-        quote.push(inlineMarkdown(escapeHtml(lines[index].replace(/^\s*>\s?/, ''))));
-        index += 1;
-      }
-      output.push(`<blockquote>${quote.join('<br>')}</blockquote>`);
-      continue;
-    }
-
-    if (/^\s*[-*+]\s+/.test(line) || /^\s*\d+\.\s+/.test(line)) {
-      const ordered = /^\s*\d+\.\s+/.test(line);
-      const items: string[] = [];
-      const pattern = ordered ? /^\s*\d+\.\s+/ : /^\s*[-*+]\s+/;
-      while (index < lines.length && pattern.test(lines[index])) {
-        items.push(`<li>${inlineMarkdown(escapeHtml(lines[index].replace(pattern, '')))}</li>`);
-        index += 1;
-      }
-      output.push(`<${ordered ? 'ol' : 'ul'}>${items.join('')}</${ordered ? 'ol' : 'ul'}>`);
-      continue;
-    }
-
-    const paragraph: string[] = [];
-    while (index < lines.length && lines[index].trim() && !/^(#{1,6})\s+/.test(lines[index]) && !/^\s*>/.test(lines[index]) && !/^\s*([-*+]\s+|\d+\.\s+)/.test(lines[index]) && !lines[index].trim().startsWith('```')) {
-      paragraph.push(inlineMarkdown(escapeHtml(lines[index])));
-      index += 1;
-    }
-    output.push(`<p>${paragraph.join('<br>')}</p>`);
-  }
-
-  return output.join('');
-}
 
 function htmlToMarkdown(html: string) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -312,7 +224,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       </div>
     </div>
 
-    {preview ? <article className="admin-preview" dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }} /> :
+    {preview ? <article className="admin-preview" dangerouslySetInnerHTML={{ __html: markdownToHtml(content, { articleTitle: title, removeDownloadLinks: true }) }} /> :
       mode === 'markdown' ? <textarea value={content} onChange={event => setContent(event.target.value)} rows={22} className="admin-input font-mono text-sm leading-7" placeholder={'# 文章标题\n\n在这里编写 Markdown 内容…'} /> :
         <div className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex flex-wrap gap-1 border-b p-2" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
