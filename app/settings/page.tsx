@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import PasswordInput from '@/components/PasswordInput';
+import Avatar from '@/components/Avatar';
 import {
   isSupportedRegistrationEmail,
   REGISTRATION_EMAIL_UNSUPPORTED_MESSAGE,
@@ -76,8 +77,6 @@ export default function SettingsPage() {
         email: authUser.email || '',
         avatarUrl: metadataAvatar,
       });
-      setLoading(false);
-
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('display_name,avatar_url')
@@ -93,6 +92,8 @@ export default function SettingsPage() {
           avatarUrl: profile.avatar_url || current.avatarUrl,
         } : current);
       }
+
+      setLoading(false);
 
       const redirectError = new URLSearchParams(window.location.hash.slice(1)).get('error_description');
       if (redirectError) {
@@ -277,9 +278,12 @@ export default function SettingsPage() {
         <div className="profile-identity-main">
           <div className="profile-avatar-ring profile-avatar-ring-compact">
             <div className="profile-avatar-inner">
-              {user?.avatarUrl
-                ? <img src={user.avatarUrl} alt="头像" className="h-full w-full object-cover" />
-                : <span>{(user?.name || 'U').slice(0, 1).toUpperCase()}</span>}
+              <Avatar
+                src={user?.avatarUrl}
+                alt="头像"
+                fallback={(user?.name || 'U').slice(0, 1).toUpperCase()}
+                priority
+              />
             </div>
           </div>
           <div className="min-w-0 flex-1">
