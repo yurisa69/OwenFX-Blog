@@ -300,13 +300,15 @@ export default function SettingsPage() {
           {error || notice}
         </div>
       )}
-<section className="account-settings-card">
+      {emailError && (
+        <div role="alert" className="account-settings-message is-error">{emailError}</div>
+      )}
+      <section className="account-settings-card">
         <div className="account-settings-card-heading">
           <div><span className="account-settings-index">01</span><h2>更改邮件地址</h2></div>
           <p>提交新邮件地址后，需要通过验证邮件确认变更。</p>
         </div>
         <form onSubmit={handleEmailChange} className="account-settings-form">
-          {emailError && <p role="alert" className="account-settings-message is-error">{emailError}</p>}
           <label htmlFor="account-email">新邮件地址</label>
           <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮件地址" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={emailBusy || !user?.email}>
