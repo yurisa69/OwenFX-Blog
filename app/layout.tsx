@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Splash } from 'next/font/google';
+import { Caramel, Geist, Geist_Mono, Splash } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 const splash = Splash({ variable: '--font-splash', subsets: ['latin'], weight: '400', display: 'swap' });
+const caramel = Caramel({ variable: '--font-caramel', subsets: ['latin'], weight: '400', display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
 export const metadata: Metadata = {
@@ -74,7 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch {}
 
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${splash.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
+    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
