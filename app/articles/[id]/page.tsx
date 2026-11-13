@@ -1,10 +1,13 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { formatChineseDate } from '@/lib/date';
 import { readMarkdownFile } from '@/lib/github-articles';
 import ArticleContent from '@/components/ArticleContent';
 import ArticleSupport from '@/components/ArticleSupport';
 import ArticleInteractions from '@/components/ArticleInteractions';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
 const categoryColors: Record<string, string> = {
   '工具评测': '#6366f1',
@@ -19,10 +22,51 @@ function sortTagsByLength(tags: string[]) {
     .map(({ tag }) => tag);
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const columns = 'id,legacy_id,title,excerpt,seo_title,seo_description,cover_url,published_at,created_at,updated_at';
+  const { data: articleById } = await supabase.from('articles').select(columns)
+    .eq('id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
+  const { data: articleByLegacyId } = articleById
+    ? { data: null }
+    : await supabase.from('articles').select(columns)
+        .eq('legacy_id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
+  const article = articleById || articleByLegacyId;
+  if (!article) return { robots: { index: false, follow: false } };
+
+  const title = article.seo_title?.trim() || article.title;
+  const description = article.seo_description?.trim() || article.excerpt?.trim() || undefined;
+  const canonicalPath = `/articles/${encodeURIComponent(article.id)}`;
+  const canonicalUrl = new URL(canonicalPath, siteUrl).toString();
+  const images = article.cover_url ? [{ url: article.cover_url }] : undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      type: 'article',
+      title,
+      description,
+      url: canonicalUrl,
+      publishedTime: article.published_at || article.created_at,
+      modifiedTime: article.updated_at || undefined,
+      images,
+    },
+    twitter: {
+      card: images ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: article.cover_url ? [article.cover_url] : undefined,
+    },
+  };
+}
+
 export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const columns = 'id,title,slug,excerpt,github_path,published_at,created_at,legacy_author,category:categories!articles_category_id_fkey(name),tags:article_tags(tag:tags(name))';
+  const columns = 'id,title,slug,excerpt,seo_title,seo_description,cover_url,github_path,published_at,created_at,updated_at,legacy_author,category:categories!articles_category_id_fkey(name),tags:article_tags(tag:tags(name))';
   const { data: articleById } = await supabase.from('articles').select(columns)
     .eq('id', id).eq('status', 'published').lte('published_at', new Date().toISOString()).maybeSingle();
   const { data: articleByLegacyId } = articleById
@@ -45,8 +89,27 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     })
     .filter(Boolean));
   const publishedDate = formatChineseDate(article.published_at || article.created_at);
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.seo_description || article.excerpt || undefined,
+    datePublished: article.published_at || article.created_at,
+    dateModified: article.updated_at || article.published_at || article.created_at,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': new URL(`/articles/${encodeURIComponent(article.id)}`, siteUrl).toString(),
+    },
+    author: { '@type': 'Organization', name: 'OwenFX' },
+    publisher: { '@type': 'Organization', name: 'OwenFX' },
+    ...(article.cover_url ? { image: [article.cover_url] } : {}),
+  };
 
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c'),
+      }} />
     <div className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <article className="uiverse-card mb-8 rounded-xl p-5 sm:p-7">
         <div className="mb-3 flex flex-col items-center gap-1 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -84,5 +147,6 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         <ArticleInteractions articleId={article.id} />
       </article>
     </div>
+    </>
   );
 }

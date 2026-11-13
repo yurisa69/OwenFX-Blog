@@ -1,10 +1,13 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import TrackLink from '@/components/TrackLink';
 import SoftwareLinkReportButton from '@/components/SoftwareLinkReportButton';
 import SoftwareSupport from '@/components/SoftwareSupport';
 import ArticleContent from '@/components/ArticleContent';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
 const categoryColors: Record<string, string> = {
   '工具': '#FF4444',
@@ -111,6 +114,35 @@ function sortSoftwareTags(tags: string[]) {
     .map(({ tag }) => tag);
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: software } = await supabase.from('software')
+    .select('title,slug,description,image_url')
+    .eq('slug', slug).eq('status', 'published')
+    .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`).maybeSingle();
+  if (!software) return { robots: { index: false, follow: false } };
+
+  const title = software.title;
+  const description = software.description?.trim() || `了解${software.title}的软件介绍、适用平台和官方下载信息。`;
+  const canonicalPath = `/software/${encodeURIComponent(software.slug)}`;
+  const canonicalUrl = new URL(canonicalPath, siteUrl).toString();
+  const images = software.image_url ? [{ url: software.image_url, alt: `${software.title} 图标` }] : undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: canonicalPath },
+    openGraph: { type: 'website', title, description, url: canonicalUrl, images },
+    twitter: {
+      card: images ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: software.image_url ? [software.image_url] : undefined,
+    },
+  };
+}
+
 export default async function SoftwareDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
@@ -151,7 +183,24 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         .limit(4)
     : { data: [] };
 
+  const softwareJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: software.title,
+    description: software.description || undefined,
+    url: new URL(`/software/${encodeURIComponent(software.slug)}`, siteUrl).toString(),
+    ...(software.image_url ? { image: software.image_url } : {}),
+    ...(categoryName ? { applicationCategory: categoryName } : {}),
+    ...(software.platform ? { operatingSystem: software.platform } : {}),
+    ...(software.version ? { softwareVersion: software.version } : {}),
+    ...(software.official_download_url ? { downloadUrl: software.official_download_url } : {}),
+  };
+
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify(softwareJsonLd).replace(/</g, '\\u003c'),
+      }} />
     <article className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <section className="uiverse-card mb-6 rounded-xl p-5 sm:p-7">
         <div className="mb-4 flex flex-col items-center text-center">
@@ -295,5 +344,6 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         </section>
       )}
     </article>
+    </>
   );
 }
