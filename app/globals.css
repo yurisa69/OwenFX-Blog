@@ -556,3 +556,11 @@ html.theme-switching .six-star-spin {
 
 .account-settings-identity-footer{position:absolute;right:14px;bottom:10px;display:flex;justify-content:flex-end}
 .account-settings-identity-logout{width:auto;min-width:0;min-height:28px;margin:0;padding:0 10px;font-size:12px;line-height:1}
+
+/* Account settings spacing: use a single layout gap to avoid margin collapsing. */
+.account-settings-page{display:flex;flex-direction:column;gap:22px}
+.account-settings-page>.account-settings-identity,
+.account-settings-page>.account-settings-card,
+.account-settings-page>.account-settings-message{margin:0}
+.account-settings-form>.account-settings-message{margin:0}
+@media(max-width:767px){.account-settings-page{gap:18px}}
