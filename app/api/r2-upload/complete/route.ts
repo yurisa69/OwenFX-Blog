@@ -1,7 +1,7 @@
 import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getR2ServerConfig, type MediaKind } from '@/lib/r2-media';
+import { getR2ServerConfig, validateMediaInput, type MediaKind } from '@/lib/r2-media';
 
 export const runtime = 'nodejs';
 
@@ -50,9 +50,17 @@ export async function POST(request: Request) {
     const head = await s3.send(new HeadObjectCommand({ Bucket: cfg.bucket, Key: key }));
     const contentType = head.ContentType || '';
     const byteSize = Number(head.ContentLength || 0);
-    if (!byteSize || byteSize > 250 * 1024 * 1024) {
-      return NextResponse.json({ error: 'R2 文件大小无效或超过 250MB' }, { status: 400 });
+    let detected: ReturnType<typeof validateMediaInput>;
+    try {
+      detected = validateMediaInput(contentType, byteSize);
+    } catch (validationError) {
+      const message = validationError instanceof Error ? validationError.message : 'R2 文件格式或大小无效';
+      return NextResponse.json({ error: message }, { status: 400 });
     }
+    if ((kind === 'video') !== (detected.kind === 'video')) {
+      return NextResponse.json({ error: kind === 'video' ? '视频上传必须使用视频文件格式' : '该媒体类型只接受图片文件' }, { status: 400 });
+    }
+
     const mediaKind = kind === 'video' ? 'video' : kind;
     const publicUrl = `${cfg.publicBaseUrl}/${key.split('/').map(encodeURIComponent).join('/')}`;
     const { data: asset, error } = await supabase.from('media_assets').insert({

@@ -1,12 +1,14 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { articleMarkdownPath, hashMarkdown, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
+import { createRateLimitBucketKey, readLimitedRequestBody } from '@/lib/api-rate-limit';
 import { createServiceClient } from '@/lib/supabase/service';
 
 export const runtime = 'nodejs';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const requestIdPattern = /^[a-zA-Z0-9._:-]{8,120}$/;
+const MAX_IMPORT_BODY_BYTES = 1_600_000;
 
 export async function POST(request: Request) {
   const authorization = request.headers.get('authorization') || '';
@@ -15,11 +17,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '缺少有效的 OwenFX 导入授权' }, { status: 401 });
   }
 
+  const service = createServiceClient();
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+  const { data: device, error: deviceError } = await service.from('api_devices')
+    .select('id,user_id,scopes,active,expires_at').eq('token_hash', tokenHash).maybeSingle();
+  if (deviceError || !device || !device.active) return NextResponse.json({ error: '导入授权无效或已撤销' }, { status: 401 });
+  if (device.expires_at && new Date(device.expires_at).getTime() <= Date.now()) {
+    return NextResponse.json({ error: '导入授权已过期' }, { status: 401 });
+  }
+  if (!Array.isArray(device.scopes) || !device.scopes.includes('articles:import')) {
+    return NextResponse.json({ error: '此授权没有文章导入权限' }, { status: 403 });
+  }
+
+  const bucketKey = createRateLimitBucketKey('integration-article-import', device.id);
+  const { data: withinLimit, error: rateError } = await service.rpc('consume_api_rate_limit', {
+    p_bucket_key: bucketKey,
+    p_limit: 10,
+    p_window_seconds: 60,
+  });
+  if (rateError) return NextResponse.json({ error: '导入服务暂时不可用，请稍后重试。' }, { status: 503 });
+  if (withinLimit !== true) {
+    return NextResponse.json({ error: '该授权设备导入过于频繁，请稍后再试。' }, {
+      status: 429,
+      headers: { 'Retry-After': '60' },
+    });
+  }
+
+  const raw = await readLimitedRequestBody(request, MAX_IMPORT_BODY_BYTES);
+  if (raw === null) return NextResponse.json({ error: '导入请求超过 1.6 MB 限制。' }, { status: 413 });
+
   let input: Record<string, unknown>;
   try {
-    const raw = await request.text();
-    if (raw.length > 600_000) return NextResponse.json({ error: '导入内容超过 600 KB 限制' }, { status: 413 });
-    input = JSON.parse(raw) as Record<string, unknown>;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return NextResponse.json({ error: '请求必须是 JSON 对象。' }, { status: 400 });
+    }
+    input = parsed as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: '请求必须是有效的 JSON' }, { status: 400 });
   }
@@ -41,18 +74,6 @@ export async function POST(request: Request) {
   const imageError = validateMarkdownImageUrls(markdown);
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
   if (!requestIdPattern.test(requestId)) return NextResponse.json({ error: 'request_id 必须为 8 至 120 位字母、数字或 . _ : -' }, { status: 400 });
-
-  const service = createServiceClient();
-  const tokenHash = createHash('sha256').update(token).digest('hex');
-  const { data: device, error: deviceError } = await service.from('api_devices')
-    .select('id,user_id,scopes,active,expires_at').eq('token_hash', tokenHash).maybeSingle();
-  if (deviceError || !device || !device.active) return NextResponse.json({ error: '导入授权无效或已撤销' }, { status: 401 });
-  if (device.expires_at && new Date(device.expires_at).getTime() <= Date.now()) {
-    return NextResponse.json({ error: '导入授权已过期' }, { status: 401 });
-  }
-  if (!Array.isArray(device.scopes) || !device.scopes.includes('articles:import')) {
-    return NextResponse.json({ error: '此授权没有文章导入权限' }, { status: 403 });
-  }
 
   const idempotencyKey = `chatgpt:${requestId}`;
   const { data: prior } = await service.from('articles').select('id,slug,status')
