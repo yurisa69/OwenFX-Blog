@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { requireContentEditor } from '@/lib/admin-auth';
-import { readMarkdownFile } from '@/lib/github-articles';
+import { readMarkdownFileFresh } from '@/lib/github-articles';
 import ArticleEditor from '@/components/admin/ArticleEditor';
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +13,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
 
   let content = '';
   if (data.github_path) {
-    const file = await readMarkdownFile(data.github_path);
+    const file = await readMarkdownFileFresh(data.github_path);
     if (!file) throw new Error('GitHub 中找不到这篇文章的 Markdown 文件，请检查 GitHub 仓库配置。');
     content = file.content;
   }

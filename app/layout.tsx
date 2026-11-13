@@ -5,14 +5,25 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import ScrollToTop from '@/components/ScrollToTop';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
+
 export const metadata: Metadata = {
-  title: 'OwenFX — 精选软件与文章',
-  description: 'OwenFX 是一个精选软件资源分享站，汇集免费、开源、实用软件与技术文章。',
+  metadataBase: new URL(siteUrl),
+  title: { default: 'OwenFX — 精选软件与文章', template: '%s' },
+  description: 'OwenFX 是一个精选软件与技术内容分享站，提供软件介绍、官方下载入口、网盘资源及原创技术文章。',
+  openGraph: {
+    type: 'website',
+    locale: 'zh_CN',
+    siteName: 'OwenFX',
+    url: siteUrl,
+  },
+  twitter: { card: 'summary_large_image' },
+  robots: { index: true, follow: true },
+  alternates: { types: { 'application/rss+xml': '/rss.xml' } },
 };
 
 const themeInitScript = `(() => {
@@ -31,15 +42,10 @@ const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll() { return cookieStore.getAll() }, setAll() {} } }
-    );
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const metadata = session.user.user_metadata as Record<string, unknown>;
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const metadata = user.user_metadata as Record<string, unknown>;
       const metadataAvatar = typeof metadata.avatar_url === 'string' ? metadata.avatar_url : typeof metadata.picture === 'string' ? metadata.picture : null;
       const metadataName = typeof metadata.display_name === 'string' ? metadata.display_name : typeof metadata.name === 'string' ? metadata.name : null;
 
@@ -50,7 +56,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         const { data } = await supabase
           .from('profiles')
           .select('display_name,avatar_url')
-          .eq('id', session.user.id)
+          .eq('id', user.id)
           .maybeSingle();
         profile = data;
       } catch {
@@ -58,9 +64,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       }
 
       initialUser = {
-        id: session.user.id,
-        name: profile?.display_name || metadataName || session.user.email?.split('@')[0] || '用户',
-        email: session.user.email,
+        id: user.id,
+        name: profile?.display_name || metadataName || user.email?.split('@')[0] || '用户',
+        email: user.email,
         avatar_url: profile?.avatar_url || metadataAvatar,
       };
     }

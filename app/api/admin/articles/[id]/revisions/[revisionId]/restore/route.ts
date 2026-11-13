@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, hashMarkdown, readMarkdownFile, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownPath, hashMarkdown, readMarkdownFileFresh, writeMarkdownFile } from '@/lib/github-articles';
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string; revisionId: string }> }) {
   const auth = await authorizeContentEditor();
@@ -21,7 +22,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
   let historical;
   try {
-    historical = await readMarkdownFile(revision.github_path, revision.github_sha);
+    historical = await readMarkdownFileFresh(revision.github_path, revision.github_sha);
   } catch (error) {
     const message = error instanceof Error ? error.message : '读取历史版本失败';
     return NextResponse.json({ error: message }, { status: 502 });
@@ -57,5 +58,6 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     details: { restored_revision_id: revisionId, github_path: path, github_sha: saved.commitSha, revision_recorded: !newRevision.error },
   });
 
+  revalidateTag('github-articles', { expire: 0 });
   return NextResponse.json({ success: true, github_path: path, github_sha: saved.commitSha });
 }

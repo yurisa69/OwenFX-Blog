@@ -25,6 +25,7 @@ const navGroups = [
     title: '互动与运营',
     items: [
       { label: '评论管理', href: '/admin/comments', icon: '◌' },
+      { label: '网盘失效反馈', href: '/admin/link-reports', icon: '↗' },
       { label: '流量统计', href: '/admin/analytics', icon: '▥' },
       { label: '赞赏设置', href: '/admin/support', icon: '⚙' },
       { label: '用户管理', href: null, icon: '♙' },

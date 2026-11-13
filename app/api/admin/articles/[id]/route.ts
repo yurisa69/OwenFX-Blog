@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
-import { articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readMarkdownFile, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
+import { articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -12,7 +13,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (error || !data) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   let content = '';
   if (data.github_path) {
-    const file = await readMarkdownFile(data.github_path);
+    const file = await readMarkdownFileFresh(data.github_path);
     if (!file) return NextResponse.json({ error: 'GitHub 中找不到文章正文文件' }, { status: 502 });
     content = file.content;
   }
@@ -74,9 +75,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     details: { storage: 'github', github_path: path, github_sha: saved.commitSha, revision_recorded: !revision.error },
   });
 
+  revalidateTag('github-articles', { expire: 0 });
+
   if (previous.github_path && previous.github_path !== path) {
     try {
-      const oldFile = await readMarkdownFile(previous.github_path);
+      const oldFile = await readMarkdownFileFresh(previous.github_path);
       if (oldFile) await deleteMarkdownFile(previous.github_path, oldFile.sha, `Move article to ${path}`);
     } catch (cleanupError) {
       console.error('[article-file-cleanup]', cleanupError);
@@ -93,5 +96,6 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   const { error } = await auth.supabase.from('articles').update({ status: 'archived', updated_at: new Date().toISOString() }).eq('id', id);
   if (error) return NextResponse.json({ error: '归档失败' }, { status: 400 });
   await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: 'article.archive', entity_type: 'article', entity_id: id });
+  revalidateTag('github-articles', { expire: 0 });
   return NextResponse.json({ success: true });
 }

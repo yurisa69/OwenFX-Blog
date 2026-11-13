@@ -43,7 +43,7 @@ async function githubRequest(url: string, init: RequestInit = {}) {
   });
 }
 
-export async function readMarkdownFile(path: string, ref?: string): Promise<{ content: string; sha: string } | null> {
+export async function readMarkdownFileFresh(path: string, ref?: string): Promise<{ content: string; sha: string } | null> {
   const { owner, repo, branch } = getRepositoryConfig();
   const targetRef = ref || branch;
 
@@ -68,8 +68,21 @@ export async function readMarkdownFile(path: string, ref?: string): Promise<{ co
   return { content: await response.text(), sha: '' };
 }
 
+export async function readMarkdownFile(path: string, ref?: string): Promise<{ content: string; sha: string } | null> {
+  const { owner, repo, branch } = getRepositoryConfig();
+  const targetRef = ref || branch;
+  const rawPath = path.split('/').map(encodeURIComponent).join('/');
+  const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(targetRef)}/${rawPath}`;
+  const response = await fetch(rawUrl, {
+    next: { revalidate: 300, tags: ['github-articles'] },
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`读取公开 GitHub 文章失败（HTTP ${response.status}）`);
+  return { content: await response.text(), sha: '' };
+}
+
 export async function writeMarkdownFile(path: string, content: string, message: string) {
-  const existing = await readMarkdownFile(path);
+  const existing = await readMarkdownFileFresh(path);
   const { branch } = getConfig();
   const response = await githubRequest(apiUrl(path), {
     method: 'PUT',

@@ -28,8 +28,10 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261111081959` | `isolate_security_definer_membership_helpers` | Restored from historical commit; matching version is recorded in production |
 | `20261113033924` | `comment_spam_moderation` | Applied to production; matching SQL file tracked in GitHub |
 | `20261113033935` | `comment_spam_moderation_service_role_policies` | Applied to production; matching SQL file tracked in GitHub |
+| `20261113051047` | `add_software_link_reports` | Additive feedback table with admin-only RLS; applied to production |
+| `20261113051500` | `restrict_software_link_report_privileges` | Restrict authenticated grants to SELECT / UPDATE and index the download-link foreign key; applied to production |
 
-At the snapshot date, all 18 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
+At the snapshot date, all 20 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 

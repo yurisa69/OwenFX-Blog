@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { authorizeContentEditor } from '@/lib/admin-api';
 import { articleMarkdownPath, hashMarkdown, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 
@@ -56,6 +57,8 @@ export async function POST(req: Request) {
       sync_pending: true,
     }, { status: 502 });
   }
+
+  if (status === 'published') revalidateTag('github-articles', { expire: 0 });
 
   const revision = await auth.supabase.from('article_revisions').insert({
     article_id: data.id, editor_id: auth.user.id, title, excerpt,

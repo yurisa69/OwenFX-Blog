@@ -48,6 +48,8 @@
 - 支持设置首页精选及精选排序。
 - 每个软件可配置官方 HTTPS 下载入口，以及百度网盘、夸克网盘、阿里云盘、天翼云盘、123 云盘等外部分享链接。
 - 支持软件草稿、发布和撤回。
+- 已登录用户可对失效网盘链接提交原因和补充说明；每个账号每小时最多 5 条。
+- 管理后台提供独立的网盘失效反馈审核入口，可标记已查看、已修复或忽略；不会自动修改下载链接。
 - 支持为文章和软件详情分别配置赞赏方式。
 - 软件安装包由官方或外部网盘托管，OwenFX 不负责保存安装包。
 
@@ -55,7 +57,7 @@
 
 为减少用户打开网站或进入个人中心时头像短暂空白、占位符闪烁的问题，当前头像采用**服务端优先读取数据库资料，客户端后台同步**的策略。
 
-1. **服务端首屏读取**：用户请求页面时，`app/layout.tsx` 先通过 Supabase Auth 获取当前 Session。仅对已登录用户查询 `profiles` 表中的 `avatar_url` 和 `display_name` 两个必要字段，并将结果作为初始用户资料传给全局 Navbar。
+1. **服务端首屏读取**：用户请求页面时，`app/layout.tsx` 通过 Supabase Auth 验证当前登录用户。仅对已登录用户查询 `profiles` 表中的 `avatar_url` 和 `display_name` 两个必要字段，并将结果作为初始用户资料传给全局 Navbar。
 2. **数据优先级**：优先使用 `profiles.avatar_url` 和 `profiles.display_name`；数据库记录不存在或查询失败时，回退到 Session 的 User Metadata（头像字段兼容 `avatar_url` / `picture`，昵称字段兼容 `display_name` / `name`），最后才使用邮件地址前缀或通用昵称。
 3. **图片直接渲染**：`components/Avatar.tsx` 在拿到有效头像 URL 后直接渲染图片，不等待图片加载事件或 `decode()` 完成，也不使用昵称首字母遮挡正在加载的图片。只有头像地址缺失或图片请求失败时，才显示昵称首字母占位。
 4. **客户端后台同步**：Navbar 在客户端继续同步 Session 与 Supabase 用户资料，更新资料面板状态并预加载头像；异步更新需检查组件生命周期和用户 ID，避免卸载后更新或将其他账号的资料写入当前用户状态。
@@ -68,6 +70,7 @@
 - `components/Avatar.tsx`：统一处理头像 URL、图片展示及缺失 / 加载失败占位。
 ### 管理与安全
 
+- Next.js 16 使用根目录 `proxy.ts` 与 Supabase SSR 客户端刷新登录会话；服务端身份读取使用经过验证的 Auth 用户信息。
 - 管理接口会检查登录状态及站长 / 内容编辑权限。
 - 评论系统使用 Akismet 与本地规则自动识别垃圾评论；后台支持垃圾评论、软删除、恢复和永久删除。
 - 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2，并将媒体元数据写入 `media_assets`。
@@ -75,6 +78,15 @@
 - 图片上传限制为 JPG、PNG、WebP、GIF、AVIF，单张不超过 10 MB。
 - 注册确认邮件及其他认证邮件统一由 Supabase Auth 根据 Authentication → Email Templates 中的六种模板发送。
 - Supabase Service Role 和 R2 密钥只允许放在服务端环境变量中。
+
+### SEO 与内容订阅
+
+- 全站配置站点基础 URL、Open Graph 与 Twitter 默认元数据。
+- `/robots.txt` 排除管理后台、API、认证和个人设置页面。
+- `/sitemap.xml` 根据已发布文章和软件详情生成站点地图。
+- `/rss.xml` 输出最近 50 篇已发布文章；RSS 不包含草稿或未到发布时间的文章。
+
+正式部署时建议在 Vercel 的 `NEXT_PUBLIC_SITE_URL` 中填写网站实际 HTTPS 域名；未配置时使用项目默认域名 `https://owenfx-blog.vercel.app`。
 
 ## 技术架构
 
@@ -290,7 +302,7 @@ npm run dev
 
 ## Supabase 数据库与迁移管理
 
-Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `public` schema 包含用户资料、文章、分类、标签、评论、文章互动、文章修订、软件目录、软件网盘下载链接、媒体元数据、站点设置、赞赏配置、审计日志和统计事件等业务对象。独立旧网盘资源模块已清理；不要重新引入 `cloud_resources`、`cloud_resource_links` 或 `resource_click` 业务逻辑。软件网盘下载入口继续使用 `software_download_links`。
+Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `public` schema 包含用户资料、文章、分类、标签、评论、文章互动、文章修订、软件目录、软件网盘下载链接、网盘失效反馈、媒体元数据、站点设置、赞赏配置、审计日志和统计事件等业务对象。独立旧网盘资源模块已清理；不要重新引入 `cloud_resources`、`cloud_resource_links` 或 `resource_click` 业务逻辑。软件网盘下载入口继续使用 `software_download_links`。
 
 ### 数据库文件说明
 
