@@ -83,8 +83,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <main className="min-w-0 flex-1">
           <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium tracking-[.16em]" style={{ color: 'var(--accent)' }}>STUDIO WORKSPACE</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight">OwenFX Studio</h1>
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--accent)' }}>OWENFX STUDIO</h1>
               <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>内容管理中心 · 统一管理文章创作、软件资源与网站运营。</p>
             </div>
             <div className="flex flex-wrap gap-2">
