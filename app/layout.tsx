@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Splash } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
-const cormorantGaramond = Cormorant_Garamond({ variable: '--font-cormorant-garamond', subsets: ['latin'], weight: '500', style: 'italic', display: 'swap' });
+const splash = Splash({ variable: '--font-splash', subsets: ['latin'], weight: '400', display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
 export const metadata: Metadata = {
@@ -38,7 +38,7 @@ const themeInitScript = `(() => {
   }
 })();`;
 
-const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}`;
+const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}.glass-nav>div nav a>span:first-child{width:26px!important;min-width:26px!important;font-family:var(--font-splash),cursive!important;font-size:22px!important;font-style:normal!important;font-weight:400!important;line-height:1!important;text-transform:lowercase!important}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
@@ -74,7 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch {}
 
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
+    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${splash.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
