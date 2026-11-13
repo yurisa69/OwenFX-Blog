@@ -231,8 +231,8 @@ html.theme-switching .six-star-spin {
 
 .profile-drawer-layer{position:fixed;inset:0;z-index:70;overflow:hidden}
 .profile-drawer-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(2,6,23,.62);backdrop-filter:blur(8px)}
-.profile-drawer-panel{position:absolute;right:0;top:0;display:flex;height:100dvh;width:min(92vw,410px);flex-direction:column;overflow-y:auto;border-left:1px solid rgba(255,255,255,.13);background:linear-gradient(160deg,rgba(15,20,39,.98),rgba(5,9,20,.97));padding:26px 22px 20px;box-shadow:-24px 0 70px rgba(2,6,23,.58);animation:profile-drawer-in .28s cubic-bezier(.2,.75,.25,1)}
-[data-theme="light"] .profile-drawer-panel{background:linear-gradient(160deg,rgba(248,250,255,.98),rgba(230,235,248,.98));border-left-color:rgba(99,102,241,.18)}
+.profile-drawer-panel{position:absolute;right:0;top:0;display:flex;height:100dvh;width:min(92vw,410px);flex-direction:column;overflow-y:auto;overscroll-behavior:contain;border-left:1px solid rgba(255,255,255,.13);background:linear-gradient(160deg,rgb(15,20,39),rgb(5,9,20));padding:26px 22px 20px;box-shadow:-24px 0 70px rgba(2,6,23,.58);animation:profile-drawer-in .28s cubic-bezier(.2,.75,.25,1)}
+[data-theme="light"] .profile-drawer-panel{background:linear-gradient(160deg,rgb(248,250,255),rgb(230,235,248));border-left-color:rgba(99,102,241,.18)}
 @keyframes profile-drawer-in{from{transform:translateX(28px);opacity:.5}to{transform:translateX(0);opacity:1}}
 .profile-overview{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:22px 0}
 .profile-avatar-ring{width:116px;height:116px;padding:5px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#6366f1,#38bdf8);box-shadow:0 0 38px rgba(129,140,248,.38)}
