@@ -29,7 +29,7 @@ const navGroups = [
       { label: '评论管理', href: '/admin/comments', icon: '◌' },
       { label: '用户管理', href: null, icon: '♙' },
       { label: '赞赏设置', href: '/admin/support', icon: '⚙' },
-      { label: '失效反馈', href: '/admin/link-reports', icon: '\u2601' },
+      { label: '失效反馈', href: '/admin/link-reports', icon: '\\u2601' },
     ],
   },
 ];
@@ -42,8 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <aside className="admin-sidebar md:sticky md:top-24 md:flex md:w-[248px] md:shrink-0 md:flex-col md:self-start">
           <div className="border-b px-5 py-5" style={{ borderColor: 'var(--border-color)' }}>
-            <Link href="/admin" className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              OwenFX <span className="gradient-text">Studio</span>
+            <Link href="/admin" className="admin-brand text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              <span className="admin-brand-owen">Owen</span><span>FX</span>{' '}
+              <span className="gradient-text">Studio</span>
             </Link>
             <p className="mt-2 truncate text-xs" style={{ color: 'var(--text-tertiary)' }}>{user.email}</p>
           </div>
@@ -97,6 +98,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       <style>{`
         .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+        .admin-brand{display:inline-flex;align-items:baseline;white-space:nowrap}
+        .admin-brand-owen{font-family:var(--font-splash),cursive;font-size:1.48em;font-weight:400;letter-spacing:-.055em;line-height:.8}
         .admin-sidebar-link{display:flex;min-width:0;min-height:40px;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:8px 10px;color:var(--text-secondary);font-size:13px;transition:background .18s,border-color .18s,color .18s}
         .admin-sidebar-link:hover{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
         .admin-sidebar-icon{display:inline-flex;width:20px;flex:0 0 20px;align-items:center;justify-content:center;font-size:15px;color:var(--text-tertiary)}
