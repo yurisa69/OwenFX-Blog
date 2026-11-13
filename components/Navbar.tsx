@@ -296,8 +296,10 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                     style={{
                       width: '18px',
                       minWidth: '18px',
-                      fontFamily: '"Minion Pro", "Times New Roman", serif',
-                      fontSize: '15px',
+                      fontFamily: 'var(--font-cormorant-garamond), "Times New Roman", serif',
+                      fontSize: '20px',
+                      fontStyle: 'italic',
+                      fontWeight: 500,
                       lineHeight: 1,
                       textAlign: 'center',
                     }}

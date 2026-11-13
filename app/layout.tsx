@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const cormorantGaramond = Cormorant_Garamond({ variable: '--font-cormorant-garamond', subsets: ['latin'], weight: '500', style: 'italic', display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
 export const metadata: Metadata = {
@@ -73,7 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch {}
 
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
+    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
