@@ -29,7 +29,7 @@ const navGroups = [
       { label: '评论管理', href: '/admin/comments', icon: '◌' },
       { label: '用户管理', href: null, icon: '♙' },
       { label: '赞赏设置', href: '/admin/support', icon: '⚙' },
-      { label: '网盘失效反馈', href: '/admin/link-reports', icon: '↗' },
+      { label: '网盘失效反馈', href: '/admin/link-reports', icon: '' },
     ],
   },
 ];
@@ -57,7 +57,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-1">
                   {group.items.map(item => item.href ? (
                     <Link key={item.label} href={item.href} className="admin-sidebar-link">
-                      <span className="admin-sidebar-icon" aria-hidden="true">{item.icon}</span>
+                      {item.icon ? <span className="admin-sidebar-icon" aria-hidden="true">{item.icon}</span> : null}
                       <span>{item.label}</span>
                     </Link>
                   ) : (
@@ -74,7 +74,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
           <div className="border-t p-3" style={{ borderColor: 'var(--border-color)' }}>
             <Link href="/" className="admin-sidebar-link">
-              <span className="gradient-text font-semibold tracking-wide">BLOG</span>
+              <span className="gradient-text font-semibold tracking-wide">BLOG »</span>
             </Link>
           </div>
         </aside>
