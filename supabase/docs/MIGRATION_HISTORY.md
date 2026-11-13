@@ -32,7 +32,7 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113051500` | `restrict_software_link_report_privileges` | Restrict authenticated grants to SELECT / UPDATE and index the download-link foreign key; applied to production |
 | `20261113054024` | `add_atomic_api_rate_limits` | Add private atomic API rate-limit storage, service-role-only RPC, and server-only analytics writes; applied to production |
 
-At the snapshot date, all 20 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
+At the snapshot date, all 21 migration versions and names in the production ledger have matching SQL files in the GitHub `supabase/migrations/` directory. No unmatched production migration or extra GitHub migration was found in this comparison.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 

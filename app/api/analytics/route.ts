@@ -44,7 +44,8 @@ export async function POST(request: Request) {
   const raw = await readLimitedRequestBody(request, 4096);
   if (raw === null) return NextResponse.json({ error: '请求内容过大。' }, { status: 413 });
   const body = parseJsonObject(raw);
-  const eventType = body?.event_type;
+  if (!body) return NextResponse.json({ error: '请求格式无效。' }, { status: 400 });
+  const eventType = body.event_type;
   if (typeof eventType !== 'string' || !allowedEvents.has(eventType)) {
     return NextResponse.json({ error: '事件类型无效。' }, { status: 400 });
   }
