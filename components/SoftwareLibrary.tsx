@@ -16,11 +16,10 @@ type SoftwareItem = {
   tags: { tag: { name: string } | { name: string }[] | null }[] | null;
 };
 
-const categoryOrder = ['工具', '多媒体', '开发工具', '系统增强', 'Android软件', 'Windows软件'];
+const categoryOrder = ['工具', '多媒体', '系统增强', 'Android软件', 'Windows软件'];
 const categoryColors: Record<string, string> = {
   '工具': '#FF4444',
   '多媒体': '#FF8C00',
-  '开发工具': '#FFD700',
   '系统增强': '#3FB950',
   'Android软件': '#3B82F6',
   'Windows软件': '#A855F7',

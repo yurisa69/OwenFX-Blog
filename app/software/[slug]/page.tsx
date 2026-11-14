@@ -14,7 +14,6 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.
 const categoryColors: Record<string, string> = {
   '工具': '#FF4444',
   '多媒体': '#FF8C00',
-  '开发工具': '#FFD700',
   '系统增强': '#3FB950',
   'Android软件': '#3B82F6',
   'Windows软件': '#A855F7',

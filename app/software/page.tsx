@@ -3,7 +3,7 @@ import SoftwareLibrary from '@/components/SoftwareLibrary';
 
 export const metadata = {
   title: '软件库 — OwenFX',
-  description: '精选免费与开源软件，按工具、多媒体、开发工具、系统增强及平台分类浏览。',
+  description: '精选免费与开源软件，按工具、多媒体、系统增强及平台分类浏览。',
 };
 
 export default async function SoftwarePage() {
