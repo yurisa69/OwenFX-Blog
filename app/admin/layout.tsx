@@ -23,9 +23,10 @@ const navGroups = [
     ],
   },
   {
-    title: '互动与运营',
+    title: '互动运营',
     items: [
       { label: '流量统计', href: '/admin/analytics', icon: '▥' },
+      { label: '安全监控', href: '/admin/security', icon: '◈' },
       { label: '评论管理', href: '/admin/comments', icon: '◌' },
       { label: '用户管理', href: null, icon: '♙' },
       { label: '赞赏设置', href: '/admin/support', icon: '⚙' },
