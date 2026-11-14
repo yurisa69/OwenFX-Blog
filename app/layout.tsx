@@ -39,7 +39,7 @@ const themeInitScript = `(() => {
   }
 })();`;
 
-const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}.glass-nav>div nav a>span:first-child{width:26px!important;min-width:26px!important;font-family:var(--font-splash),cursive!important;font-size:22px!important;font-style:normal!important;font-weight:400!important;line-height:1!important;text-transform:lowercase!important}`;
+const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;

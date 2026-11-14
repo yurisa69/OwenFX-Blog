@@ -284,27 +284,13 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
         {menuOpen && (
           <div className="md:hidden animate-fade-in border-t border-[var(--border-color)] shadow-lg">
             <nav className="flex flex-col p-4 gap-1">
-              {navLinks.map((link, index) => (
+              {navLinks.map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
+                  className="inline-flex items-center px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
                 >
-                  <span
-                    aria-hidden="true"
-                    className="inline-flex shrink-0 items-center justify-center"
-                    style={{
-                      width: '18px',
-                      minWidth: '18px',
-                      fontFamily: 'var(--font-cormorant-garamond), "Times New Roman", serif',
-                      fontSize: '20px',
-                      fontStyle: 'italic',
-                      fontWeight: 500,
-                      lineHeight: 1,
-                      textAlign: 'center',
-                    }}
-                  >{['I', 'II', 'III', 'IV', 'V', 'VI'][index]}</span>
                   <span>{link.label}</span>
                 </Link>
               ))}
