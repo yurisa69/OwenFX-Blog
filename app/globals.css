@@ -654,3 +654,9 @@ html.theme-switching .six-star-spin {
 @media (prefers-reduced-motion: reduce) {
   .code-copy-button { transition: none; }
 }
+
+/* Slightly tighten vertical spacing only for Bash code blocks. */
+.article-content .prose-block pre[data-language="bash" i] {
+  padding-top: 2.25rem;
+  padding-bottom: 10px;
+}
