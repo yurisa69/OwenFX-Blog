@@ -655,8 +655,8 @@ html.theme-switching .six-star-spin {
   .code-copy-button { transition: none; }
 }
 
-/* Slightly tighten vertical spacing only for Bash code blocks. */
+/* Keep Bash code text clear of the horizontal scrollbar. */
 .article-content .prose-block pre[data-language="bash" i] {
   padding-top: 2.25rem;
-  padding-bottom: 10px;
+  padding-bottom: 18px;
 }
