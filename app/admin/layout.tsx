@@ -15,11 +15,11 @@ const navGroups = [
     ],
   },
   {
-    title: '软件资源',
+    title: '后台功能',
     items: [
-      { label: '软件库管理', href: '/admin/software', icon: '▦' },
-      { label: '媒体资源库', href: null, icon: '▧' },
-      { label: '分类与标签', href: null, icon: '◇' },
+      { label: '软件管理', href: '/admin/software', icon: '▦' },
+      { label: '媒体资源', href: null, icon: '▧' },
+      { label: '分类标签', href: null, icon: '◇' },
     ],
   },
   {
