@@ -48,12 +48,24 @@ function remarkOwenFxCompatibility() {
         const middle = node.children[index + 1];
         const last = node.children[index + 2];
 
+        // The legacy renderer preserved source line breaks inside paragraphs.
+        // CommonMark represents these as soft line breaks inside text nodes.
+        if (first?.type === 'text' && typeof first.value === 'string' && first.value.includes('\n')) {
+          const parts = first.value.split('\n');
+          for (let partIndex = 0; partIndex < parts.length; partIndex += 1) {
+            if (parts[partIndex]) output.push({ type: 'text', value: parts[partIndex] });
+            if (partIndex < parts.length - 1) output.push({ type: 'break' });
+          }
+          index += 1;
+          continue;
+        }
+
         if (first?.type === 'text' && typeof first.value === 'string'
           && middle?.type === 'link' && typeof middle.url === 'string'
           && /^https?:\/\//i.test(middle.url)
           && last?.type === 'text' && typeof last.value === 'string') {
           const prefix = first.value.match(/!\[([^\]]*)\]\($/);
-          const suffix = last.value.match(/^\s+=(\d{1,5})x(\d{1,5})\)/);
+          const suffix = last.value.match(/^\s+=(\d{1,5})x(\d{1,5})(?:\s+"([^"]*)")?\)/);
 
           if (prefix && suffix) {
             const before = first.value.slice(0, first.value.length - prefix[0].length);
@@ -64,7 +76,7 @@ function remarkOwenFxCompatibility() {
               type: 'image',
               url: middle.url,
               alt: prefix[1],
-              title: null,
+              title: suffix[3] ?? null,
               data: {
                 hProperties: imageProperties(Number(suffix[1]), Number(suffix[2])),
               },
@@ -111,6 +123,31 @@ function remarkOwenFxCompatibility() {
   };
 }
 
+
+function rehypeWrapTables() {
+  return (tree: HtmlNode) => {
+    const visit = (node: HtmlNode) => {
+      if (!node.children) return;
+      const output: HtmlNode[] = [];
+      for (const child of node.children) {
+        if (child.type === 'element' && child.tagName === 'table') {
+          output.push({
+            type: 'element',
+            tagName: 'div',
+            properties: { className: ['article-table-wrap'] },
+            children: [child],
+          });
+        } else {
+          visit(child);
+          output.push(child);
+        }
+      }
+      node.children = output;
+    };
+    visit(tree);
+  };
+}
+
 function rehypeAddCodeLanguageLabels() {
   return (tree: HtmlNode) => {
     const visit = (node: HtmlNode) => {
@@ -140,6 +177,7 @@ const markdownSanitizeSchema = {
   attributes: {
     ...defaultSchema.attributes,
     a: [...(defaultSchema.attributes?.a ?? []), 'title', ['target', '_blank'], 'rel'],
+    div: [...(defaultSchema.attributes?.div ?? []), ['className', 'article-table-wrap']],
     code: [['className', /^language-/, 'hljs']],
     pre: [['dataLanguage', /^[a-zA-Z0-9_+#.-]+$/]],
     span: [['className', /^hljs-/]],
@@ -161,6 +199,7 @@ const markdownProcessor = remark()
   .use(remarkGfm)
   .use(remarkOwenFxCompatibility)
   .use(remarkRehype)
+  .use(rehypeWrapTables)
   .use(rehypeHighlight)
   .use(rehypeAddCodeLanguageLabels)
   .use(rehypeSanitize, markdownSanitizeSchema)
