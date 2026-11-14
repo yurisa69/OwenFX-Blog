@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 
 import { markdownToHtml } from '@/lib/markdown';
+import CodeCopyEnhancer from '@/components/CodeCopyEnhancer';
 
 export default async function ArticleContent({ content, title }: { content: string; title?: string }) {
   const matches = [...content.matchAll(/\{\{software:([a-z0-9-]+)\}\}/g)];
@@ -28,7 +29,7 @@ export default async function ArticleContent({ content, title }: { content: stri
         </Link>;
       }
       if (!piece.trim()) return null;
-      return <div key={index} className="prose-block" dangerouslySetInnerHTML={{ __html: markdownToHtml(piece, { articleTitle: title, removeDownloadLinks: true }) }} />;
+      return <CodeCopyEnhancer key={index} html={markdownToHtml(piece, { articleTitle: title, removeDownloadLinks: true })} />;
     })}
 
   </div>;
