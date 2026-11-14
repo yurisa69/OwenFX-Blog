@@ -15,8 +15,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: 'OwenFX — 精选软件与文章', template: '%s' },
-  description: 'OwenFX 是一个精选软件与技术内容分享站，提供软件介绍、官方下载入口、网盘资源及原创技术文章。',
+  title: { default: 'OwenFX — 软件与文章', template: '%s' },
+  description: 'OwenFX 是一个软件与技术内容分享站，提供软件介绍、官方下载入口、网盘资源及原创技术文章。',
   openGraph: {
     type: 'website',
     locale: 'zh_CN',

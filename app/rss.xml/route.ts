@@ -35,7 +35,7 @@ export async function GET() {
   <channel>
     <title>OwenFX</title>
     <link>${siteUrl}</link>
-    <description>精选软件介绍与原创技术文章</description>
+    <description>软件介绍与原创技术文章</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     ${items}

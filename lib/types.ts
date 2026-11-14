@@ -8,7 +8,6 @@ export interface Software {
   tags: string[];
   downloadUrl: string;
   updatedAt: string;
-  featured: boolean;
   imageUrl?: string;
   version?: string;
   size?: string;

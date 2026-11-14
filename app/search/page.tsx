@@ -102,8 +102,6 @@ export default async function SearchPage({
       .select('id,title,slug,description,developer,version,platform,image_url,introduction_markdown,category:categories!software_category_id_fkey(name,slug),tags:software_tags(tag:tags(name,slug))')
       .eq('status', 'published')
       .or(`published_at.is.null,published_at.lte.${now}`)
-      .order('featured', { ascending: false })
-      .order('featured_order', { ascending: true })
       .order('updated_at', { ascending: false })
       .range(from, to)),
     supabase.from('tags').select('id,name,slug')

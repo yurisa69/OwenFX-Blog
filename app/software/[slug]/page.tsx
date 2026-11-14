@@ -182,7 +182,6 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         .eq('status', 'published')
         .neq('id', software.id)
         .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
-        .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
         .limit(4)
     : { data: [] };

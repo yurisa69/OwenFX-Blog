@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import ParticleBackground from '@/components/ParticleBackground';
 
 const slides = [
-  { title: '精选软件', desc: '发现高效实用的开源免费工具', tags: ['免费开源', '精选推荐', '每日更新'] },
   { title: '技术文章', desc: '软件推荐、使用教程与技术分享', tags: ['教程', '评测', '技巧'] },
   { title: '分类浏览', desc: '按分类快速找到你需要的工具', tags: ['工具', '开发', '多媒体'] },
 ];
@@ -60,7 +59,7 @@ export default function Carousel() {
 
   return (
     <section
-      aria-label="首页精选轮播"
+      aria-label="首页内容轮播"
       className="home-feature relative isolate mb-8 overflow-hidden rounded-2xl border"
       style={{
         borderColor: 'var(--border-color)',

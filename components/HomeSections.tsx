@@ -3,8 +3,7 @@
 import Link from 'next/link';
 
 type HomeArticle = { id: string; title: string; category: string; description: string; createdAt: string };
-type FeaturedSoftware = { id: string; title: string; slug: string; description: string | null; version: string | null; platform: string | null; image_url: string | null; developer: string | null };
-interface HomeSectionProps { articles: HomeArticle[]; featured?: FeaturedSoftware[]; }
+interface HomeSectionProps { articles: HomeArticle[]; }
 
 export default function HomeSections({ articles }: HomeSectionProps) {
   return <>

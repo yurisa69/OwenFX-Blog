@@ -10,7 +10,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object') return NextResponse.json({ error: '请求数据无效' }, { status: 400 });
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  for (const key of ['title', 'slug', 'description', 'developer', 'version', 'file_size', 'platform', 'image_url', 'official_download_url', 'introduction_markdown', 'screenshots', 'featured', 'featured_order']) if (key in body) patch[key] = body[key];
+  for (const key of ['title', 'slug', 'description', 'developer', 'version', 'file_size', 'platform', 'image_url', 'official_download_url', 'introduction_markdown', 'screenshots']) if (key in body) patch[key] = body[key];
   if (typeof body.status === 'string' && ['draft', 'published', 'archived'].includes(body.status)) {
     patch.status = body.status; patch.published_at = body.status === 'published' ? new Date().toISOString() : null;
   }
