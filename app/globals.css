@@ -612,9 +612,8 @@ html.theme-switching .six-star-spin {
   background: var(--bg-glass);
   color: var(--text-secondary);
   box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
-  font-family: var(--font-caramel), cursive;
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 650;
   letter-spacing: 0;
   line-height: 1;
   white-space: nowrap;
