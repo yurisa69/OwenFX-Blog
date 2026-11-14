@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <nav aria-label="OwenFX Studio 工作空间导航" className="flex-1 space-y-5 overflow-x-auto px-3 py-4 md:overflow-visible">
             {navGroups.map(group => (
               <div key={group.title}>
-                <p className="mb-2 px-3 text-[10px] font-semibold tracking-[.18em]" style={{ color: 'var(--text-tertiary)' }}>
+                <p className="mb-2 px-3 text-[10px] font-semibold tracking-[.18em] gradient-text" style={{ color: 'var(--text-tertiary)' }}>
                   {group.title}
                 </p>
                 <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-1">
