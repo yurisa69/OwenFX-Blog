@@ -493,6 +493,11 @@ html.theme-switching .six-star-spin {
 .back-to-top-btn:focus-visible {
   outline: none;
 }
+.code-copy-label {
+  display: inline-block;
+  white-space: nowrap;
+  transform: scaleX(.65);
+}
 @media (hover: hover) and (pointer: fine) {
   .back-to-top-btn:hover .back-to-top-icon {
     color: var(--text-primary);
@@ -600,7 +605,9 @@ html.theme-switching .six-star-spin {
   top: 7px;
   right: 8px;
   z-index: 3;
+  box-sizing: border-box;
   display: inline-flex;
+  flex: 0 0 26px;
   width: 26px;
   height: 26px;
   align-items: center;
@@ -615,6 +622,7 @@ html.theme-switching .six-star-spin {
   font-weight: 650;
   letter-spacing: 0;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;

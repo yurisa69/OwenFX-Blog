@@ -18,7 +18,10 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'code-copy-button';
-      button.textContent = 'Copy';
+      const label = document.createElement('span');
+      label.className = 'code-copy-label';
+      label.textContent = 'Copy';
+      button.appendChild(label);
       button.setAttribute('aria-label', 'Copy code');
       button.setAttribute('title', 'Copy code');
 
@@ -28,15 +31,15 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
 
         try {
           await navigator.clipboard.writeText(code);
-          button.textContent = 'Copied';
+          label.textContent = 'Copied';
           button.setAttribute('aria-label', 'Copied');
         } catch {
-          button.textContent = 'Failed';
+          label.textContent = 'Failed';
           button.setAttribute('aria-label', 'Copy failed');
         }
 
         window.setTimeout(() => {
-          button.textContent = 'Copy';
+          label.textContent = 'Copy';
           button.setAttribute('aria-label', 'Copy code');
         }, 1600);
       };
