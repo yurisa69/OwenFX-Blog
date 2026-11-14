@@ -601,8 +601,8 @@ html.theme-switching .six-star-spin {
   right: 8px;
   z-index: 3;
   display: inline-flex;
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -611,7 +611,7 @@ html.theme-switching .six-star-spin {
   background: var(--bg-glass);
   color: var(--text-secondary);
   box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0;
   line-height: 1;
