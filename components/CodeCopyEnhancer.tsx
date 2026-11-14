@@ -13,6 +13,29 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
     const codeBlocks = Array.from(container.querySelectorAll('pre'));
 
     codeBlocks.forEach((pre) => {
+      const codeElement = pre.querySelector<HTMLElement>('code.hljs, code');
+      if (codeElement) {
+        const updateOverflowState = () => {
+          const hasHorizontalScroll =
+            codeElement.scrollWidth > codeElement.clientWidth + 1 ||
+            pre.scrollWidth > pre.clientWidth + 1;
+          pre.classList.toggle('has-horizontal-scroll', hasHorizontalScroll);
+          codeElement.style.paddingBottom = hasHorizontalScroll ? '8px' : '0px';
+        };
+
+        const resizeObserver = new ResizeObserver(updateOverflowState);
+        resizeObserver.observe(pre);
+        resizeObserver.observe(codeElement);
+        const frameId = window.requestAnimationFrame(updateOverflowState);
+
+        cleanups.push(() => {
+          window.cancelAnimationFrame(frameId);
+          resizeObserver.disconnect();
+          pre.classList.remove('has-horizontal-scroll');
+          codeElement.style.removeProperty('padding-bottom');
+        });
+      }
+
       if (pre.querySelector('.code-copy-button')) return;
 
       const button = document.createElement('button');
