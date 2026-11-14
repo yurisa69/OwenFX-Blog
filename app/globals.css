@@ -568,7 +568,7 @@ html.theme-switching .six-star-spin {
 
 
 /* Markdown code highlighting and copy controls restored from the established implementation. */
-.article-content .prose-block pre{position:relative;padding-top:2.65rem}
+.article-content .prose-block pre{position:relative;width:fit-content;min-width:min(120px,100%);max-width:100%;box-sizing:border-box;padding-top:2.65rem}
 .article-content .prose-block pre[data-language]::before{content:attr(data-language);position:absolute;top:9px;left:13px;font-size:10px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;color:var(--text-tertiary)}
 .code-copy-button{position:absolute;top:7px;right:8px;z-index:2;border:1px solid var(--border-color);border-radius:7px;background:var(--bg-glass);color:var(--text-secondary);padding:3px 9px;font-size:11px;line-height:1.5;cursor:pointer;transition:background-color .18s ease,color .18s ease}
 .code-copy-button:hover{background:var(--accent-bg);color:var(--text-primary)}
