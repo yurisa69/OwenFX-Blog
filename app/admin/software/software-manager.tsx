@@ -9,9 +9,10 @@ type SoftwareRow = { id: string; title: string; slug: string; description: strin
 const emptyLink = (): LinkItem => ({ provider: 'quark', label: '夸克网盘', share_url: '', access_code: '' });
 const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'baidu', label: '百度网盘' }, { value: 'thunder', label: '迅雷网盘' }, { value: 'aliyun', label: '阿里云盘' }, { value: 'tianyi', label: '天翼云盘' }, { value: '123pan', label: '123云盘' }, { value: 'other', label: '其他' }];
 
-export default function SoftwareManager() {
+export default function SoftwareManager({ initialCreate = false }: { initialCreate?: boolean }) {
   const [rows, setRows] = useState<SoftwareRow[]>([]);
   const [editId, setEditId] = useState('');
+  const [formOpen, setFormOpen] = useState(initialCreate);
   const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
   const [links, setLinks] = useState<LinkItem[]>([emptyLink()]);
   const [error, setError] = useState('');
@@ -29,6 +30,7 @@ export default function SoftwareManager() {
   }
   function reset() {
     setEditId('');
+    setFormOpen(false);
     setForm({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
     setLinks([emptyLink()]);
   }
@@ -44,6 +46,7 @@ export default function SoftwareManager() {
   }
   function edit(row: SoftwareRow) {
     setEditId(row.id);
+    setFormOpen(true);
     setForm({ title: row.title, slug: row.slug, description: row.description || '', developer: row.developer || '', version: row.version || '', file_size: row.file_size || '', platform: row.platform || '', image_url: row.image_url || '', official_download_url: row.official_download_url || '', introduction_markdown: row.introduction_markdown || '', screenshots: (row.screenshots || []).join('\n') });
     setLinks(row.software_download_links?.length ? row.software_download_links : [emptyLink()]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -56,7 +59,7 @@ export default function SoftwareManager() {
   }
 
   return <div className="space-y-5">
-    <form onSubmit={save} className="admin-panel grid gap-3 sm:grid-cols-2">
+    {formOpen && <form onSubmit={save} className="admin-panel grid gap-3 sm:grid-cols-2">
       <h2 className="sm:col-span-2 font-semibold">{editId ? '编辑软件' : '添加软件'}</h2>
       <input required className="rounded-lg border bg-transparent p-2" placeholder="软件名称" value={form.title} onChange={e => change('title', e.target.value)} />
       <input required pattern="[a-z0-9]+(-[a-z0-9]+)*" className="rounded-lg border bg-transparent p-2" placeholder="英文 slug，例如 vscode" value={form.slug} onChange={e => change('slug', e.target.value)} />
@@ -79,9 +82,12 @@ export default function SoftwareManager() {
       </div>
       <div className="flex flex-wrap gap-2 sm:col-span-2"><button disabled={busy} className="uiverse-btn uiverse-btn-primary">{busy ? '保存中…' : editId ? '保存修改' : '保存软件草稿'}</button>{editId && <button type="button" className="uiverse-btn uiverse-btn-ghost" onClick={reset}>取消编辑</button>}</div>
       {error && <p className="text-sm text-red-500 sm:col-span-2">{error}</p>}
-    </form>
+    </form>}
     <section className="admin-panel">
-      <h2 className="mb-3 font-semibold">软件列表</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-semibold">软件列表</h2>
+        <button type="button" className="uiverse-btn uiverse-btn-primary" onClick={() => { reset(); setFormOpen(true); }}>添加软件</button>
+      </div>
       {rows.length === 0 ? <p className="text-sm opacity-70">暂无软件条目</p> : rows.map(row => <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 border-t py-3">
         <div className="flex items-center gap-3">{row.image_url ? <img src={row.image_url} alt="" className="h-10 w-10 rounded-xl object-cover" /> : <div className="h-10 w-10 rounded-xl" style={{ background: 'var(--bg-tertiary)' }} />}<div><p className="text-sm font-semibold">{row.title}</p><p className="text-xs opacity-60">{row.slug} · {row.status}</p></div></div>
         <div className="flex gap-2"><button type="button" className="admin-nav-link" onClick={() => edit(row)}>编辑</button><button type="button" className="admin-nav-link" onClick={() => void toggle(row)}>{row.status === 'published' ? '撤回为草稿' : '发布'}</button></div>
