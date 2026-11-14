@@ -9,30 +9,54 @@ const slides = [
   { title: '分类浏览', desc: '按分类快速找到你需要的工具', tags: ['工具', '开发', '多媒体'] },
 ];
 
-const glowPalette = ['#818cf8', '#22d3ee', '#a78bfa'];
+const glowPalettes = [
+  ['#818cf8', '#22d3ee', '#a78bfa'],
+  ['#f472b6', '#60a5fa', '#c084fc'],
+  ['#34d399', '#fbbf24', '#fb7185'],
+];
 
 type Glow = { x: number; y: number };
 
 export default function Carousel() {
   const [idx, setIdx] = useState(0);
-  const glowPositions: Glow[] = [
+  const [glowRound, setGlowRound] = useState(0);
+  const [glowPositions, setGlowPositions] = useState<Glow[]>([
     { x: 18, y: 28 },
     { x: 78, y: 34 },
     { x: 52, y: 82 },
-  ];
+  ]);
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (reducedMotion.matches) return;
-
     const timer = window.setInterval(() => {
       setIdx(current => (current + 1) % slides.length);
     }, 5000);
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    // Randomize the first visible arrangement after hydration, so every page refresh starts differently.
+    setGlowRound(Math.floor(Math.random() * glowPalettes.length));
+    setGlowPositions(
+      Array.from({ length: 3 }, () => ({
+        x: 8 + Math.random() * 84,
+        y: 12 + Math.random() * 76,
+      }))
+    );
+
+    const timer = window.setInterval(() => {
+      setGlowRound(current => (current + 1) % glowPalettes.length);
+      setGlowPositions(
+        Array.from({ length: 3 }, () => ({
+          x: 8 + Math.random() * 84,
+          y: 12 + Math.random() * 76,
+        }))
+      );
+    }, 4600);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const slide = slides[idx];
-  const activePalette = glowPalette;
+  const activePalette = glowPalettes[glowRound];
 
   return (
     <section
@@ -89,15 +113,15 @@ export default function Carousel() {
         </div>
       </div>
       <style>{`
-        .home-feature { box-shadow:0 12px 44px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); animation:none; }
-        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(58px); pointer-events:none; opacity:.2; transform:translate(-50%,-50%); transition:none; animation:none; }
+        .home-feature { box-shadow:0 12px 44px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.07); animation:home-breathe 6s ease-in-out infinite; }
+        .home-feature-glow { position:absolute; z-index:0; width:220px; height:170px; border-radius:999px; filter:blur(58px); pointer-events:none; opacity:.2; transform:translate(-50%,-50%); transition:left 3.8s cubic-bezier(.2,.7,.2,1),top 3.8s cubic-bezier(.2,.7,.2,1),background-color 1.8s ease; animation:home-glow-pulse 5.5s ease-in-out infinite; }
         .home-feature-copy { animation:home-copy-in .45s ease both; }
         @keyframes home-breathe { 0%,100% { box-shadow:0 12px 44px rgba(0,0,0,.12),0 0 18px rgba(129,140,248,.07),inset 0 1px 0 rgba(255,255,255,.07); } 50% { box-shadow:0 16px 52px rgba(0,0,0,.16),0 0 34px rgba(129,140,248,.13),inset 0 1px 0 rgba(255,255,255,.12); } }
         @keyframes home-glow-pulse { 0%,100% { opacity:.12; scale:.88; } 50% { opacity:.28; scale:1.18; } }
         @keyframes home-copy-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         @media (max-width: 640px) {
           .home-feature { backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
-          .home-feature-glow { width:145px; height:115px; filter:blur(32px); opacity:.15; transition:none; }
+          .home-feature-glow { width:145px; height:115px; filter:blur(32px); opacity:.15; transition:left 6.5s ease-in-out,top 6.5s ease-in-out,background-color 1.8s ease; }
         }
         @media (prefers-reduced-motion: reduce) {
           .home-feature,.home-feature-glow,.home-feature-copy { animation:none !important; transition:none !important; }
