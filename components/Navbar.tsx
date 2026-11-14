@@ -289,9 +289,9 @@ export default function Navbar({ initialUser = null }: { initialUser?: NavUser |
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="inline-flex items-center px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
+                  className="px-4 py-2.5 text-sm rounded-lg transition-all text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
                 >
-                  <span>{link.label}</span>
+                  {link.label}
                 </Link>
               ))}
             </nav>
