@@ -564,3 +564,81 @@ html.theme-switching .six-star-spin {
 .account-settings-page>.account-settings-message{margin:0}
 .account-settings-form>.account-settings-message{margin:0}
 @media(max-width:767px){.account-settings-page{gap:18px}}
+
+
+/* Article rendering: GFM tables, task lists, highlighted code and stable media. */
+.prose-block { min-width: 0; overflow-wrap: anywhere; }
+.prose-block pre {
+  max-width: 100%;
+  overflow: auto;
+  overscroll-behavior-x: contain;
+  white-space: pre;
+  tab-size: 2;
+  -webkit-overflow-scrolling: touch;
+}
+.prose-block pre code {
+  display: block;
+  min-width: max-content;
+  color: var(--text-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875em;
+  line-height: 1.75;
+}
+.prose-block :not(pre) > code {
+  overflow-wrap: anywhere;
+  color: var(--accent);
+}
+.code-token-keyword { color: #c4b5fd; }
+.code-token-string { color: #86efac; }
+.code-token-number { color: #fbbf24; }
+.code-token-comment { color: #94a3b8; font-style: italic; }
+.code-token-function { color: #7dd3fc; }
+.code-token-operator { color: #f0abfc; }
+.article-content .article-markdown-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(72vh, 760px);
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  border-radius: 12px;
+  margin: 1.25rem auto;
+  background: var(--bg-secondary);
+}
+.article-content .article-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.article-content .task-list-item { list-style: none; }
+.article-content .task-list-item input[type="checkbox"] {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin: 0 0.45rem 0 -1.35rem;
+  vertical-align: -0.1rem;
+  accent-color: var(--accent);
+}
+.pagination-link {
+  display: inline-flex;
+  min-width: 38px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.pagination-link:hover,
+.pagination-link.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+.pagination-link.is-disabled { opacity: .4; pointer-events: none; }
