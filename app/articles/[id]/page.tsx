@@ -10,12 +10,6 @@ import ArticleInteractions from '@/components/ArticleInteractions';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
-const categoryColors: Record<string, string> = {
-  '工具评测': '#6366f1',
-  '教程': '#f59e0b',
-  '系统技巧': '#10b981',
-};
-
 function sortTagsByLength(tags: string[]) {
   return tags
     .map((tag, index) => ({ tag, index }))
@@ -81,7 +75,6 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
   const category = Array.isArray(article.category) ? article.category[0] : article.category;
   const categoryName = category?.name || '';
-  const categoryColor = categoryColors[categoryName] || '#6366f1';
   const tags = sortTagsByLength((article.tags || [])
     .map((entry: { tag?: { name?: string } | { name?: string }[] | null }) => {
       const tag = Array.isArray(entry.tag) ? entry.tag[0] : entry.tag;
@@ -133,18 +126,6 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         <div className="border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
           <ArticleContent content={file.content} title={article.title} />
         </div>
-
-        {tags.length > 0 && (
-          <div className="mt-7 flex flex-wrap gap-2">
-            {tags.map(tag => (
-              <span key={tag} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs"
-                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: categoryColor }} />
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
 
         <ArticleSupport className="mt-7" />
         <ArticleInteractions articleId={article.id} />
