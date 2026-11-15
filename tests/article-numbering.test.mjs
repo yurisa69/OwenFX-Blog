@@ -11,6 +11,43 @@ import {
 const effectiveAt = '2026-11-15T19:03:22.089Z';
 const legacyTimestamp = '2026-11-15T19:03:21Z';
 
+test('detects every present heading level with up to three leading spaces without requiring H3 to exist', () => {
+  const noH3 = [
+    '# 文章标题',
+    '# 一、环境准备',
+    '  ## 1. 检查系统',
+    '## 2. 安装 Docker',
+  ].join('\n');
+  assert.deepEqual(validateArticleNumbering(noH3), []);
+
+  const allLevels = [
+    '# 文章标题',
+    ' # 一. 环境准备',
+    '  ## 检查系统',
+    '   ### 1. 查看系统版本',
+  ].join('\n');
+  const issues = validateArticleNumbering(allLevels);
+  assert.equal(issues.length, 3);
+  assert.deepEqual(issues.map(issue => issue.level), [1, 2, 3]);
+});
+
+test('auto-fix recognizes and preserves valid Markdown heading indentation', () => {
+  const source = [
+    '# 文章标题',
+    ' # 一. 环境准备',
+    '  ## 3. 检查系统',
+    '   ### ② 查看系统版本',
+  ].join('\n');
+  const result = autoFixArticleNumbering(source);
+  assert.equal(result.markdown, [
+    '# 文章标题',
+    ' # 一、环境准备',
+    '  ## 1. 检查系统',
+    '   ### ① 查看系统版本',
+  ].join('\n'));
+  assert.deepEqual(validateArticleNumbering(result.markdown), []);
+});
+
 test('accepts article title, H1 major steps, H2 substeps and H3 numbered details', () => {
   const markdown = [
     '# Uptime Kuma 部署教程',

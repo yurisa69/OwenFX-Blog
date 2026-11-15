@@ -132,6 +132,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       : content;
     const result = autoFixArticleNumbering(source);
     setContent(result.markdown);
+    if (mode === 'rich' && richRef.current) richRef.current.innerHTML = markdownToHtml(result.markdown);
     setEditorRevision(value => value + 1);
     const remaining = validateArticleNumbering(result.markdown);
 
@@ -148,9 +149,15 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       setMessage('请先填写文章标题和 Slug');
       return;
     }
+    const finalContent = mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content;
+    const finalIssues = nextStatus === 'published' ? validateArticleNumbering(finalContent) : [];
+    if (finalIssues.length > 0) {
+      setContent(finalContent);
+      setMessage('发布前复检发现 ' + finalIssues.length + ' 项标题层级或编号问题，请修正后再发布。');
+      return;
+    }
     setBusy(true);
     setMessage('');
-    const finalContent = mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content;
     try {
       const saveUrl = initial.id ? `/api/admin/articles/${initial.id}` : '/api/admin/articles';
       const requestId = crypto.randomUUID();

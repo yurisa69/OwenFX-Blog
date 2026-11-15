@@ -100,7 +100,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
       return;
     }
 
-    const headingMatch = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+    const headingMatch = line.replace(/^\s{0,3}/, '').match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
     if (!headingMatch) return;
 
     const level = headingMatch[1].length;
@@ -286,7 +286,7 @@ function usesLegacyHeadingHierarchy(markdown: string): boolean {
       continue;
     }
 
-    const match = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+    const match = line.replace(/^\s{0,3}/, '').match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
     if (!match) continue;
     const level = match[1].length;
     const heading = stripExistingHeadingNumber(match[2].trim());
@@ -343,9 +343,10 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
       continue;
     }
 
-    const rawHeading = line.match(/^(#{1,6}\s+)(.*?)(\s+#+\s*)?$/);
+    const headingIndent = line.match(/^\s{0,3}/)?.[0] || '';
+    const rawHeading = line.slice(headingIndent.length).match(/^(#{1,6}\s+)(.*?)(\s+#+\s*)?$/);
     if (!rawHeading) continue;
-    const originalLevel = rawHeading[1].trim().length;
+        const originalLevel = rawHeading[1].trim().length;
     if (originalLevel > (legacyHierarchy ? 4 : 3)) continue;
     const level = legacyHierarchy && originalLevel >= 2 ? originalLevel - 1 : originalLevel;
 
@@ -398,7 +399,7 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
 
     const nextPrefix = '#'.repeat(level) + ' ';
     if (nextPrefix !== rawHeading[1] || nextHeading !== originalHeading) {
-      parts[partIndex] = nextPrefix + nextHeading + (rawHeading[3] || '');
+      parts[partIndex] = headingIndent + nextPrefix + nextHeading + (rawHeading[3] || '');
       fixedCount += 1;
     }
   }
