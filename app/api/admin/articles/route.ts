@@ -14,6 +14,7 @@ export async function GET() {
   if ('response' in auth) return auth.response;
   const { data, error } = await auth.supabase.from('articles')
     .select('id,title,slug,excerpt,status,updated_at,published_at,github_path,github_sha,content_hash')
+    .neq('status', 'archived')
     .order('updated_at', { ascending: false }).limit(200);
   if (error) return NextResponse.json({ error: '文章列表读取失败' }, { status: 500 });
   return NextResponse.json({ articles: data ?? [] });
