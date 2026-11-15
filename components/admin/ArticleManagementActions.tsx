@@ -42,20 +42,21 @@ export default function ArticleManagementActions({
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {status !== 'trashed' && (
-        <Link className={buttonClass} href={'/admin/articles/' + articleId}>
-          编辑
-        </Link>
-      )}
       {status === 'draft' || status === 'published' ? (
         <>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('archive')}>归档</button>
           <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
+          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('archive')}>归档</button>
+          <Link className={buttonClass} href={'/admin/articles/' + articleId}>
+            编辑
+          </Link>
         </>
       ) : status === 'archived' ? (
         <>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('restore_archive')}>恢复归档</button>
           <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
+          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('restore_archive')}>恢复归档</button>
+          <Link className={buttonClass} href={'/admin/articles/' + articleId}>
+            编辑
+          </Link>
         </>
       ) : (
         <>
