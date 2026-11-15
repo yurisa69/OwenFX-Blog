@@ -39,29 +39,33 @@ export default function ArticleManagementActions({
   }
 
   const buttonClass = 'admin-nav-link disabled:cursor-not-allowed disabled:opacity-50';
+  const deleteClass = buttonClass + ' !text-red-500';
+  const archiveClass = buttonClass + ' !text-yellow-400';
+  const editClass = buttonClass + ' !text-rose-400';
+  const restoreClass = buttonClass + ' !text-green-500';
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
       {status === 'draft' || status === 'published' ? (
         <>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('archive')}>归档</button>
-          <Link className={buttonClass} href={'/admin/articles/' + articleId}>
+          <button type="button" className={deleteClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
+          <button type="button" className={archiveClass} disabled={busy} onClick={() => void run('archive')}>归档</button>
+          <Link className={editClass} href={'/admin/articles/' + articleId}>
             编辑
           </Link>
         </>
       ) : status === 'archived' ? (
         <>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('restore_archive')}>恢复归档</button>
-          <Link className={buttonClass} href={'/admin/articles/' + articleId}>
+          <button type="button" className={deleteClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
+          <button type="button" className={restoreClass} disabled={busy} onClick={() => void run('restore_archive')}>恢复归档</button>
+          <Link className={editClass} href={'/admin/articles/' + articleId}>
             编辑
           </Link>
         </>
       ) : (
         <>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('restore_trash')}>恢复</button>
-          <button type="button" className={buttonClass} disabled={busy} onClick={() => void run('permanent_delete')}>永久删除</button>
+          <button type="button" className={restoreClass} disabled={busy} onClick={() => void run('restore_trash')}>恢复</button>
+          <button type="button" className={deleteClass} disabled={busy} onClick={() => void run('permanent_delete')}>永久删除</button>
         </>
       )}
       {busy && <span className="text-xs opacity-60">处理中…</span>}
