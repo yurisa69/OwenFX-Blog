@@ -425,3 +425,37 @@ test('legacy hierarchy conversion ignores fenced code blocks and is idempotent',
   assert.equal(second.markdown, first.markdown);
   assert.equal(second.fixedCount, 0);
 });
+
+
+test('detects different, repeated and mixed legacy prefixes after current H1/H2/H3 numbering', () => {
+  const issues = validateArticleNumbering([
+    '# 文章标题',
+    '# 一、1 旧版一级编号',
+    '## 1. 2 旧版二级编号',
+    '### ① 2 旧版三级编号',
+  ].join('\n'));
+  assert.equal(issues.length, 3);
+  assert.ok(issues.some(issue => issue.level === 1 && /残留旧编号/.test(issue.message)));
+  assert.ok(issues.some(issue => issue.level === 2 && /残留旧编号/.test(issue.message)));
+  assert.ok(issues.some(issue => issue.level === 3 && /残留旧编号/.test(issue.message)));
+});
+
+test('removes all mismatched and nested legacy prefixes before regenerating H1/H2/H3 numbering', () => {
+  const source = [
+    '# 文章标题',
+    '# 二、1 旧一级编号',
+    '## 2. 1 2.1.1 旧二级编号',
+    '### ② 1 3.1.1 旧三级编号',
+    '## 3. （4）另一个旧编号',
+  ].join('\n');
+  const result = autoFixArticleNumbering(source);
+  assert.equal(result.markdown, [
+    '# 文章标题',
+    '# 一、旧一级编号',
+    '## 1. 旧二级编号',
+    '### ① 旧三级编号',
+    '## 2. 另一个旧编号',
+  ].join('\n'));
+  assert.deepEqual(validateArticleNumbering(result.markdown), []);
+  assert.equal(autoFixArticleNumbering(result.markdown).fixedCount, 0);
+});

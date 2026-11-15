@@ -64,9 +64,9 @@ function isStructuralHeading(heading: string) {
   return structuralHeadingPattern.test(heading.trim());
 }
 
-function hasLegacyNumberAfterCurrentPrefix(value: string, currentNumber: number): boolean {
-  const escapedNumber = String(currentNumber);
-  return new RegExp(`^(?:\\d+(?:\\.\\d+)+|${escapedNumber})(?:[.、．-]\\s*|\\s+)`).test(value);
+function hasLegacyNumberAfterCurrentPrefix(value: string): boolean {
+  const headingText = value.trimStart();
+  return /^(?:\d{1,3}(?:\.\d+)*(?:[、.．-]\s*|\s+)|[零〇一二三四五六七八九十百千万]+(?:[、.．-]\s*|\s+)|[①-⑳㉑-㉟㊱-㊿](?:[、.．-])?\s+|[（(【[]\d+[）)】\]]\s*)/.test(headingText);
 }
 
 export function validateArticleNumbering(markdown: string): ArticleNumberingIssue[] {
@@ -139,7 +139,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '一级标题应使用 H1 和中文数字加顿号，例如「# 一、环境准备」。');
       } else {
         const actual = parseChineseNumber(numbered[1]);
-        if (actual !== null && hasLegacyNumberAfterCurrentPrefix(numbered[2], actual)) {
+        if (actual !== null && hasLegacyNumberAfterCurrentPrefix(numbered[2])) {
           addIssue(lineNumber, level, heading, '一级标题内容仍残留旧编号，请删除重复编号。');
         }
         if (actual !== expectedMajor) {
@@ -169,7 +169,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '二级标题应使用阿拉伯数字加英文句点，例如「## 1. 检查环境」。');
       } else {
         const actual = Number(numbered[1]);
-        if (hasLegacyNumberAfterCurrentPrefix(numbered[2], actual)) {
+        if (hasLegacyNumberAfterCurrentPrefix(numbered[2])) {
           addIssue(lineNumber, level, heading, '二级标题内容仍残留旧编号，请删除重复编号。');
         }
         if (actual !== expectedSub) {
@@ -196,7 +196,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '三级标题应使用 Unicode 带圈阿拉伯数字，例如「### ① 检查运行状态」。');
       } else {
         const actual = parseCircledNumber(numbered[1]) ?? 0;
-        if (actual > 0 && hasLegacyNumberAfterCurrentPrefix(numbered[2], actual)) {
+        if (actual > 0 && hasLegacyNumberAfterCurrentPrefix(numbered[2])) {
           addIssue(lineNumber, level, heading, '三级标题内容仍残留旧编号，请删除重复编号。');
         }
         if (actual !== expectedTertiary) {
@@ -241,36 +241,30 @@ function chineseNumberForHeading(value: number): string | null {
 
 function stripExistingHeadingNumber(heading: string): string {
   let cleaned = heading.trimStart();
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    const compound = cleaned.match(/^(\d+(?:\.\d+)+)[、.．-]?\s+/);
-    if (compound) {
-      cleaned = cleaned.slice(compound[0].length).trimStart();
+  let removedPrefix = false;
+
+  // Consume every explicitly marked legacy prefix, regardless of whether its
+  // number matches the current number. This handles mixed and nested formats.
+  while (cleaned) {
+    const markedPrefix = cleaned.match(/^(?:\d+(?:\.\d+)+(?:[、.．-])?\s*|\d+[、.．-]\s*|[零〇一二三四五六七八九十百千万]+[、.．-]\s*|[①-⑳㉑-㉟㊱-㊿](?:[、.．-])?\s+|[（(【[]\d+[）)】\]]\s*)/);
+    if (markedPrefix) {
+      cleaned = cleaned.slice(markedPrefix[0].length).trimStart();
+      removedPrefix = true;
       continue;
     }
-    const arabic = cleaned.match(/^(\d+)[、.．-]\s*/);
-    if (arabic) {
-      cleaned = cleaned.slice(arabic[0].length).trimStart();
-      const duplicate = cleaned.match(new RegExp('^' + arabic[1] + '(?:[、.．-]\\s*|\\s+)'));
-      if (duplicate) cleaned = cleaned.slice(duplicate[0].length).trimStart();
-      continue;
-    }
-    const chinese = cleaned.match(/^([零〇一二三四五六七八九十百千万]+)[、.．-]\s*/);
-    if (chinese) {
-      cleaned = cleaned.slice(chinese[0].length).trimStart();
-      continue;
-    }
-    const circled = cleaned.match(/^([①-⑳㉑-㉟㊱-㊿])\s+/);
-    if (circled) {
-      const number = parseCircledNumber(circled[1]);
-      cleaned = cleaned.slice(circled[0].length).trimStart();
-      if (number !== null) {
-        const duplicate = cleaned.match(new RegExp('^' + number + '(?:[、.．-]\\s*|\\s+)'));
-        if (duplicate) cleaned = cleaned.slice(duplicate[0].length).trimStart();
+
+    // Old repair operations sometimes left the next number without punctuation.
+    // Only consume bare numbers after a marked prefix established a numbered heading.
+    if (removedPrefix) {
+      const repeatedPrefix = cleaned.match(/^(?:\d{1,3}(?:\.\d+)*|[零〇一二三四五六七八九十百千万]+|[①-⑳㉑-㉟㊱-㊿]|[（(【[]\d+[）)】\]])\s+/);
+      if (repeatedPrefix) {
+        cleaned = cleaned.slice(repeatedPrefix[0].length).trimStart();
+        continue;
       }
-      continue;
     }
     break;
   }
+
   return cleaned;
 }
 
