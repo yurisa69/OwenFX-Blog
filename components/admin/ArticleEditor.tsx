@@ -126,22 +126,6 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     }
   }
 
-  function fixNumbering() {
-    const result = autoFixArticleNumbering(content);
-    if (result.fixedCount === 0) {
-      setMessage('没有可自动修正的标题编号；剩余问题可能涉及标题层级，需要人工调整。');
-      return;
-    }
-    setContent(result.markdown);
-    setEditorRevision(value => value + 1);
-    const remaining = validateArticleNumbering(result.markdown).length;
-    setMessage(
-      '已自动修正 ' + result.fixedCount + ' 处标题编号' +
-      (remaining > 0 ? '，仍有 ' + remaining + ' 项需要人工处理。' : '，复检通过。') +
-      '请检查内容后手动保存或发布。',
-    );
-  }
-
   async function save(nextStatus: 'draft' | 'published' = 'draft') {
     if (!title.trim() || !slug.trim()) {
       setMessage('请先填写文章标题和 Slug');
@@ -149,8 +133,32 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     }
     setBusy(true);
     setMessage('');
-    const finalContent = mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content;
+    let finalContent = mode === 'rich' && richRef.current ? htmlToMarkdown(richRef.current.innerHTML) : content;
     try {
+      if (nextStatus === 'published') {
+        const issuesBeforeFix = validateArticleNumbering(finalContent);
+        if (issuesBeforeFix.length > 0) {
+          const fixed = autoFixArticleNumbering(finalContent);
+          finalContent = fixed.markdown;
+          if (fixed.fixedCount > 0) {
+            setContent(finalContent);
+            setEditorRevision(value => value + 1);
+          }
+
+          const remainingIssues = validateArticleNumbering(finalContent);
+          if (remainingIssues.length > 0) {
+            setMessage(
+              `已自动修正 ${fixed.fixedCount} 处标题编号，仍有 ${remainingIssues.length} 项无法安全自动修正，文章尚未发布。请根据编号检查结果手动调整后重试。`,
+            );
+            return;
+          }
+
+          setMessage(fixed.fixedCount > 0
+            ? `已自动修正 ${fixed.fixedCount} 处标题编号，复检通过，正在发布…`
+            : '编号复检通过，正在发布…');
+        }
+      }
+
       const saveUrl = initial.id ? `/api/admin/articles/${initial.id}` : '/api/admin/articles';
       const requestId = crypto.randomUUID();
       const saveBody = JSON.stringify({ title, slug, excerpt, content_markdown: finalContent, status: nextStatus, ...(initial.id ? { github_blob_sha: githubBlobSha, request_id: requestId } : {}) });
@@ -257,16 +265,9 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
 
     {content.trim() && (
       <section className="mt-3 rounded-lg border p-3" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }} role="status" aria-live="polite">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold">
-            {numberingIssues.length > 0 ? '文章编号检查：发现 ' + numberingIssues.length + ' 项需要调整' : '文章编号检查：未发现问题'}
-          </p>
-          {numberingIssues.length > 0 && (
-            <button type="button" className="admin-tab active" disabled={busy || uploadBusy} onClick={fixNumbering}>
-              一键修正编号
-            </button>
-          )}
-        </div>
+        <p className="text-sm font-semibold">
+          {numberingIssues.length > 0 ? '文章编号检查：发现 ' + numberingIssues.length + ' 项需要调整' : '文章编号检查：未发现问题'}
+        </p>
         {numberingIssues.length > 0 && (
           <ul className="mt-2 space-y-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
             {numberingIssues.map((issue, index) => (
@@ -284,7 +285,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       <p className="text-sm" aria-live="polite" style={{ color: message.includes('失败') || message.includes('不能为空') ? 'var(--danger)' : 'var(--text-secondary)' }}>{message || `${content.length.toLocaleString()} 字符 · 当前状态：${status === 'published' ? '已发布' : '草稿'}`}</p>
       <div className="flex gap-2">
         <button type="button" disabled={busy || uploadBusy} onClick={() => void save('draft')} className="uiverse-btn uiverse-btn-ghost">{busy ? '保存中…' : '保存草稿'}</button>
-        <button type="button" disabled={busy || uploadBusy} onClick={() => void save('published')} className="uiverse-btn uiverse-btn-primary">{busy ? '处理中…' : status === 'published' ? '更新并发布' : '发布文章'}</button>
+        <button type="button" disabled={busy || uploadBusy} onClick={() => void save('published')} className="uiverse-btn uiverse-btn-primary">{busy ? '处理中…' : numberingIssues.length > 0 ? '修正并发布' : status === 'published' ? '更新并发布' : '发布文章'}</button>
       </div>
     </div>
 
