@@ -7,7 +7,7 @@ import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquir
 import { createServiceClient } from '@/lib/supabase/service';
 import { validateArticleWriteInput } from '@/lib/article-input';
 import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
-import { getArticleNumberingUpdateError } from '@/lib/article-numbering';
+import { getArticleNumberingPublishError } from '@/lib/article-numbering';
 
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -43,9 +43,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .eq('id', id).maybeSingle();
   if (readError || !previous) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   if (!previous.github_path) return NextResponse.json({ error: '文章缺少 GitHub 正文路径，请先检查文章记录。' }, { status: 409 });
-  const numberingError = getArticleNumberingUpdateError(
-    status, content, previous.published_at, previous.content_hash, hashMarkdown(content),
-  );
+  const numberingError = getArticleNumberingPublishError(status, content);
   if (numberingError) return NextResponse.json(numberingError, { status: 422 });
   const path = articleMarkdownPath(slug);
   const { data: duplicate } = await auth.supabase.from('articles').select('id').eq('slug', slug).neq('id', id).maybeSingle();

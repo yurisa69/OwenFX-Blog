@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { markdownToHtml } from '@/lib/markdown';
 import { htmlToMarkdown } from '@/lib/article-editor-conversion';
-import { getArticleNumberingEditorIssues } from '@/lib/article-numbering';
+import { validateArticleNumbering } from '@/lib/article-numbering';
 
 type Draft = {
   id?: string;
@@ -14,7 +14,6 @@ type Draft = {
   content_markdown?: string;
   status?: string;
   github_blob_sha?: string | null;
-  published_at?: string | null;
 };
 
 function escapeHtml(value: string) {
@@ -39,7 +38,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [preview, setPreview] = useState(false);
-  const numberingIssues = useMemo(() => getArticleNumberingEditorIssues(content, initial.published_at, initial.content_markdown || ''), [content, initial.content_markdown, initial.published_at]);
+  const numberingIssues = useMemo(() => validateArticleNumbering(content), [content]);
 
   // 不将 content 加入依赖：每次输入都会更新它，重新写入 innerHTML 会导致编辑光标跳动。
   // eslint-disable-next-line react-hooks/exhaustive-deps
