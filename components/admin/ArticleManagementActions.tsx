@@ -40,7 +40,7 @@ export default function ArticleManagementActions({
 
   const buttonClass = 'admin-nav-link disabled:cursor-not-allowed disabled:opacity-50';
   const deleteClass = buttonClass + ' !text-red-500';
-  const archiveClass = buttonClass + ' !text-yellow-400';
+  const archiveClass = buttonClass + ' !text-amber-400';
   const editClass = buttonClass + ' !text-rose-400';
   const restoreClass = buttonClass + ' !text-green-500';
 
