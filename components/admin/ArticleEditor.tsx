@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { markdownToHtml } from '@/lib/markdown';
 import { htmlToMarkdown } from '@/lib/article-editor-conversion';
+import { validateArticleNumbering } from '@/lib/article-numbering';
 
 type Draft = {
   id?: string;
@@ -37,6 +38,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [preview, setPreview] = useState(false);
+  const numberingIssues = useMemo(() => validateArticleNumbering(content), [content]);
 
   // 不将 content 加入依赖：每次输入都会更新它，重新写入 innerHTML 会导致编辑光标跳动。
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -235,6 +237,24 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
             className="admin-rich min-h-[420px] p-5 outline-none" data-placeholder="开始写作…" />
         </div>
     }
+
+    {content.trim() && (
+      <section className="mt-3 rounded-lg border p-3" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }} role="status" aria-live="polite">
+        <p className="text-sm font-semibold">
+          {numberingIssues.length > 0 ? '文章编号检查：发现 ' + numberingIssues.length + ' 项需要调整' : '文章编号检查：未发现问题'}
+        </p>
+        {numberingIssues.length > 0 && (
+          <ul className="mt-2 space-y-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {numberingIssues.map((issue, index) => (
+              <li key={issue.line + '-' + index}>
+                第 {issue.line} 行：{issue.message}
+                <span className="ml-1 opacity-70">（{issue.heading}）</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    )}
 
     <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
       <p className="text-sm" aria-live="polite" style={{ color: message.includes('失败') || message.includes('不能为空') ? 'var(--danger)' : 'var(--text-secondary)' }}>{message || `${content.length.toLocaleString()} 字符 · 当前状态：${status === 'published' ? '已发布' : '草稿'}`}</p>
