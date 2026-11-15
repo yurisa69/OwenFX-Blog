@@ -198,6 +198,131 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
   return issues;
 }
 
+function chineseNumberForHeading(value: number): string | null {
+  if (!Number.isInteger(value) || value < 1 || value > 9999) return null;
+  const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  const units = ['', '十', '百', '千'];
+  let result = '';
+  let pendingZero = false;
+  let remaining = value;
+
+  for (let position = 3; position >= 0; position -= 1) {
+    const unitValue = 10 ** position;
+    const digit = Math.floor(remaining / unitValue);
+    remaining %= unitValue;
+    if (digit === 0) {
+      if (result && remaining > 0) pendingZero = true;
+      continue;
+    }
+    if (pendingZero) result += '零';
+    if (!(position === 1 && digit === 1 && result === '')) result += digits[digit];
+    result += units[position];
+    pendingZero = false;
+  }
+  return result;
+}
+
+function stripExistingHeadingNumber(heading: string): string {
+  return heading.replace(
+    /^(?:(?:\d+(?:\.\d+)*|[零〇一二三四五六七八九十百千万]+)[、.．-]\s*|(?:\d+(?:\.\d+)+)\s+|[①-⑳㉑-㉟㊱-㊿]\s*)/,
+    '',
+  ).trimStart();
+}
+
+/**
+ * Repairs only recognizable numbering prefixes on H1-H3 headings.
+ * It never changes heading levels, body text, code fences, or list structure.
+ * Orphan headings and numbered H4+ headings remain for manual review.
+ */
+export function autoFixArticleNumbering(markdown: string): { markdown: string; fixedCount: number } {
+  const parts = markdown.split(/(\r\n|\n)/);
+  let inFence = false;
+  let fenceCharacter = '';
+  let fenceLength = 0;
+  let sectionType: 'none' | 'steps' | 'structural' = 'none';
+  let expectedMajor = 1;
+  let expectedSub = 1;
+  let expectedTertiary = 1;
+  let hasSeenH1 = false;
+  let hasSeenH2 = false;
+  let fixedCount = 0;
+
+  for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
+    const line = parts[partIndex];
+    const fence = line.match(/^\s{0,3}(\x60{3,}|~{3,})/);
+    if (!inFence && fence) {
+      inFence = true;
+      fenceCharacter = fence[1][0];
+      fenceLength = fence[1].length;
+      continue;
+    }
+    if (inFence) {
+      const closing = line.match(/^\s{0,3}(\x60{3,}|~{3,})\s*$/);
+      if (closing && closing[1][0] === fenceCharacter && closing[1].length >= fenceLength) {
+        inFence = false;
+        fenceCharacter = '';
+        fenceLength = 0;
+      }
+      continue;
+    }
+
+    const rawHeading = line.match(/^(#{1,6}\s+)(.*?)(\s+#+\s*)?$/);
+    if (!rawHeading) continue;
+    const level = rawHeading[1].trim().length;
+    if (level > 3) continue;
+
+    const originalHeading = rawHeading[2].trim();
+    const cleanHeading = stripExistingHeadingNumber(originalHeading);
+    let nextHeading = originalHeading;
+
+    if (level === 1) {
+      expectedSub = 1;
+      expectedTertiary = 1;
+      hasSeenH2 = false;
+
+      if (isStructuralHeading(cleanHeading)) {
+        sectionType = 'structural';
+        hasSeenH1 = true;
+        nextHeading = cleanHeading;
+      } else if (!hasSeenH1 && cleanHeading === originalHeading && !/^(?:[零〇一二三四五六七八九十百千万]+|\d+)[、.．-]/.test(originalHeading)) {
+        hasSeenH1 = true;
+        sectionType = 'none';
+      } else {
+        hasSeenH1 = true;
+        sectionType = 'steps';
+        const number = chineseNumberForHeading(expectedMajor);
+        if (number) nextHeading = number + '、' + cleanHeading;
+        expectedMajor += 1;
+      }
+    } else if (level === 2) {
+      expectedTertiary = 1;
+      hasSeenH2 = true;
+      if (isStructuralHeading(cleanHeading)) {
+        sectionType = 'structural';
+        nextHeading = cleanHeading;
+      } else if (sectionType === 'steps') {
+        nextHeading = expectedSub + '. ' + cleanHeading;
+        expectedSub += 1;
+      }
+    } else if (sectionType === 'steps' && hasSeenH2 && expectedTertiary <= 50) {
+      const circled = expectedTertiary <= 20
+        ? String.fromCodePoint(0x245f + expectedTertiary)
+        : expectedTertiary <= 35
+          ? String.fromCodePoint(0x323c + expectedTertiary)
+          : String.fromCodePoint(0x328d + expectedTertiary);
+      nextHeading = circled + ' ' + cleanHeading;
+      expectedTertiary += 1;
+    }
+
+    if (nextHeading !== originalHeading) {
+      parts[partIndex] = rawHeading[1] + nextHeading + (rawHeading[3] || '');
+      fixedCount += 1;
+    }
+  }
+
+  return { markdown: parts.join(''), fixedCount };
+}
+
 export function getArticleNumberingPublishError(status: string, markdown: string) {
   if (status !== 'published') return null;
   const issues = validateArticleNumbering(markdown);

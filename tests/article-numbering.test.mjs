@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ARTICLE_NUMBERING_EFFECTIVE_AT,
+  autoFixArticleNumbering,
   getArticleNumberingPublishError,
   getArticleNumberingRevisionRestoreError,
   validateArticleNumbering,
@@ -237,4 +238,82 @@ test('rejects republishing unchanged historical article content that violates cu
   const legacy = '## 1. 项目与部署方案';
   const result = getArticleNumberingPublishError('published', legacy);
   assert.equal(result.error, '文章编号不符合规范，请修正后再发布。');
+});
+
+
+test('auto-fixes H1, H2 and H3 numbering while preserving hierarchy and body text', () => {
+  const source = [
+    '# Uptime Kuma 部署教程',
+    '',
+    '# 1. 环境准备',
+    '保留这段正文。',
+    '## 1.1 检查环境',
+    '### 1.1.1 查看系统版本',
+    '## 3. 部署方式',
+    '### 2. 验证部署',
+    '# 3. 安装服务',
+    '## 4. 安装 Docker',
+    '### 3. 检查服务',
+    '## 总结',
+  ].join('\n');
+  const result = autoFixArticleNumbering(source);
+  assert.equal(result.fixedCount, 8);
+  assert.equal(result.markdown, [
+    '# Uptime Kuma 部署教程',
+    '',
+    '# 一、环境准备',
+    '保留这段正文。',
+    '## 1. 检查环境',
+    '### ① 查看系统版本',
+    '## 2. 部署方式',
+    '### ① 验证部署',
+    '# 二、安装服务',
+    '## 1. 安装 Docker',
+    '### ① 检查服务',
+    '## 总结',
+  ].join('\n'));
+  assert.deepEqual(validateArticleNumbering(result.markdown), []);
+});
+
+test('auto-fix leaves code fences, structural headings and article title unchanged', () => {
+  const source = [
+    '# Uptime Kuma 部署教程',
+    '# 一. 前言',
+    '\x60\x60\x60markdown',
+    '# 1. 代码示例',
+    '## 1.1 示例标题',
+    '\x60\x60\x60',
+    '# 1. 环境准备',
+    '## 1. 检查环境',
+    '## 总结',
+  ].join('\n');
+  const result = autoFixArticleNumbering(source);
+  assert.equal(result.markdown, [
+    '# Uptime Kuma 部署教程',
+    '# 前言',
+    '\x60\x60\x60markdown',
+    '# 1. 代码示例',
+    '## 1.1 示例标题',
+    '\x60\x60\x60',
+    '# 一、环境准备',
+    '## 1. 检查环境',
+    '## 总结',
+  ].join('\n'));
+  assert.equal(result.fixedCount, 2);
+});
+
+test('auto-fix is idempotent and leaves orphan or H4 numbering issues for manual review', () => {
+  const source = [
+    '# 文章标题',
+    '## 9. 缺少一级标题',
+    '# 一、环境准备',
+    '## 1. 检查环境',
+    '#### 1.1 详细步骤',
+  ].join('\n');
+  const first = autoFixArticleNumbering(source);
+  const second = autoFixArticleNumbering(first.markdown);
+  assert.equal(first.fixedCount, 0);
+  assert.equal(second.fixedCount, 0);
+  assert.equal(second.markdown, first.markdown);
+  assert.equal(validateArticleNumbering(first.markdown).length, 2);
 });

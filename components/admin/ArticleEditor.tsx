@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { markdownToHtml } from '@/lib/markdown';
 import { htmlToMarkdown } from '@/lib/article-editor-conversion';
-import { validateArticleNumbering } from '@/lib/article-numbering';
+import { autoFixArticleNumbering, validateArticleNumbering } from '@/lib/article-numbering';
 
 type Draft = {
   id?: string;
@@ -38,13 +38,14 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [preview, setPreview] = useState(false);
+  const [editorRevision, setEditorRevision] = useState(0);
   const numberingIssues = useMemo(() => validateArticleNumbering(content), [content]);
 
   // 不将 content 加入依赖：每次输入都会更新它，重新写入 innerHTML 会导致编辑光标跳动。
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (mode === 'rich' && richRef.current) richRef.current.innerHTML = markdownToHtml(content);
-  }, [mode, preview]);
+  }, [mode, preview, editorRevision]);
 
   function switchMode(next: 'markdown' | 'rich') {
     if (mode === 'rich' && richRef.current) setContent(htmlToMarkdown(richRef.current.innerHTML));
@@ -123,6 +124,22 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       setUploadBusy(false);
       if (fileRef.current) fileRef.current.value = '';
     }
+  }
+
+  function fixNumbering() {
+    const result = autoFixArticleNumbering(content);
+    if (result.fixedCount === 0) {
+      setMessage('没有可自动修正的标题编号；剩余问题可能涉及标题层级，需要人工调整。');
+      return;
+    }
+    setContent(result.markdown);
+    setEditorRevision(value => value + 1);
+    const remaining = validateArticleNumbering(result.markdown).length;
+    setMessage(
+      '已自动修正 ' + result.fixedCount + ' 处标题编号' +
+      (remaining > 0 ? '，仍有 ' + remaining + ' 项需要人工处理。' : '，复检通过。') +
+      '请检查内容后手动保存或发布。',
+    );
   }
 
   async function save(nextStatus: 'draft' | 'published' = 'draft') {
@@ -240,9 +257,16 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
 
     {content.trim() && (
       <section className="mt-3 rounded-lg border p-3" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }} role="status" aria-live="polite">
-        <p className="text-sm font-semibold">
-          {numberingIssues.length > 0 ? '文章编号检查：发现 ' + numberingIssues.length + ' 项需要调整' : '文章编号检查：未发现问题'}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold">
+            {numberingIssues.length > 0 ? '文章编号检查：发现 ' + numberingIssues.length + ' 项需要调整' : '文章编号检查：未发现问题'}
+          </p>
+          {numberingIssues.length > 0 && (
+            <button type="button" className="admin-tab active" disabled={busy || uploadBusy} onClick={fixNumbering}>
+              一键修正编号
+            </button>
+          )}
+        </div>
         {numberingIssues.length > 0 && (
           <ul className="mt-2 space-y-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
             {numberingIssues.map((issue, index) => (
