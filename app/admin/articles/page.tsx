@@ -158,17 +158,26 @@ export default async function AdminArticlesPage({
             当前分类暂无文章
           </p>
         ) : (
-          data.map(article => (
+          data.map((article, index) => (
             <div
               key={article.id}
               className="flex flex-wrap items-center justify-between gap-3 border-t py-3"
               style={{ borderColor: 'var(--border-color)' }}
             >
-              <div className="min-w-0">
-                <p className="font-medium">{article.title}</p>
-                <p className="mt-1 text-xs opacity-60">
-                  {article.slug} · {statusLabels[article.status as ArticleStatus] ?? article.status} · {formatChineseDateLocal(article.updated_at)}
-                </p>
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  aria-label={`第 ${index + 1} 篇`}
+                  className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-md border px-2 text-xs font-semibold tabular-nums"
+                  style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+                >
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-medium">{article.title}</p>
+                  <p className="mt-1 text-xs opacity-60">
+                    {article.slug} · {statusLabels[article.status as ArticleStatus] ?? article.status} · {formatChineseDateLocal(article.updated_at)}
+                  </p>
+                </div>
               </div>
               <ArticleManagementActions articleId={article.id} status={article.status as ArticleStatus} />
             </div>
