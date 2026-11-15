@@ -7,6 +7,7 @@ import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquir
 import { createServiceClient } from '@/lib/supabase/service';
 import { validateArticleWriteInput } from '@/lib/article-input';
 import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
+import { getArticleNumberingPublishError } from '@/lib/article-numbering';
 
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -34,6 +35,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { title, slug, content, excerpt, status, expectedBlobSha } = validation.value;
   const requestId = typeof input?.request_id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.request_id)
     ? input.request_id : randomUUID();
+  const numberingError = getArticleNumberingPublishError(status, content);
+  if (numberingError) return NextResponse.json(numberingError, { status: 422 });
   const imageError = validateMarkdownImageUrls(content);
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 

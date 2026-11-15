@@ -134,3 +134,13 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
 
   return issues;
 }
+
+export function getArticleNumberingPublishError(status: string, markdown: string) {
+  if (status !== 'published') return null;
+  const issues = validateArticleNumbering(markdown);
+  if (issues.length === 0) return null;
+  return {
+    error: '文章编号不符合规范，请修正后再发布。',
+    issues,
+  };
+}

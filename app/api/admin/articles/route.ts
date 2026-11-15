@@ -6,6 +6,7 @@ import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob } from 
 import { createServiceClient } from '@/lib/supabase/service';
 import { validateArticleWriteInput } from '@/lib/article-input';
 import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
+import { getArticleNumberingPublishError } from '@/lib/article-numbering';
 
 
 export async function GET() {
@@ -25,6 +26,8 @@ export async function POST(req: Request) {
   const validation = validateArticleWriteInput(input, 'create');
   if (!validation.ok) return NextResponse.json({ error: validation.error }, { status: validation.status });
   const { title, slug, content, excerpt, status } = validation.value;
+  const numberingError = getArticleNumberingPublishError(status, content);
+  if (numberingError) return NextResponse.json(numberingError, { status: 422 });
   const imageError = validateMarkdownImageUrls(content);
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
   const service = createServiceClient();

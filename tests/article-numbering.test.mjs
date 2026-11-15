@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateArticleNumbering } from '../lib/article-numbering.ts';
+import { getArticleNumberingPublishError, validateArticleNumbering } from '../lib/article-numbering.ts';
 
 test('accepts Chinese major steps and Arabic substeps that reset per section', () => {
   const markdown = [
@@ -105,4 +105,24 @@ test('reports a substep that is not attached to a major step', () => {
   const issues = validateArticleNumbering('### 1. 独立小步骤');
   assert.equal(issues.length, 1);
   assert.match(issues[0].message, /必须归属于/);
+});
+
+
+test('allows drafts to be saved even when numbering is not compliant', () => {
+  assert.equal(getArticleNumberingPublishError('draft', '## 1. 未完成的步骤'), null);
+});
+
+test('allows publishing when all step numbering is compliant', () => {
+  const markdown = ['## 一. 环境准备', '### 1. 检查系统', '## 总结'].join('\n');
+  assert.equal(getArticleNumberingPublishError('published', markdown), null);
+});
+
+test('rejects publishing with a structured list of numbering issues', () => {
+  const result = getArticleNumberingPublishError('published', [
+    '## 1. 环境准备',
+    '### 1. 检查系统',
+  ].join('\n'));
+  assert.equal(result.error, '文章编号不符合规范，请修正后再发布。');
+  assert.equal(result.issues.length, 1);
+  assert.equal(result.issues[0].line, 1);
 });
