@@ -14,7 +14,7 @@ const chineseUnits: Record<string, number> = {
   十: 10, 百: 100, 千: 1000, 万: 10000,
 };
 
-const structuralHeadingPattern = /^(?:前言|引言|概述|目录|总结|结语|参考资料|参考文献|延伸阅读|附录|致谢|相关链接)(?:\s|[:：—-]|$)/i;
+const structuralHeadingPattern = /^(?:前言|引言|概述|目录|总结|结语|官方资料|参考资料|参考文献|延伸阅读|附录|致谢|相关链接)(?:\s|[:：—-]|$)/i;
 
 function parseCircledNumber(value: string): number | null {
   const codePoint = value.codePointAt(0);
