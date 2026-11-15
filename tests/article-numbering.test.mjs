@@ -20,19 +20,19 @@ test('accepts article title, H1 major steps, H2 substeps and H3 numbered details
     '',
     '## 1. 确定部署架构',
     '',
-    '### 1. 确认服务组件',
+    '### ① 确认服务组件',
     '',
-    '### 2. 规划服务端口',
+    '### ② 规划服务端口',
     '',
     '## 2. 确定部署方式',
     '',
-    '### 1. 选择部署方式',
+    '### ① 选择部署方式',
     '',
     '# 二、环境准备',
     '',
     '## 1. 检查系统版本',
     '',
-    '### 1. 查看系统信息',
+    '### ① 查看系统信息',
     '',
     '## 总结',
   ].join('\n');
@@ -43,7 +43,7 @@ test('accepts a numbered H1 as the first heading when the article title is metad
   assert.deepEqual(validateArticleNumbering([
     '# 一、环境准备',
     '## 1. 检查系统',
-    '### 1. 查看系统版本',
+    '### ① 查看系统版本',
   ].join('\n')), []);
 });
 
@@ -54,7 +54,7 @@ test('rejects old H2 major-step format and requires H1 major steps', () => {
   ].join('\n'));
   assert.equal(issues.length, 1);
   assert.equal(issues[0].level, 2);
-  assert.match(issues[0].message, /必须归属于一个一级大步骤/);
+  assert.match(issues[0].message, /必须归属于一个一级标题/);
 });
 
 test('rejects Arabic or incorrectly punctuated major steps', () => {
@@ -87,36 +87,35 @@ test('requires Arabic H2 numbering and detects missing numbers and gaps', () => 
   ].join('\n');
   const issues = validateArticleNumbering(markdown);
   assert.equal(issues.length, 2);
-  assert.match(issues[0].message, /二级步骤应使用阿拉伯数字/);
+  assert.match(issues[0].message, /二级标题应使用阿拉伯数字/);
   assert.match(issues[1].message, /应从「2」开始/);
 });
 
-test('requires Arabic H3 numbering and detects missing numbers and gaps', () => {
+test('requires Unicode circled H3 numbering and detects missing numbers and gaps', () => {
   const markdown = [
     '# 文章标题',
     '# 一、环境准备',
     '## 1. 检查系统',
-    '### 检查系统版本',
-    '### 3. 查看磁盘空间',
+    '### 1. 检查系统版本',
+    '### ③ 查看磁盘空间',
   ].join('\n');
   const issues = validateArticleNumbering(markdown);
   assert.equal(issues.length, 2);
-  assert.match(issues[0].message, /三级标题应使用阿拉伯数字/);
-  assert.match(issues[1].message, /应从「2」开始/);
+  assert.match(issues[0].message, /Unicode 带圈阿拉伯数字/);
+  assert.match(issues[1].message, /应从「②」开始/);
 });
-
 test('resets H2 numbering under each new H1 and H3 numbering under each new H2', () => {
   const markdown = [
     '# 文章标题',
     '# 一、环境准备',
     '## 1. 检查系统',
-    '### 1. 查看系统版本',
-    '### 2. 检查磁盘空间',
+    '### ① 查看系统版本',
+    '### ② 检查磁盘空间',
     '## 2. 准备配置',
-    '### 1. 创建配置文件',
+    '### ① 创建配置文件',
     '# 二、安装服务',
     '## 1. 安装 Docker',
-    '### 1. 验证安装',
+    '### ① 验证安装',
   ].join('\n');
   assert.deepEqual(validateArticleNumbering(markdown), []);
 });
@@ -124,12 +123,12 @@ test('resets H2 numbering under each new H1 and H3 numbering under each new H2',
 test('requires H2 and H3 headings to belong to their parent levels', () => {
   const h2Issues = validateArticleNumbering('## 1. 孤立的二级标题');
   assert.equal(h2Issues.length, 1);
-  assert.match(h2Issues[0].message, /必须归属于一个一级大步骤/);
+  assert.match(h2Issues[0].message, /必须归属于一个一级标题/);
 
   const h3Issues = validateArticleNumbering([
     '# 文章标题',
     '# 一、环境准备',
-    '### 1. 孤立的三级标题',
+    '### ① 孤立的三级标题',
   ].join('\n'));
   assert.equal(h3Issues.length, 1);
   assert.match(h3Issues[0].message, /必须归属于一个二级标题/);
@@ -140,7 +139,7 @@ test('does not require numbering for structural headings', () => {
     '# 前言',
     '# 一、正式步骤',
     '## 1. 执行安装',
-    '### 1. 验证安装',
+    '### ① 验证安装',
     '## 总结',
     '### 官方资料',
   ].join('\n');
@@ -152,7 +151,7 @@ test('warns against numbered headings below H3', () => {
     '# 文章标题',
     '# 一、环境准备',
     '## 1. 检查环境',
-    '### 1. 检查系统',
+    '### ① 检查系统',
     '#### 1.1 检查系统版本',
   ].join('\n'));
   assert.equal(issues.length, 1);
@@ -164,12 +163,12 @@ test('ignores headings inside fenced code blocks', () => {
     '```markdown',
     '# 一、这是代码示例',
     '## 1. 这不是实际标题',
-    '### 1. 这也不是实际标题',
+    '### ① 这也不是实际标题',
     '```',
     '# 文章标题',
     '# 一、正式步骤',
     '## 1. 检查环境',
-    '### 1. 查看状态',
+    '### ① 查看状态',
   ].join('\n');
   assert.deepEqual(validateArticleNumbering(markdown), []);
 });
@@ -183,7 +182,7 @@ test('allows publishing when all heading levels are compliant', () => {
     '# 文章标题',
     '# 一、环境准备',
     '## 1. 检查系统',
-    '### 1. 查看系统版本',
+    '### ① 查看系统版本',
     '## 总结',
   ].join('\n');
   assert.equal(getArticleNumberingPublishError('published', markdown), null);

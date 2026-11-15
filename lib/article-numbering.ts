@@ -16,6 +16,23 @@ const chineseUnits: Record<string, number> = {
 
 const structuralHeadingPattern = /^(?:前言|引言|概述|目录|总结|结语|参考资料|参考文献|延伸阅读|附录|致谢|相关链接)(?:\s|[:：—-]|$)/i;
 
+function parseCircledNumber(value: string): number | null {
+  const codePoint = value.codePointAt(0);
+  if (codePoint === undefined) return null;
+  if (codePoint >= 0x2460 && codePoint <= 0x2473) return codePoint - 0x245f;
+  if (codePoint >= 0x3251 && codePoint <= 0x325f) return codePoint - 0x323c;
+  if (codePoint >= 0x32b1 && codePoint <= 0x32bf) return codePoint - 0x328d;
+  return null;
+}
+
+function circleNumberForMessage(value: number): string {
+  if (value >= 1 && value <= 20) return String.fromCodePoint(0x245f + value);
+  if (value >= 21 && value <= 35) return String.fromCodePoint(0x323c + value);
+  if (value >= 36 && value <= 50) return String.fromCodePoint(0x328d + value);
+  return String(value);
+}
+
+
 function parseChineseNumber(value: string): number | null {
   if (!value || !/^[零〇一二三四五六七八九十百千万]+$/.test(value)) return null;
 
@@ -112,11 +129,11 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
       hasSeenH1 = true;
       sectionType = 'steps';
       if (!numbered) {
-        addIssue(lineNumber, level, heading, '一级大步骤应使用 H1 和中文数字加顿号，例如「# 一、环境准备」。');
+        addIssue(lineNumber, level, heading, '一级标题应使用 H1 和中文数字加顿号，例如「# 一、环境准备」。');
       } else {
         const actual = parseChineseNumber(numbered[1]);
         if (actual !== expectedMajor) {
-          addIssue(lineNumber, level, heading, '一级大步骤应按顺序编号为「' + expectedMajor + '」，当前为「' + numbered[1] + '」。');
+          addIssue(lineNumber, level, heading, '一级标题应按顺序编号为「' + expectedMajor + '」，当前为「' + numbered[1] + '」。');
         }
       }
       expectedMajor += 1;
@@ -132,17 +149,17 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         return;
       }
       if (sectionType !== 'steps') {
-        addIssue(lineNumber, level, heading, '二级步骤必须归属于一个一级大步骤（H1）。');
+        addIssue(lineNumber, level, heading, '二级标题必须归属于一个一级标题（H1）。');
         return;
       }
 
       const numbered = heading.match(/^(\d+)\.\s+(.+)$/);
       if (!numbered) {
-        addIssue(lineNumber, level, heading, '二级步骤应使用阿拉伯数字加英文句点，例如「## 1. 检查环境」。');
+        addIssue(lineNumber, level, heading, '二级标题应使用阿拉伯数字加英文句点，例如「## 1. 检查环境」。');
       } else {
         const actual = Number(numbered[1]);
         if (actual !== expectedSub) {
-          addIssue(lineNumber, level, heading, '当前一级大步骤下的二级标题应从「' + expectedSub + '」开始并连续递增，当前为「' + numbered[1] + '」。');
+          addIssue(lineNumber, level, heading, '当前一级标题下的二级标题应从「' + expectedSub + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }
       }
       expectedSub += 1;
@@ -152,7 +169,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
     if (level === 3) {
       if (sectionType === 'structural') return;
       if (sectionType !== 'steps') {
-        addIssue(lineNumber, level, heading, '三级标题必须归属于一个一级大步骤（H1）。');
+        addIssue(lineNumber, level, heading, '三级标题必须归属于一个一级标题（H1）。');
         return;
       }
       if (!hasSeenH2) {
@@ -160,13 +177,13 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         return;
       }
 
-      const numbered = heading.match(/^(\d+)\.\s+(.+)$/);
+      const numbered = heading.match(/^([①-⑳㉑-㉟㊱-㊿])\s+(.+)$/);
       if (!numbered) {
-        addIssue(lineNumber, level, heading, '三级标题应使用阿拉伯数字编号，例如「### 1. 检查运行状态」。');
+        addIssue(lineNumber, level, heading, '三级标题应使用 Unicode 带圈阿拉伯数字，例如「### ① 检查运行状态」。');
       } else {
-        const actual = Number(numbered[1]);
+        const actual = parseCircledNumber(numbered[1]) ?? 0;
         if (actual !== expectedTertiary) {
-          addIssue(lineNumber, level, heading, '当前二级标题下的三级标题应从「' + expectedTertiary + '」开始并连续递增，当前为「' + numbered[1] + '」。');
+          addIssue(lineNumber, level, heading, '当前二级标题下的三级标题应从「' + circleNumberForMessage(expectedTertiary) + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }
       }
       expectedTertiary += 1;
@@ -193,7 +210,7 @@ export function getArticleNumberingPublishError(status: string, markdown: string
 
 // The revised H1/H2/H3 hierarchy became effective with the updated guidelines
 // commit. Keep this timestamp in UTC so historical article checks remain stable.
-export const ARTICLE_NUMBERING_EFFECTIVE_AT = '2026-11-15T18:29:54.000Z';
+export const ARTICLE_NUMBERING_EFFECTIVE_AT = '2026-11-15T19:03:22.089Z';
 
 /**
  * Historical revisions created before the revised hierarchy took effect may

@@ -122,7 +122,7 @@ test('sanitizes unsafe image URLs while retaining safe image URLs', () => {
   assert.match(safe, /src="https:\/\/example\.com\/image\.png"/);
 });
 
-test('renders H3 numeric prefixes as circular badge elements', () => {
+test('preserves Unicode circled Arabic numerals in H3 headings as plain text', () => {
   const html = markdownToHtml([
     '# 文章标题',
     '',
@@ -130,8 +130,11 @@ test('renders H3 numeric prefixes as circular badge elements', () => {
     '',
     '## 1. 检查服务器',
     '',
-    '### 1. 查看系统状态',
+    '### ① 查看系统状态',
+    '',
+    '### ② 检查磁盘空间',
   ].join('\n'));
-  assert.match(html, /<h3><span class="article-heading-number">1<\/span> 查看系统状态<\/h3>/);
-  assert.doesNotMatch(html, /<h3>1\. 查看系统状态<\/h3>/);
+  assert.match(html, /<h3>① 查看系统状态<\/h3>/);
+  assert.match(html, /<h3>② 检查磁盘空间<\/h3>/);
+  assert.doesNotMatch(html, /article-heading-number|<span/);
 });
