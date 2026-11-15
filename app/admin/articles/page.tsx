@@ -164,20 +164,18 @@ export default async function AdminArticlesPage({
               className="flex flex-wrap items-center justify-between gap-3 border-t py-3"
               style={{ borderColor: 'var(--border-color)' }}
             >
-              <div className="flex min-w-0 items-center gap-3">
+              <div className="min-w-0">
                 <span
                   aria-label={`第 ${index + 1} 篇`}
-                  className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-md border px-2 text-xs font-semibold tabular-nums"
+                  className="mb-2 inline-flex h-7 min-w-7 items-center justify-center rounded-md border px-2 text-xs font-semibold tabular-nums"
                   style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
                 >
                   {index + 1}
                 </span>
-                <div className="min-w-0">
-                  <p className="font-medium">{article.title}</p>
-                  <p className="mt-1 text-xs opacity-60">
-                    {article.slug} · {statusLabels[article.status as ArticleStatus] ?? article.status} · {formatChineseDateLocal(article.updated_at)}
-                  </p>
-                </div>
+                <p className="font-medium">{article.title}</p>
+                <p className="mt-1 text-xs opacity-60">
+                  {article.slug} · {statusLabels[article.status as ArticleStatus] ?? article.status} · {formatChineseDateLocal(article.updated_at)}
+                </p>
               </div>
               <ArticleManagementActions articleId={article.id} status={article.status as ArticleStatus} />
             </div>
