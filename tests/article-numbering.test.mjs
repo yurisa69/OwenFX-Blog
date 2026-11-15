@@ -145,6 +145,33 @@ test('does not require numbering for structural headings', () => {
   assert.deepEqual(validateArticleNumbering(markdown), []);
 });
 
+test('rejects duplicated legacy numbering left after an apparently valid H1, H2 or H3 prefix', () => {
+  const issues = validateArticleNumbering([
+    '# 文章标题',
+    '# 一、环境准备',
+    '## 1. 1 检查系统',
+    '### ① 1.1.1 查看系统版本',
+  ].join('\n'));
+  assert.equal(issues.length, 2);
+  assert.ok(issues.some(issue => issue.level === 2 && /残留旧编号/.test(issue.message)));
+  assert.ok(issues.some(issue => issue.level === 3 && /残留旧编号/.test(issue.message)));
+});
+
+test('does not let a structural H2 break numbering checks for later H2 headings', () => {
+  const markdown = [
+    '# 文章标题',
+    '# 一、环境准备',
+    '## 1. 检查系统',
+    '### ① 查看系统版本',
+    '## 总结',
+    '### 官方资料',
+    '# 二、安装服务',
+    '## 1. 安装 Docker',
+    '### ① 验证安装',
+  ].join('\n');
+  assert.deepEqual(validateArticleNumbering(markdown), []);
+});
+
 test('warns against numbered headings below H3', () => {
   const issues = validateArticleNumbering([
     '# 文章标题',
@@ -273,6 +300,32 @@ test('auto-fixes H1, H2 and H3 numbering while preserving hierarchy and body tex
     '## 总结',
   ].join('\n'));
   assert.deepEqual(validateArticleNumbering(result.markdown), []);
+});
+
+test('auto-fix completely removes duplicated and legacy H2/H3 numbering', () => {
+  const source = [
+    '# 文章标题',
+    '# 一、环境准备',
+    '## 1. 1 检查系统',
+    '### ① 1.1.1 查看系统版本',
+    '## 2. 2 安装服务',
+    '### ① 1 验证安装',
+    '## 总结',
+    '### 官方资料',
+  ].join('\n');
+  const result = autoFixArticleNumbering(source);
+  assert.equal(result.markdown, [
+    '# 文章标题',
+    '# 一、环境准备',
+    '## 1. 检查系统',
+    '### ① 查看系统版本',
+    '## 2. 安装服务',
+    '### ① 验证安装',
+    '## 总结',
+    '### 官方资料',
+  ].join('\n'));
+  assert.deepEqual(validateArticleNumbering(result.markdown), []);
+  assert.equal(autoFixArticleNumbering(result.markdown).fixedCount, 0);
 });
 
 test('auto-fix leaves code fences, structural headings and article title unchanged', () => {

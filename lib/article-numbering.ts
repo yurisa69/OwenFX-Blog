@@ -64,6 +64,11 @@ function isStructuralHeading(heading: string) {
   return structuralHeadingPattern.test(heading.trim());
 }
 
+function hasLegacyNumberAfterCurrentPrefix(value: string, currentNumber: number): boolean {
+  const escapedNumber = String(currentNumber);
+  return new RegExp(`^(?:\\d+(?:\\.\\d+)+|${escapedNumber})(?:[.、．-]\\s*|\\s+)`).test(value);
+}
+
 export function validateArticleNumbering(markdown: string): ArticleNumberingIssue[] {
   const issues: ArticleNumberingIssue[] = [];
   const lines = markdown.split(/\r?\n/);
@@ -76,6 +81,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
   let expectedTertiary = 1;
   let hasSeenH1 = false;
   let hasSeenH2 = false;
+  let currentH2IsStructural = false;
 
   const addIssue = (line: number, level: number, heading: string, message: string) => {
     issues.push({ line, level, heading, message });
@@ -110,6 +116,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
       expectedSub = 1;
       expectedTertiary = 1;
       hasSeenH2 = false;
+      currentH2IsStructural = false;
 
       if (isStructuralHeading(heading)) {
         sectionType = 'structural';
@@ -132,6 +139,9 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '一级标题应使用 H1 和中文数字加顿号，例如「# 一、环境准备」。');
       } else {
         const actual = parseChineseNumber(numbered[1]);
+        if (actual !== null && hasLegacyNumberAfterCurrentPrefix(numbered[2], actual)) {
+          addIssue(lineNumber, level, heading, '一级标题内容仍残留旧编号，请删除重复编号。');
+        }
         if (actual !== expectedMajor) {
           addIssue(lineNumber, level, heading, '一级标题应按顺序编号为「' + expectedMajor + '」，当前为「' + numbered[1] + '」。');
         }
@@ -145,9 +155,10 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
       hasSeenH2 = true;
 
       if (isStructuralHeading(heading)) {
-        sectionType = 'structural';
+        currentH2IsStructural = true;
         return;
       }
+      currentH2IsStructural = false;
       if (sectionType !== 'steps') {
         addIssue(lineNumber, level, heading, '二级标题必须归属于一个一级标题（H1）。');
         return;
@@ -158,6 +169,9 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '二级标题应使用阿拉伯数字加英文句点，例如「## 1. 检查环境」。');
       } else {
         const actual = Number(numbered[1]);
+        if (hasLegacyNumberAfterCurrentPrefix(numbered[2], actual)) {
+          addIssue(lineNumber, level, heading, '二级标题内容仍残留旧编号，请删除重复编号。');
+        }
         if (actual !== expectedSub) {
           addIssue(lineNumber, level, heading, '当前一级标题下的二级标题应从「' + expectedSub + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }
@@ -167,7 +181,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
     }
 
     if (level === 3) {
-      if (sectionType === 'structural') return;
+      if (isStructuralHeading(heading) || currentH2IsStructural || sectionType === 'structural') return;
       if (sectionType !== 'steps') {
         addIssue(lineNumber, level, heading, '三级标题必须归属于一个一级标题（H1）。');
         return;
@@ -182,6 +196,9 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '三级标题应使用 Unicode 带圈阿拉伯数字，例如「### ① 检查运行状态」。');
       } else {
         const actual = parseCircledNumber(numbered[1]) ?? 0;
+        if (actual > 0 && hasLegacyNumberAfterCurrentPrefix(numbered[2], actual)) {
+          addIssue(lineNumber, level, heading, '三级标题内容仍残留旧编号，请删除重复编号。');
+        }
         if (actual !== expectedTertiary) {
           addIssue(lineNumber, level, heading, '当前二级标题下的三级标题应从「' + circleNumberForMessage(expectedTertiary) + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }
@@ -223,10 +240,38 @@ function chineseNumberForHeading(value: number): string | null {
 }
 
 function stripExistingHeadingNumber(heading: string): string {
-  return heading.replace(
-    /^(?:(?:\d+(?:\.\d+)*|[零〇一二三四五六七八九十百千万]+)[、.．-]\s*|(?:\d+(?:\.\d+)+)\s+|[①-⑳㉑-㉟㊱-㊿]\s*)/,
-    '',
-  ).trimStart();
+  let cleaned = heading.trimStart();
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const compound = cleaned.match(/^(\d+(?:\.\d+)+)[、.．-]?\s+/);
+    if (compound) {
+      cleaned = cleaned.slice(compound[0].length).trimStart();
+      continue;
+    }
+    const arabic = cleaned.match(/^(\d+)[、.．-]\s*/);
+    if (arabic) {
+      cleaned = cleaned.slice(arabic[0].length).trimStart();
+      const duplicate = cleaned.match(new RegExp('^' + arabic[1] + '(?:[、.．-]\\s*|\\s+)'));
+      if (duplicate) cleaned = cleaned.slice(duplicate[0].length).trimStart();
+      continue;
+    }
+    const chinese = cleaned.match(/^([零〇一二三四五六七八九十百千万]+)[、.．-]\s*/);
+    if (chinese) {
+      cleaned = cleaned.slice(chinese[0].length).trimStart();
+      continue;
+    }
+    const circled = cleaned.match(/^([①-⑳㉑-㉟㊱-㊿])\s+/);
+    if (circled) {
+      const number = parseCircledNumber(circled[1]);
+      cleaned = cleaned.slice(circled[0].length).trimStart();
+      if (number !== null) {
+        const duplicate = cleaned.match(new RegExp('^' + number + '(?:[、.．-]\\s*|\\s+)'));
+        if (duplicate) cleaned = cleaned.slice(duplicate[0].length).trimStart();
+      }
+      continue;
+    }
+    break;
+  }
+  return cleaned;
 }
 
 /**
@@ -296,6 +341,7 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
   let expectedTertiary = 1;
   let hasSeenH1 = false;
   let hasSeenH2 = false;
+  let currentH2IsStructural = false;
   let fixedCount = 0;
 
   for (let partIndex = 0; partIndex < parts.length; partIndex += 2) {
@@ -331,6 +377,7 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
       expectedSub = 1;
       expectedTertiary = 1;
       hasSeenH2 = false;
+      currentH2IsStructural = false;
 
       if (isStructuralHeading(cleanHeading)) {
         sectionType = 'structural';
@@ -350,14 +397,19 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
       expectedTertiary = 1;
       hasSeenH2 = true;
       if (isStructuralHeading(cleanHeading)) {
-        sectionType = 'structural';
+        currentH2IsStructural = true;
         nextHeading = cleanHeading;
-      } else if (sectionType === 'steps') {
-        nextHeading = expectedSub + '. ' + cleanHeading;
-        expectedSub += 1;
+      } else {
+        currentH2IsStructural = false;
+        if (sectionType === 'steps') {
+          nextHeading = expectedSub + '. ' + cleanHeading;
+          expectedSub += 1;
+        }
       }
     } else if (level === 3) {
-      if (sectionType === 'steps' && hasSeenH2 && expectedTertiary <= 50) {
+      if (isStructuralHeading(cleanHeading) || currentH2IsStructural) {
+        nextHeading = cleanHeading;
+      } else if (sectionType === 'steps' && hasSeenH2 && expectedTertiary <= 50) {
         const circled = circleNumberForMessage(expectedTertiary);
         nextHeading = circled + ' ' + cleanHeading;
         expectedTertiary += 1;
