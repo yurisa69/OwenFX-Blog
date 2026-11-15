@@ -4,8 +4,9 @@ import { authorizeContentEditor } from '@/lib/admin-api';
 import { articleMarkdownCacheTag, articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
+import { validateArticleWriteInput } from '@/lib/article-input';
+import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
 
-const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export async function GET() {
   const auth = await authorizeContentEditor();
@@ -21,15 +22,9 @@ export async function POST(req: Request) {
   const auth = await authorizeContentEditor();
   if ('response' in auth) return auth.response;
   const input = await req.json().catch(() => null);
-  const title = typeof input?.title === 'string' ? input.title.trim() : '';
-  const slug = typeof input?.slug === 'string' ? input.slug.trim() : '';
-  const content = typeof input?.content_markdown === 'string' ? input.content_markdown : '';
-  const excerpt = typeof input?.excerpt === 'string' ? input.excerpt.trim().slice(0, 300) : '';
-  const status = input?.status === 'published' ? 'published' : 'draft';
-  if (!title || title.length > 160) return NextResponse.json({ error: '标题不能为空且不能超过160字' }, { status: 400 });
-  if (!slugPattern.test(slug) || slug.length > 180) return NextResponse.json({ error: 'Slug 仅允许小写字母、数字和连字符' }, { status: 400 });
-  if (status === 'published' && !content.trim()) return NextResponse.json({ error: '发布前请先填写文章正文' }, { status: 400 });
-  if (content.length > 500000) return NextResponse.json({ error: '文章内容过大' }, { status: 413 });
+  const validation = validateArticleWriteInput(input, 'create');
+  if (!validation.ok) return NextResponse.json({ error: validation.error }, { status: validation.status });
+  const { title, slug, content, excerpt, status } = validation.value;
   const imageError = validateMarkdownImageUrls(content);
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
   const service = createServiceClient();
@@ -106,22 +101,11 @@ export async function POST(req: Request) {
       article_id: data.id, editor_id: auth.user.id, title, excerpt, content_markdown: '',
       github_path: path, github_sha: commitSha, content_hash: contentHash, sync_job_id: job.id,
     };
-    const { data: existingRevision, error: revisionLookupError } = await service.from('article_revisions')
-      .select('id').eq('sync_job_id', job.id).maybeSingle();
-    if (revisionLookupError) throw new Error(revisionLookupError.message);
-    const { error: revisionError } = existingRevision
-      ? await service.from('article_revisions').update(revisionValues).eq('id', existingRevision.id)
-      : await service.from('article_revisions').insert(revisionValues);
-    if (revisionError) throw new Error(`文章已保存，但版本索引写入失败：${revisionError.message}`);
-    const { data: existingAudit } = await service.from('audit_logs').select('id')
-      .eq('entity_type', 'article').eq('entity_id', data.id)
-      .contains('details', { sync_job_id: job.id }).maybeSingle();
-    if (!existingAudit) {
-      await service.from('audit_logs').insert({
-        actor_id: auth.user.id, action: status === 'published' ? 'article.publish' : 'article.create', entity_type: 'article', entity_id: data.id,
-        details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
-      });
-    }
+    await upsertArticleRevision(service, revisionValues);
+    await ensureArticleAuditLog(service, {
+      actor_id: auth.user.id, action: status === 'published' ? 'article.publish' : 'article.create', entity_type: 'article', entity_id: data.id,
+      details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
+    });
     await updateArticleSyncJob(service, job.id, lease.leaseToken, 'completed', { articleId: data.id, githubSha: commitSha });
     if (status === 'published') revalidateTag(articleMarkdownCacheTag(path), { expire: 0 });
     return NextResponse.json({ id: data.id, github_path: path, github_sha: commitSha, github_blob_sha: blobSha, sync_job_id: job.id }, { status: 201 });

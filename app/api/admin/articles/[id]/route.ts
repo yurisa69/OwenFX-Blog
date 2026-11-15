@@ -5,8 +5,9 @@ import { authorizeContentEditor } from '@/lib/admin-api';
 import { articleMarkdownCacheTag, articleMarkdownPath, deleteMarkdownFile, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, validateMarkdownImageUrls, writeMarkdownFile } from '@/lib/github-articles';
 import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
+import { validateArticleWriteInput } from '@/lib/article-input';
+import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
 
-const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorizeContentEditor();
@@ -28,18 +29,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if ('response' in auth) return auth.response;
   const { id } = await params;
   const input = await req.json().catch(() => null);
-  const title = typeof input?.title === 'string' ? input.title.trim() : '';
-  const slug = typeof input?.slug === 'string' ? input.slug.trim() : '';
-  const content = typeof input?.content_markdown === 'string' ? input.content_markdown : '';
-  const excerpt = typeof input?.excerpt === 'string' ? input.excerpt.trim().slice(0, 300) : '';
-  const status = input?.status === 'published' ? 'published' : 'draft';
-  const expectedBlobSha = typeof input?.github_blob_sha === 'string' && input.github_blob_sha.length > 0 ? input.github_blob_sha : null;
+  const validation = validateArticleWriteInput(input, 'update');
+  if (!validation.ok) return NextResponse.json({ error: validation.error }, { status: validation.status });
+  const { title, slug, content, excerpt, status, expectedBlobSha } = validation.value;
   const requestId = typeof input?.request_id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.request_id)
     ? input.request_id : randomUUID();
-  if (!expectedBlobSha) return NextResponse.json({ error: '编辑器缺少文章版本标识，请刷新页面后重试。' }, { status: 428 });
-  if (!title || title.length > 160 || !slugPattern.test(slug) || slug.length > 180) return NextResponse.json({ error: '请检查标题和 Slug 格式' }, { status: 400 });
-  if (status === 'published' && !content.trim()) return NextResponse.json({ error: '发布前请先填写文章正文' }, { status: 400 });
-  if (content.length > 500000) return NextResponse.json({ error: '文章内容过大' }, { status: 413 });
   const imageError = validateMarkdownImageUrls(content);
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
@@ -156,22 +150,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       article_id: id, editor_id: auth.user.id, title, excerpt, content_markdown: '',
       github_path: path, github_sha: commitSha, content_hash: contentHash, sync_job_id: job.id,
     };
-    const { data: existingRevision, error: revisionLookupError } = await service.from('article_revisions')
-      .select('id').eq('sync_job_id', job.id).maybeSingle();
-    if (revisionLookupError) throw new Error(revisionLookupError.message);
-    const { error: revisionError } = existingRevision
-      ? await service.from('article_revisions').update(revisionValues).eq('id', existingRevision.id)
-      : await service.from('article_revisions').insert(revisionValues);
-    if (revisionError) throw new Error(`文章已保存，但版本索引写入失败：${revisionError.message}`);
-    const { data: existingAudit } = await service.from('audit_logs').select('id')
-      .eq('entity_type', 'article').eq('entity_id', id)
-      .contains('details', { sync_job_id: job.id }).maybeSingle();
-    if (!existingAudit) {
-      await service.from('audit_logs').insert({
-        actor_id: auth.user.id, action: status === 'published' ? 'article.publish' : 'article.update', entity_type: 'article', entity_id: id,
-        details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
-      });
-    }
+    await upsertArticleRevision(service, revisionValues);
+    await ensureArticleAuditLog(service, {
+      actor_id: auth.user.id, action: status === 'published' ? 'article.publish' : 'article.update', entity_type: 'article', entity_id: id,
+      details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
+    });
     await updateArticleSyncJob(service, job.id, lease.leaseToken, 'completed', { articleId: id, githubSha: commitSha });
     revalidateTag(articleMarkdownCacheTag(path), { expire: 0 });
     if (previous.github_path !== path) revalidateTag(articleMarkdownCacheTag(previous.github_path), { expire: 0 });
