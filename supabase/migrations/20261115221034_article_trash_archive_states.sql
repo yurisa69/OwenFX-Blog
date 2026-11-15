@@ -8,7 +8,7 @@ ALTER TABLE public.articles
 
 ALTER TABLE public.articles
   ADD CONSTRAINT articles_status_check
-  CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'archived'::text, 'trashed'::text));
+  CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'archived'::text, 'trashed'::text]));
 
 ALTER TABLE public.articles
   ADD CONSTRAINT articles_archive_previous_status_check
