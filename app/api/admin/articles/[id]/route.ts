@@ -39,12 +39,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
   const { data: previous, error: readError } = await auth.supabase.from('articles')
-    .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at,author_id,category_id,status,updated_at,sync_job_id')
+    .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at,author_id,category_id,status,archive_previous_status,updated_at,sync_job_id')
     .eq('id', id).maybeSingle();
   if (readError || !previous) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   if (previous.status === 'trashed') return NextResponse.json({ error: '文章在回收站中，请先恢复后再编辑。' }, { status: 409 });
   if (!previous.github_path) return NextResponse.json({ error: '文章缺少 GitHub 正文路径，请先检查文章记录。' }, { status: 409 });
-  const numberingError = getArticleNumberingPublishError(status, content);
+  const nextStatus = previous.status === 'archived' ? 'archived' : status;
+  const numberingError = getArticleNumberingPublishError(nextStatus, content);
   if (numberingError) return NextResponse.json(numberingError, { status: 422 });
   const path = articleMarkdownPath(slug);
   const { data: duplicate } = await auth.supabase.from('articles').select('id').eq('slug', slug).neq('id', id).maybeSingle();
@@ -52,7 +53,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const service = createServiceClient();
   const contentHash = hashMarkdown(content);
-  const publishedAt = status === 'published' ? (previous.published_at || new Date().toISOString()) : null;
+  const publishedAt = nextStatus === 'published' ? (previous.published_at || new Date().toISOString())
+    : nextStatus === 'archived' ? previous.published_at : null;
   let job;
   let lease;
   let articleLockAcquired = false;
@@ -64,7 +66,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const baseIdempotencyKey = `admin:update:${id}:${previous.updated_at}:${expectedBlobSha}:${path}:${contentHash}`;
     const syncJobInput = {
       operation: 'update' as const, articleId: id, actorId: auth.user.id, targetPath: path, contentHash,
-      metadata: { title, slug, excerpt, status, editor_id: auth.user.id,
+      metadata: { title, slug, excerpt, status: nextStatus, editor_id: auth.user.id,
         published_at: publishedAt, base_github_sha: previous.github_sha, previous_path: previous.github_path,
         previous_blob_sha: expectedBlobSha, base_article_updated_at: previous.updated_at,
         base_article_sync_job_id: previous.sync_job_id, author_id: previous.author_id, category_id: previous.category_id },
@@ -137,9 +139,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     let articleUpdate = service.from('articles').update({
-      title, slug, excerpt, status, github_path: path, github_sha: commitSha,
+      title, slug, excerpt, status: nextStatus, github_path: path, github_sha: commitSha,
       content_hash: contentHash, published_at: publishedAt, updated_at: new Date().toISOString(),
-      archive_previous_status: null, deleted_at: null, trash_previous_status: null,
+      archive_previous_status: nextStatus === 'archived' ? previous.archive_previous_status : null,
+      deleted_at: null, trash_previous_status: null,
       sync_job_id: job.id,
     }).eq('id', id).eq('updated_at', previous.updated_at);
     articleUpdate = previous.sync_job_id
@@ -157,7 +160,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     };
     await upsertArticleRevision(service, revisionValues);
     await ensureArticleAuditLog(service, {
-      actor_id: auth.user.id, action: status === 'published' ? 'article.publish' : 'article.update', entity_type: 'article', entity_id: id,
+      actor_id: auth.user.id, action: nextStatus === 'published' ? 'article.publish' : 'article.update', entity_type: 'article', entity_id: id,
       details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
     });
     await updateArticleSyncJob(service, job.id, lease.leaseToken, 'completed', { articleId: id, githubSha: commitSha });
@@ -200,7 +203,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (readError || !article) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
 
   const now = new Date().toISOString();
-  let updateValues: Record<string, unknown> | null = null;
+  let updateValues: { status: string; archive_previous_status?: string | null; trash_previous_status?: string | null; deleted_at?: string | null; updated_at: string } | null = null;
   let auditAction = '';
 
   if (action === 'archive') {
@@ -219,7 +222,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     auditAction = 'article.restore_archive';
   } else if (action === 'restore_trash') {
     if (article.status !== 'trashed') return NextResponse.json({ error: '这篇文章不在回收站中。' }, { status: 409 });
-    const restoredStatus = ['draft', 'published', 'archived'].includes(article.trash_previous_status)
+    const restoredStatus = article.trash_previous_status === 'draft' || article.trash_previous_status === 'published' || article.trash_previous_status === 'archived'
       ? article.trash_previous_status : 'draft';
     updateValues = { status: restoredStatus, deleted_at: null, trash_previous_status: null, updated_at: now };
     auditAction = 'article.restore_trash';
