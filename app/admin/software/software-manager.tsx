@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import R2ImageUploader from '@/components/admin/R2ImageUploader';
 
 type LinkItem = { provider: string; label: string; share_url: string; access_code: string };
-type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; file_size: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; status: string; software_download_links?: LinkItem[] };
+type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; file_size: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; status: string; archive_previous_status?: string | null; trash_previous_status?: string | null; deleted_at?: string | null; software_download_links?: LinkItem[] };
 
 const emptyLink = (): LinkItem => ({ provider: 'quark', label: '夸克网盘', share_url: '', access_code: '' });
 const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'baidu', label: '百度网盘' }, { value: 'thunder', label: '迅雷网盘' }, { value: 'aliyun', label: '阿里云盘' }, { value: 'tianyi', label: '天翼云盘' }, { value: '123pan', label: '123云盘' }, { value: 'other', label: '其他' }];
@@ -51,12 +51,14 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
     setLinks(row.software_download_links?.length ? row.software_download_links : [emptyLink()]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  async function toggle(row: SoftwareRow) {
-    const status = row.status === 'published' ? 'draft' : 'published';
-    const response = await fetch('/api/admin/software/' + row.id, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ status }) });
+  async function manage(row: SoftwareRow, action: 'archive' | 'restore_archive' | 'restore_trash' | 'permanent_delete' | 'trash') {
+    const prompts = { archive: '确定归档这个软件吗？', restore_archive: '确定恢复归档软件吗？', restore_trash: '确定恢复这个软件吗？', permanent_delete: '确定永久删除这个软件吗？此操作不可恢复。', trash: '确定将这个软件移入回收站吗？' };
+    if (!window.confirm(prompts[action])) return;
+    const response = await fetch('/api/admin/software/' + row.id, { method: action === 'trash' ? 'DELETE' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action }) });
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) setError(body.error || '状态更新失败'); else await load();
+    if (!response.ok) setError(body.error || '软件状态更新失败'); else { setError(''); await load(); }
   }
+
 
   const totalCount = rows.length;
   const publishedCount = rows.filter(row => row.status === 'published').length;
@@ -66,6 +68,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
     { label: '软件总数', value: totalCount, hint: '全部软件资料' },
     { label: '已发布', value: publishedCount, hint: '公开展示的软件' },
     { label: '已归档', value: archivedCount, hint: '已归档的软件' },
+    { label: '回收站', value: rows.filter(row => row.status === 'trashed').length, hint: '已删除、可恢复的软件' },
     { label: '草稿箱', value: draftCount, hint: '尚未发布的软件' },
   ];
 
@@ -77,7 +80,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
       </div>
       <button type="button" className="admin-nav-link" onClick={() => { reset(); setFormOpen(true); }}>添加软件</button>
     </div>
-    <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+    <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
       {stats.map(stat => <div key={stat.label} className="admin-panel">
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{stat.label}</p>
         <p className="mt-3 text-3xl font-bold tabular-nums">{stat.value}</p>
@@ -119,12 +122,18 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
           {row.image_url ? <img src={row.image_url} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover" /> : <div className="h-10 w-10 shrink-0 rounded-xl" style={{ background: 'var(--bg-tertiary)' }} />}
           <div className="min-w-0">
             <p className="font-medium">{row.title}</p>
-            <p className="mt-1 text-xs opacity-60">{row.slug} · {row.status === 'published' ? '已发布' : '草稿'}</p>
+            <p className="mt-1 text-xs opacity-60">{row.slug} · {({ published: '已发布', draft: '草稿', archived: '已归档', trashed: '回收站' } as Record<string, string>)[row.status] || row.status}</p>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-start gap-2">
-          <button type="button" className="admin-nav-link !text-rose-400" onClick={() => edit(row)}>编辑</button>
-          <button type="button" className={`admin-nav-link ${row.status === 'published' ? '!text-red-500' : '!text-green-500'}`} onClick={() => void toggle(row)}>{row.status === 'published' ? '撤回为草稿' : '发布'}</button>
+          {row.status === 'trashed' ? <>
+            <button type="button" className="admin-nav-link !text-green-500" onClick={() => void manage(row, 'restore_trash')}>恢复</button>
+            <button type="button" className="admin-nav-link !text-red-500" onClick={() => void manage(row, 'permanent_delete')}>永久删除</button>
+          </> : <>
+            <button type="button" className="admin-nav-link !text-red-500" onClick={() => void manage(row, 'trash')}>删除</button>
+            {row.status === 'archived' ? <button type="button" className="admin-nav-link !text-green-500" onClick={() => void manage(row, 'restore_archive')}>恢复归档</button> : <button type="button" className="admin-nav-link !text-amber-400" onClick={() => void manage(row, 'archive')}>归档</button>}
+            <button type="button" className="admin-nav-link !text-rose-400" onClick={() => edit(row)}>编辑</button>
+          </>}
         </div>
       </div>)}
     </section>

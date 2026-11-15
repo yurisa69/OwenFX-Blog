@@ -35,3 +35,53 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
   return NextResponse.json({ ok: true });
 }
+
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await authorizeAdmin();
+  if ('response' in auth) return auth.response;
+  const { id } = await params;
+  const body = await req.json().catch(() => null);
+  const action = typeof body?.action === 'string' ? body.action : '';
+  const { data: item, error } = await auth.supabase.from('software').select('id,title,status,archive_previous_status,trash_previous_status').eq('id', id).maybeSingle();
+  if (error || !item) return NextResponse.json({ error: '软件不存在' }, { status: 404 });
+  const now = new Date().toISOString();
+  let values: Record<string, unknown> | null = null;
+  let auditAction = '';
+  if (action === 'archive') {
+    if (!['draft', 'published'].includes(item.status)) return NextResponse.json({ error: '只有草稿或已发布软件可以归档。' }, { status: 409 });
+    values = { status: 'archived', archive_previous_status: item.status, updated_at: now }; auditAction = 'software.archive';
+  } else if (action === 'restore_archive') {
+    if (item.status !== 'archived') return NextResponse.json({ error: '软件当前不在归档状态。' }, { status: 409 });
+    values = { status: item.archive_previous_status === 'published' ? 'published' : 'draft', archive_previous_status: null, updated_at: now }; auditAction = 'software.restore_archive';
+  } else if (action === 'restore_trash') {
+    if (item.status !== 'trashed') return NextResponse.json({ error: '软件不在回收站中。' }, { status: 409 });
+    values = { status: ['draft','published','archived'].includes(item.trash_previous_status || '') ? item.trash_previous_status : 'draft', trash_previous_status: null, deleted_at: null, updated_at: now }; auditAction = 'software.restore_trash';
+  } else if (action === 'permanent_delete') {
+    if (item.status !== 'trashed') return NextResponse.json({ error: '只能永久删除回收站中的软件。' }, { status: 409 });
+    const { count, error: reportError } = await auth.supabase.from('software_link_reports').select('id', { count: 'exact', head: true }).eq('software_id', id);
+    if (reportError) return NextResponse.json({ error: '无法确认下载链接举报记录，已停止删除。' }, { status: 500 });
+    if ((count || 0) > 0) return NextResponse.json({ error: '该软件存在下载链接举报记录。为保留举报数据，暂不能永久删除。' }, { status: 409 });
+    const { data: deleted, error: deleteError } = await auth.supabase.from('software').delete().eq('id', id).eq('status', 'trashed').select('id').maybeSingle();
+    if (deleteError || !deleted) return NextResponse.json({ error: '永久删除失败，请检查关联数据后重试。' }, { status: 409 });
+    await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: 'software.permanent_delete', entity_type: 'software', entity_id: id, details: { title: item.title } });
+    return NextResponse.json({ success: true });
+  } else return NextResponse.json({ error: '不支持的软件管理操作。' }, { status: 400 });
+  const { data: updated, error: updateError } = await auth.supabase.from('software').update(values).eq('id', id).eq('status', item.status).select('id').maybeSingle();
+  if (updateError || !updated) return NextResponse.json({ error: '软件状态更新失败，请刷新后重试。' }, { status: 409 });
+  await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: auditAction, entity_type: 'software', entity_id: id });
+  return NextResponse.json({ success: true });
+}
+
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await authorizeAdmin();
+  if ('response' in auth) return auth.response;
+  const { id } = await params;
+  const { data: item, error } = await auth.supabase.from('software').select('id,status').eq('id', id).maybeSingle();
+  if (error || !item) return NextResponse.json({ error: '软件不存在' }, { status: 404 });
+  if (item.status === 'trashed') return NextResponse.json({ error: '软件已经在回收站中。' }, { status: 409 });
+  const { data: updated, error: updateError } = await auth.supabase.from('software').update({ status: 'trashed', deleted_at: new Date().toISOString(), trash_previous_status: item.status, updated_at: new Date().toISOString() }).eq('id', id).eq('status', item.status).select('id').maybeSingle();
+  if (updateError || !updated) return NextResponse.json({ error: '移入回收站失败，请刷新后重试。' }, { status: 409 });
+  await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: 'software.trash', entity_type: 'software', entity_id: id });
+  return NextResponse.json({ success: true });
+}
