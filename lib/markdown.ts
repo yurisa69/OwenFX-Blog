@@ -23,6 +23,7 @@ type MarkdownNode = {
 type HtmlNode = {
   type: string;
   tagName?: string;
+  value?: string;
   properties?: Record<string, unknown>;
   children?: HtmlNode[];
 };
@@ -148,6 +149,33 @@ function rehypeWrapTables() {
   };
 }
 
+function rehypeWrapHeadingNumbers() {
+  return (tree: HtmlNode) => {
+    const visit = (node: HtmlNode) => {
+      if (node.type === 'element' && node.tagName === 'h3' && node.children?.length) {
+        const first = node.children[0];
+        if (first.type === 'text' && typeof first.value === 'string') {
+          const match = first.value.match(/^(\\d+)\\.\\s+(.*)$/s);
+          if (match) {
+            node.children = [
+              {
+                type: 'element',
+                tagName: 'span',
+                properties: { className: ['article-heading-number'] },
+                children: [{ type: 'text', value: match[1] }],
+              },
+              { type: 'text', value: match[2] },
+              ...node.children.slice(1),
+            ];
+          }
+        }
+      }
+      node.children?.forEach(visit);
+    };
+    visit(tree);
+  };
+}
+
 function rehypeAddCodeLanguageLabels() {
   return (tree: HtmlNode) => {
     const visit = (node: HtmlNode) => {
@@ -180,7 +208,7 @@ const markdownSanitizeSchema = {
     div: [...(defaultSchema.attributes?.div ?? []), ['className', 'article-table-wrap']],
     code: [['className', /^language-/, 'hljs']],
     pre: [['dataLanguage', /^[a-zA-Z0-9_+#.-]+$/]],
-    span: [['className', /^hljs-/]],
+    span: [['className', /^hljs-/, 'article-heading-number']],
     img: [
       ...(defaultSchema.attributes?.img ?? []),
       'alt',
@@ -200,6 +228,7 @@ const markdownProcessor = remark()
   .use(remarkOwenFxCompatibility)
   .use(remarkRehype)
   .use(rehypeWrapTables)
+  .use(rehypeWrapHeadingNumbers)
   .use(rehypeHighlight)
   .use(rehypeAddCodeLanguageLabels)
   .use(rehypeSanitize, markdownSanitizeSchema)

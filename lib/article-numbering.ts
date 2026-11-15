@@ -56,13 +56,16 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
   let sectionType: 'none' | 'steps' | 'structural' = 'none';
   let expectedMajor = 1;
   let expectedSub = 1;
+  let expectedTertiary = 1;
+  let hasSeenH1 = false;
+  let hasSeenH2 = false;
 
   const addIssue = (line: number, level: number, heading: string, message: string) => {
     issues.push({ line, level, heading, message });
   };
 
   lines.forEach((line, index) => {
-    const fence = line.match(/^\s{0,3}([\x60]{3,}|~{3,})/);
+    const fence = line.match(/^\s{0,3}([`]{3,}|~{3,})/);
     if (!inFence && fence) {
       inFence = true;
       fenceCharacter = fence[1][0];
@@ -70,7 +73,7 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
       return;
     }
     if (inFence) {
-      const closing = line.match(/^\s{0,3}([\x60]{3,}|~{3,})\s*$/);
+      const closing = line.match(/^\s{0,3}([`]{3,}|~{3,})\s*$/);
       if (closing && closing[1][0] === fenceCharacter && closing[1].length >= fenceLength) {
         inFence = false;
         fenceCharacter = '';
@@ -86,17 +89,30 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
     const heading = headingMatch[2].trim();
     const lineNumber = index + 1;
 
-    if (level === 2) {
+    if (level === 1) {
       expectedSub = 1;
+      expectedTertiary = 1;
+      hasSeenH2 = false;
+
       if (isStructuralHeading(heading)) {
         sectionType = 'structural';
+        hasSeenH1 = true;
         return;
       }
 
+      const numbered = heading.match(/^([零〇一二三四五六七八九十百千万]+)、\s*(.+)$/);
+      // The first unnumbered H1 is the article title. Subsequent H1 headings
+      // are major steps and must use Chinese numerals followed by a dunhao.
+      if (!numbered && !hasSeenH1) {
+        hasSeenH1 = true;
+        sectionType = 'none';
+        return;
+      }
+
+      hasSeenH1 = true;
       sectionType = 'steps';
-      const numbered = heading.match(/^([零〇一二三四五六七八九十百千万]+)\.\s+(.+)$/);
       if (!numbered) {
-        addIssue(lineNumber, level, heading, '一级大步骤应使用中文数字加英文句点，例如「一. 环境准备」。');
+        addIssue(lineNumber, level, heading, '一级大步骤应使用 H1 和中文数字加顿号，例如「# 一、环境准备」。');
       } else {
         const actual = parseChineseNumber(numbered[1]);
         if (actual !== expectedMajor) {
@@ -107,28 +123,58 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
       return;
     }
 
-    if (level === 3) {
-      if (sectionType === 'structural') return;
-      if (sectionType === 'none') {
-        addIssue(lineNumber, level, heading, '二级小步骤必须归属于一个一级大步骤。');
+    if (level === 2) {
+      expectedTertiary = 1;
+      hasSeenH2 = true;
+
+      if (isStructuralHeading(heading)) {
+        sectionType = 'structural';
+        return;
+      }
+      if (sectionType !== 'steps') {
+        addIssue(lineNumber, level, heading, '二级步骤必须归属于一个一级大步骤（H1）。');
         return;
       }
 
       const numbered = heading.match(/^(\d+)\.\s+(.+)$/);
       if (!numbered) {
-        addIssue(lineNumber, level, heading, '二级小步骤应使用阿拉伯数字加英文句点，例如「1. 检查环境」。');
+        addIssue(lineNumber, level, heading, '二级步骤应使用阿拉伯数字加英文句点，例如「## 1. 检查环境」。');
       } else {
         const actual = Number(numbered[1]);
         if (actual !== expectedSub) {
-          addIssue(lineNumber, level, heading, '当前一级大步骤下的小步骤应从「' + expectedSub + '」开始并连续递增，当前为「' + numbered[1] + '」。');
+          addIssue(lineNumber, level, heading, '当前一级大步骤下的二级标题应从「' + expectedSub + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }
       }
       expectedSub += 1;
       return;
     }
 
+    if (level === 3) {
+      if (sectionType === 'structural') return;
+      if (sectionType !== 'steps') {
+        addIssue(lineNumber, level, heading, '三级标题必须归属于一个一级大步骤（H1）。');
+        return;
+      }
+      if (!hasSeenH2) {
+        addIssue(lineNumber, level, heading, '三级标题必须归属于一个二级标题（H2）。');
+        return;
+      }
+
+      const numbered = heading.match(/^(\d+)\.\s+(.+)$/);
+      if (!numbered) {
+        addIssue(lineNumber, level, heading, '三级标题应使用阿拉伯数字编号，例如「### 1. 检查运行状态」。');
+      } else {
+        const actual = Number(numbered[1]);
+        if (actual !== expectedTertiary) {
+          addIssue(lineNumber, level, heading, '当前二级标题下的三级标题应从「' + expectedTertiary + '」开始并连续递增，当前为「' + numbered[1] + '」。');
+        }
+      }
+      expectedTertiary += 1;
+      return;
+    }
+
     if (level >= 4 && /^(?:\d+(?:\.\d+)+\s+|\d+[.、．]\s+|[零〇一二三四五六七八九十百千万]+[.、．]\s+)/.test(heading)) {
-      addIssue(lineNumber, level, heading, '三级及以下内容不要继续叠加数字编号层级，优先使用无序列表。');
+      addIssue(lineNumber, level, heading, '四级及以下内容不要继续叠加数字标题层级，优先使用无序列表。');
     }
   });
 
@@ -145,14 +191,13 @@ export function getArticleNumberingPublishError(status: string, markdown: string
   };
 }
 
-// The article numbering policy became effective when its first guideline commit
-// landed on main. Keep this timestamp in UTC to make historical checks stable.
-export const ARTICLE_NUMBERING_EFFECTIVE_AT = '2026-11-14T19:04:41.000Z';
+// The revised H1/H2/H3 hierarchy became effective with the updated guidelines
+// commit. Keep this timestamp in UTC so historical article checks remain stable.
+export const ARTICLE_NUMBERING_EFFECTIVE_AT = '2026-11-15T18:29:54.000Z';
 
 /**
- * Historical revisions created before the policy took effect may be restored
- * unchanged. Newer revisions, and revisions without a trustworthy timestamp,
- * continue through the normal publish validator.
+ * Historical revisions created before the revised hierarchy took effect may
+ * be restored unchanged. Newer revisions and unknown timestamps are validated.
  */
 export function getArticleNumberingRevisionRestoreError(
   status: string,
@@ -166,10 +211,9 @@ export function getArticleNumberingRevisionRestoreError(
   return getArticleNumberingPublishError(status, markdown);
 }
 
-
 /**
- * Returns true only for an article published before the numbering policy
- * became effective. Missing or invalid timestamps are never grandfathered.
+ * Returns true only for an article published before the revised hierarchy took
+ * effect. Missing or invalid timestamps are never grandfathered.
  */
 export function isHistoricalArticleBeforeNumberingPolicy(publishedAt: string | null | undefined) {
   const timestamp = publishedAt ? Date.parse(publishedAt) : Number.NaN;
