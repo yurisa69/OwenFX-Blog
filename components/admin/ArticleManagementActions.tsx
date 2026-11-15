@@ -45,7 +45,7 @@ export default function ArticleManagementActions({
   const restoreClass = buttonClass + ' !text-green-500';
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 sm:min-w-max sm:justify-end">
       {status === 'draft' || status === 'published' ? (
         <>
           <button type="button" className={deleteClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
