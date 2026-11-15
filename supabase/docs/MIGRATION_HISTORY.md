@@ -38,10 +38,8 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113092936` | `article_sync_locks_service_role_policy` | Add an explicit service-role-only RLS policy for the private lock table |
 | `20261114135410` | `remove_unused_categories` | Remove unused categories after checking references; applied to production |
 | `20261115221034` | `article_trash_archive_states` | Add explicit archive restoration and soft-delete/recycle-bin states; applied to production |
-| `20261115232549` | `software_trash_archive_states` | Add software archive restoration and recycle-bin states; applied to production |
-| `20261115234616` | `remove_software_link_reports` | Removed the retired report table and its constraints, indexes, policies, and grants from production; table contained zero rows |
 
-The production ledger also contains the software archive / recycle-bin migration and the forward-only removal of the retired software link-report feature. The report table contained zero rows when it was dropped. Its original creation and privilege migrations remain in this document as immutable historical records and must not be replayed. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the three newer article-sync migrations are tracked with the SQL applied to production.
+The production ledger now also contains the additive `20261115221034_article_trash_archive_states` migration. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the three newer article-sync migrations are tracked with the SQL applied to production.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 
@@ -88,3 +86,5 @@ The analytics table and its other records were retained. The separate `software_
 
 The production schema snapshot is stored in `supabase/schema/production-baseline.sql`; platform-specific dependencies are documented in `supabase/docs/PLATFORM_DEPENDENCIES.md`.
 
+- `20261116120000` `software_trash_archive_states`: adds software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time. Applied to production; existing software rows retained.
+- `20261115235048` `restore_software_link_reports`: restores the empty software-link report table, foreign keys, indexes, RLS policy, and original role grants after the rollback; applied to production.
