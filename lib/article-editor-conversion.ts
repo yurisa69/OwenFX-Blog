@@ -45,4 +45,78 @@ function walk(node: RichTextNodeLike, listDepth = 0): string {
   }
 
   if (tagName === 'TABLE') {
-    const rows = findDm®éÜj×
+    const rows = findDescendants(node, ['TR']).map(row =>
+      elementChildren(row)
+        .filter(cell => cell.tagName && ['TH', 'TD'].includes(cell.tagName.toUpperCase()))
+        .map(cell => textContent(cell).trim().replace(/\|/g, '\\|')),
+    );
+    if (!rows.length) return '';
+    const width = Math.max(...rows.map(row => row.length));
+    const normalized = rows.map(row => Array.from({ length: width }, (_, index) => row[index] || ''));
+    return [normalized[0], normalized[0].map(() => '---'), ...normalized.slice(1)]
+      .map(row => `| ${row.join(' | ')} |`).join('\n') + '\n\n';
+  }
+
+  if (tagName === 'UL' || tagName === 'OL') {
+    return elementChildren(node)
+      .filter(child => child.tagName?.toUpperCase() === 'LI')
+      .map(child => walk(child, listDepth))
+      .join('') + '\n';
+  }
+
+  if (tagName === 'LI') {
+    const parent = node.parentElement;
+    const parentTag = parent?.tagName?.toUpperCase();
+    const siblings = parent ? elementChildren(parent).filter(child => child.tagName?.toUpperCase() === 'LI') : [];
+    const number = siblings.indexOf(node) + 1;
+    const marker = parentTag === 'OL' ? `${number}. ` : '- ';
+    const children = childNodes(node);
+    const nestedLists = children.filter(child => ['UL', 'OL'].includes(child.tagName?.toUpperCase() || ''));
+    const inlineContent = children
+      .filter(child => !nestedLists.includes(child))
+      .map(child => walk(child, listDepth))
+      .join('')
+      .trim();
+    const nestedContent = nestedLists.map(child => walk(child, listDepth + 1).trimEnd()).filter(Boolean).join('\n');
+    return `${'  '.repeat(listDepth)}${marker}${inlineContent}${nestedContent ? `\n${nestedContent}` : ''}\n`;
+  }
+
+  if (tagName === 'PRE') {
+    return '\x60\x60\x60\n' + textContent(node) + '\n\x60\x60\x60\n\n';
+  }
+
+  const content = childNodes(node).map(child => walk(child, listDepth)).join('');
+  switch (tagName) {
+    case 'H1': return `# ${content}\n\n`;
+    case 'H2': return `## ${content}\n\n`;
+    case 'H3': return `### ${content}\n\n`;
+    case 'H4': return `#### ${content}\n\n`;
+    case 'H5': return `##### ${content}\n\n`;
+    case 'H6': return `###### ${content}\n\n`;
+    case 'STRONG':
+    case 'B': return `**${content}**`;
+    case 'EM':
+    case 'I': return `*${content}*`;
+    case 'CODE': return '`' + content + '`';
+    case 'BLOCKQUOTE':
+      return content.split('\n').filter(Boolean).map(line => `> ${line}`).join('\n') + '\n\n';
+    case 'BR': return '\n';
+    case 'HR': return '\n---\n\n';
+    case 'P':
+    case 'DIV': return `${content}\n\n`;
+    case 'A': {
+      const href = node.getAttribute?.('href') || '';
+      return /^(https?:\/\/|mailto:)/i.test(href) ? `[${content}](${href})` : content;
+    }
+    default: return content;
+  }
+}
+
+export function richTextNodesToMarkdown(nodes: ArrayLike<RichTextNodeLike>) {
+  return Array.from(nodes).map(node => walk(node)).join('').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+export function htmlToMarkdown(html: string) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return richTextNodesToMarkdown(doc.body.childNodes as unknown as ArrayLike<RichTextNodeLike>);
+}

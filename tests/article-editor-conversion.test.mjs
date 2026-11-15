@@ -47,4 +47,82 @@ test('converts bold, italic, inline code and links', () => {
     text(' '),
     element('a', [text('链接')], { href: 'https://example.com' }),
   ])];
-  assert.equm���jם
+  assert.equal(
+    richTextNodesToMarkdown(html),
+    '**粗体** *斜体* `const x = 1` [链接](https://example.com)',
+  );
+});
+
+test('converts nested unordered lists without flattening their hierarchy', () => {
+  const html = [element('ul', [
+    element('li', [
+      text('父项'),
+      element('ul', [
+        element('li', [
+          text('子项'),
+          element('ul', [element('li', [text('孙项')])]),
+        ]),
+      ]),
+    ]),
+  ])];
+  assert.equal(richTextNodesToMarkdown(html), '- 父项\n  - 子项\n    - 孙项');
+});
+
+test('converts ordered lists with stable item numbering', () => {
+  const html = [element('ol', [
+    element('li', [text('第一项')]),
+    element('li', [text('第二项')]),
+  ])];
+  assert.equal(richTextNodesToMarkdown(html), '1. 第一项\n2. 第二项');
+});
+
+test('converts tables and escapes pipe characters in cells', () => {
+  const html = [element('table', [
+    element('thead', [element('tr', [
+      element('th', [text('名称')]),
+      element('th', [text('说明')]),
+    ])]),
+    element('tbody', [element('tr', [
+      element('td', [text('A|B')]),
+      element('td', [text('内容')]),
+    ])]),
+  ])];
+  assert.equal(
+    richTextNodesToMarkdown(html),
+    '| 名称 | 说明 |\n| --- | --- |\n| A\\|B | 内容 |',
+  );
+});
+
+test('converts preformatted code blocks without losing their content', () => {
+  const html = [element('pre', [element('code', [text('mkdir -p /opt/app\ncd /opt/app')])])];
+  assert.equal(
+    richTextNodesToMarkdown(html),
+    '```\nmkdir -p /opt/app\ncd /opt/app\n```',
+  );
+});
+
+test('converts safe images and escapes closing brackets in alt text', () => {
+  const html = [element('p', [
+    element('img', [], { src: 'https://example.com/image.png', alt: '图]片' }),
+  ])];
+  assert.equal(richTextNodesToMarkdown(html), '![图\\]片](https://example.com/image.png)');
+});
+
+test('drops images with unsafe or non-http sources', () => {
+  const html = [element('p', [
+    element('img', [], { src: 'javascript:alert(1)', alt: '危险图片' }),
+  ])];
+  assert.equal(richTextNodesToMarkdown(html), '');
+});
+
+test('converts blockquotes, hard line breaks and horizontal rules', () => {
+  const html = [
+    element('blockquote', [element('p', [text('引用内容')])]),
+    element('p', [text('第一行'), element('br'), text('第二行')]),
+    element('hr'),
+  ];
+  assert.equal(
+    richTextNodesToMarkdown(html),
+    '> 引用内容\n\n第一行\n第二行\n\n---',
+  );
+});
