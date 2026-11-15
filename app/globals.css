@@ -38,6 +38,9 @@ body {
 a { color: inherit; text-decoration: none; }
 button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 
+/* Remove mouse-triggered focus outlines while preserving keyboard focus indicators. */
+:focus:not(:focus-visible) { outline: none; }
+
 .glass-nav {
   background: var(--bg-glass);
   -webkit-backdrop-filter: blur(24px);
