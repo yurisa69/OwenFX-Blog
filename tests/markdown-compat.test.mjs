@@ -62,3 +62,62 @@ test('keeps image sizing out of inline code', () => {
   assert.doesNotMatch(html, /<img/);
   assert.match(html, /=800x600/);
 });
+
+test('renders footnotes with working reference and return anchors', () => {
+  const html = markdownToHtml(['正文[^1]', '', '[^1]: 脚注内容'].join('\n'));
+  assert.match(html, /href="#user-content-fn-1"/);
+  assert.match(html, /id="user-content-fnref-1"/);
+  assert.match(html, /id="user-content-fn-1"/);
+  assert.match(html, /href="#user-content-fnref-1"/);
+  assert.match(html, /脚注内容/);
+});
+
+test('preserves nested unordered list structure', () => {
+  const html = markdownToHtml(['- 父项', '  - 子项', '    - 孙项'].join('\n'));
+  assert.match(html, /<li>父项\s*<ul>\s*<li>子项\s*<ul>\s*<li>孙项<\/li>/);
+});
+
+test('supports GFM bare URL and angle-bracket autolinks', () => {
+  const html = markdownToHtml('访问 https://example.com 或 <https://example.org>');
+  assert.match(html, /<a href="https:\/\/example\.com"/);
+  assert.match(html, /<a href="https:\/\/example\.org"/);
+  assert.match(html, /target="_blank"/);
+  assert.match(html, /rel="noopener noreferrer"/);
+});
+
+test('supports Setext heading levels', () => {
+  const html = markdownToHtml(['一级标题', '========', '', '二级标题', '--------'].join('\n'));
+  assert.match(html, /<h1>一级标题<\/h1>/);
+  assert.match(html, /<h2>二级标题<\/h2>/);
+});
+
+test('removes only the matching leading article title heading', () => {
+  const matching = markdownToHtml(['# 文章标题', '', '正文'].join('\n'), { articleTitle: '文章标题' });
+  assert.doesNotMatch(matching, /<h1>/);
+  assert.match(matching, /<p>正文<\/p>/);
+
+  const different = markdownToHtml(['# 其他标题', '', '正文'].join('\n'), { articleTitle: '文章标题' });
+  assert.match(different, /<h1>其他标题<\/h1>/);
+});
+
+test('removes supported download-link lines without removing surrounding content', () => {
+  const source = [
+    '正文保留',
+    '**官方下载** https://example.com/download',
+    '[下载](https://example.com/file.zip)',
+    '结尾保留',
+  ].join('\n');
+  const html = markdownToHtml(source, { removeDownloadLinks: true });
+  assert.match(html, /正文保留/);
+  assert.match(html, /结尾保留/);
+  assert.doesNotMatch(html, /example\.com/);
+});
+
+test('sanitizes unsafe image URLs while retaining safe image URLs', () => {
+  const unsafe = markdownToHtml('![危险图片](javascript:alert(1))');
+  assert.match(unsafe, /<img/);
+  assert.doesNotMatch(unsafe, /src=/i);
+
+  const safe = markdownToHtml('![安全图片](https://example.com/image.png)');
+  assert.match(safe, /src="https:\/\/example\.com\/image\.png"/);
+});
