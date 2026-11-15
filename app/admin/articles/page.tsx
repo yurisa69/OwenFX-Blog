@@ -161,7 +161,7 @@ export default async function AdminArticlesPage({
           data.map((article, index) => (
             <div
               key={article.id}
-              className="grid grid-cols-1 items-center gap-3 border-t py-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+              className="flex flex-wrap items-center justify-between gap-3 border-t py-3"
               style={{ borderColor: 'var(--border-color)' }}
             >
               <div className="flex min-w-0 items-center gap-3">
