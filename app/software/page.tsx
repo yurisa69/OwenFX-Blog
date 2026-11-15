@@ -19,16 +19,12 @@ export default async function SoftwarePage({ searchParams }: SoftwarePageProps) 
       .eq('kind', 'software').eq('active', true).eq('slug', categorySlug).maybeSingle()
     : { data: null };
 
-  let softwareQuery = supabase.from('software')
+  const softwareQuery = supabase.from('software')
     .select('id,title,slug,description,developer,version,platform,image_url,category:categories!software_category_id_fkey(name,slug),tags:software_tags(tag:tags(name))')
     .eq('status', 'published')
     .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
     .order('updated_at', { ascending: false })
     .limit(100);
-
-  if (selectedCategory) {
-    softwareQuery = softwareQuery.eq('category_id', selectedCategory.id);
-  }
 
   const { data } = await softwareQuery;
   const items = (data || []).map((item) => ({
