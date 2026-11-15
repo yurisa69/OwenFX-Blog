@@ -37,7 +37,7 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113092747` | `release_failed_article_sync_leases` | Release task leases on failed/conflict/completed transitions to allow immediate safe retry |
 | `20261113092936` | `article_sync_locks_service_role_policy` | Add an explicit service-role-only RLS policy for the private lock table |
 
-At the snapshot date, the production ledger contains 26 migration versions. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the three newer article-sync migrations are tracked with the SQL applied to production.
+The production ledger now also contains the additive `20261116120000_article_trash_archive_states` migration. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the three newer article-sync migrations are tracked with the SQL applied to production.
 
 The two comment moderation migrations dated 2026-11-13 add the spam / deleted comment states, server-only Akismet context, and per-user rate limiting. They are forward-only changes; existing comment rows are retained.
 

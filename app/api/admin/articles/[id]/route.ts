@@ -39,9 +39,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
   const { data: previous, error: readError } = await auth.supabase.from('articles')
-    .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at,author_id,category_id,updated_at,sync_job_id')
+    .select('id,title,excerpt,slug,github_path,github_sha,content_hash,published_at,author_id,category_id,status,updated_at,sync_job_id')
     .eq('id', id).maybeSingle();
   if (readError || !previous) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
+  if (previous.status === 'trashed') return NextResponse.json({ error: '文章在回收站中，请先恢复后再编辑。' }, { status: 409 });
   if (!previous.github_path) return NextResponse.json({ error: '文章缺少 GitHub 正文路径，请先检查文章记录。' }, { status: 409 });
   const numberingError = getArticleNumberingPublishError(status, content);
   if (numberingError) return NextResponse.json(numberingError, { status: 422 });
@@ -138,6 +139,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     let articleUpdate = service.from('articles').update({
       title, slug, excerpt, status, github_path: path, github_sha: commitSha,
       content_hash: contentHash, published_at: publishedAt, updated_at: new Date().toISOString(),
+      archive_previous_status: null, deleted_at: null, trash_previous_status: null,
       sync_job_id: job.id,
     }).eq('id', id).eq('updated_at', previous.updated_at);
     articleUpdate = previous.sync_job_id
@@ -183,15 +185,101 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
+
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await authorizeContentEditor();
+  if ('response' in auth) return auth.response;
+  const { id } = await params;
+  const input = await req.json().catch(() => null);
+  const action = typeof input?.action === 'string' ? input.action : '';
+  const service = createServiceClient();
+  const { data: article, error: readError } = await service.from('articles')
+    .select('id,title,status,github_path,content_hash,archive_previous_status,trash_previous_status')
+    .eq('id', id).maybeSingle();
+  if (readError || !article) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
+
+  const now = new Date().toISOString();
+  let updateValues: Record<string, unknown> | null = null;
+  let auditAction = '';
+
+  if (action === 'archive') {
+    if (article.status !== 'draft' && article.status !== 'published') {
+      return NextResponse.json({ error: '只有草稿或已发布文章可以归档。' }, { status: 409 });
+    }
+    updateValues = { status: 'archived', archive_previous_status: article.status, updated_at: now };
+    auditAction = 'article.archive';
+  } else if (action === 'restore_archive') {
+    if (article.status !== 'archived') return NextResponse.json({ error: '这篇文章当前不在归档状态。' }, { status: 409 });
+    updateValues = {
+      status: article.archive_previous_status === 'draft' ? 'draft' : 'published',
+      archive_previous_status: null,
+      updated_at: now,
+    };
+    auditAction = 'article.restore_archive';
+  } else if (action === 'restore_trash') {
+    if (article.status !== 'trashed') return NextResponse.json({ error: '这篇文章不在回收站中。' }, { status: 409 });
+    const restoredStatus = ['draft', 'published', 'archived'].includes(article.trash_previous_status)
+      ? article.trash_previous_status : 'draft';
+    updateValues = { status: restoredStatus, deleted_at: null, trash_previous_status: null, updated_at: now };
+    auditAction = 'article.restore_trash';
+  } else if (action === 'permanent_delete') {
+    if (article.status !== 'trashed') return NextResponse.json({ error: '只能永久删除回收站中的文章。' }, { status: 409 });
+    if (article.github_path) {
+      const currentFile = await readMarkdownFileFresh(article.github_path);
+      if (currentFile) {
+        if (article.content_hash && hashMarkdown(currentFile.content) !== article.content_hash) {
+          return NextResponse.json({ error: 'GitHub 中的文章正文已发生变化，为保护数据已停止永久删除。' }, { status: 409 });
+        }
+        await deleteMarkdownFile(article.github_path, currentFile.sha, 'Permanently delete article: ' + article.title);
+      }
+    }
+    const { data: deleted, error: deleteError } = await service.from('articles')
+      .delete().eq('id', id).eq('status', 'trashed').select('id').maybeSingle();
+    if (deleteError || !deleted) {
+      return NextResponse.json({ error: '文章数据库记录删除失败；GitHub 正文如已移除，历史提交仍保留，可检查后重试。' }, { status: 500 });
+    }
+    await service.from('media_assets').delete().eq('entity_type', 'article').eq('entity_id', id);
+    await service.from('audit_logs').insert({
+      actor_id: auth.user.id, action: 'article.permanent_delete', entity_type: 'article', entity_id: id,
+      details: { github_path: article.github_path, github_history_preserved: true },
+    });
+    if (article.github_path) revalidateTag(articleMarkdownCacheTag(article.github_path), { expire: 0 });
+    return NextResponse.json({ success: true });
+  } else {
+    return NextResponse.json({ error: '不支持的文章管理操作。' }, { status: 400 });
+  }
+
+  const { data: updated, error: updateError } = await service.from('articles')
+    .update(updateValues).eq('id', id).eq('status', article.status)
+    .select('id,github_path').maybeSingle();
+  if (updateError || !updated) return NextResponse.json({ error: '文章状态更新失败，请刷新后重试。' }, { status: 409 });
+  await service.from('audit_logs').insert({
+    actor_id: auth.user.id, action: auditAction, entity_type: 'article', entity_id: id,
+  });
+  if (updated.github_path) revalidateTag(articleMarkdownCacheTag(updated.github_path), { expire: 0 });
+  return NextResponse.json({ success: true });
+}
+
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorizeContentEditor();
   if ('response' in auth) return auth.response;
   const { id } = await params;
-  const { data: archived, error } = await auth.supabase.from('articles')
-    .update({ status: 'archived', updated_at: new Date().toISOString() })
-    .eq('id', id).select('github_path').maybeSingle();
-  if (error) return NextResponse.json({ error: '归档失败' }, { status: 400 });
-  await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: 'article.archive', entity_type: 'article', entity_id: id });
-  if (archived?.github_path) revalidateTag(articleMarkdownCacheTag(archived.github_path), { expire: 0 });
+  const service = createServiceClient();
+  const { data: article, error: readError } = await service.from('articles')
+    .select('id,status,github_path').eq('id', id).maybeSingle();
+  if (readError || !article) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
+  if (article.status === 'trashed') return NextResponse.json({ error: '文章已经在回收站中。' }, { status: 409 });
+  const { data: trashed, error } = await service.from('articles').update({
+    status: 'trashed',
+    deleted_at: new Date().toISOString(),
+    trash_previous_status: article.status,
+    updated_at: new Date().toISOString(),
+  }).eq('id', id).eq('status', article.status).select('id,github_path').maybeSingle();
+  if (error || !trashed) return NextResponse.json({ error: '移入回收站失败，请刷新后重试。' }, { status: 409 });
+  await service.from('audit_logs').insert({
+    actor_id: auth.user.id, action: 'article.trash', entity_type: 'article', entity_id: id,
+  });
+  if (trashed.github_path) revalidateTag(articleMarkdownCacheTag(trashed.github_path), { expire: 0 });
   return NextResponse.json({ success: true });
 }

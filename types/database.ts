@@ -121,6 +121,9 @@ export type Database = {
         category_id: string | null;
         author_id: string | null;
         status: string;
+        archive_previous_status: string | null;
+        trash_previous_status: string | null;
+        deleted_at: string | null;
         featured: boolean;
         seo_title: string | null;
         seo_description: string | null;

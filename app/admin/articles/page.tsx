@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import { requireContentEditor } from '@/lib/admin-auth';
 import { formatChineseDateLocal } from '@/lib/date';
+import ArticleManagementActions from '@/components/admin/ArticleManagementActions';
 
-type ArticleStatus = 'draft' | 'published' | 'archived';
+type ArticleStatus = 'draft' | 'published' | 'archived' | 'trashed';
 type ArticleFilter = 'all' | ArticleStatus;
 
 const statusLabels: Record<ArticleStatus, string> = {
   draft: '草稿',
   published: '已发布',
   archived: '已归档',
+  trashed: '回收站',
 };
 
 export default async function AdminArticlesPage({
@@ -20,7 +22,7 @@ export default async function AdminArticlesPage({
   const params = await searchParams;
   const requestedStatus = params.status;
   const activeFilter: ArticleFilter =
-    requestedStatus === 'draft' || requestedStatus === 'published' || requestedStatus === 'archived'
+    requestedStatus === 'draft' || requestedStatus === 'published' || requestedStatus === 'archived' || requestedStatus === 'trashed'
       ? requestedStatus
       : 'all';
 
@@ -29,11 +31,13 @@ export default async function AdminArticlesPage({
     { count: publishedCount, error: publishedError },
     { count: archivedCount, error: archivedError },
     { count: draftCount, error: draftError },
+    { count: trashCount, error: trashError },
   ] = await Promise.all([
     supabase.from('articles').select('*', { count: 'exact', head: true }),
     supabase.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'published'),
     supabase.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'archived'),
     supabase.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'trashed'),
   ]);
 
   let articlesQuery = supabase
@@ -73,9 +77,9 @@ export default async function AdminArticlesPage({
     {
       key: 'trash' as const,
       label: '回收站',
-      value: null,
-      hint: '暂未启用独立回收站',
-      href: null,
+      value: trashError ? null : trashCount,
+      hint: '已删除、可恢复的文章',
+      href: '/admin/articles?status=trashed',
     },
     {
       key: 'draft' as const,
@@ -92,7 +96,7 @@ export default async function AdminArticlesPage({
         <div>
           <h2 className="text-lg font-semibold">文章管理</h2>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>
-            查看文章状态，管理草稿、已发布和已归档内容。
+            管理文章发布、归档与回收站状态。
           </p>
         </div>
         <Link className="admin-nav-link" href="/admin/articles/new">
@@ -166,9 +170,7 @@ export default async function AdminArticlesPage({
                   {article.slug} · {statusLabels[article.status as ArticleStatus] ?? article.status} · {formatChineseDateLocal(article.updated_at)}
                 </p>
               </div>
-              <Link className="admin-nav-link" href={'/admin/articles/' + article.id}>
-                编辑
-              </Link>
+              <ArticleManagementActions articleId={article.id} status={article.status as ArticleStatus} />
             </div>
           ))
         )}
