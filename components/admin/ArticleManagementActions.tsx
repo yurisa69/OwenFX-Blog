@@ -45,7 +45,7 @@ export default function ArticleManagementActions({
   const restoreClass = buttonClass + ' !text-green-500';
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex flex-wrap items-center justify-start gap-2">
       {status === 'draft' || status === 'published' ? (
         <>
           <button type="button" className={deleteClass} disabled={busy} onClick={() => void run('trash', 'DELETE')}>删除</button>
@@ -69,7 +69,7 @@ export default function ArticleManagementActions({
         </>
       )}
       {busy && <span className="text-xs opacity-60">处理中…</span>}
-      {message && <span role="status" className="basis-full text-right text-xs" style={{ color: 'var(--danger)' }}>{message}</span>}
+      {message && <span role="status" className="basis-full text-left text-xs" style={{ color: 'var(--danger)' }}>{message}</span>}
     </div>
   );
 }

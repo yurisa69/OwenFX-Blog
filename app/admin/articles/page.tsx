@@ -161,7 +161,7 @@ export default async function AdminArticlesPage({
           data.map((article, index) => (
             <div
               key={article.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-t py-3"
+              className="border-t py-3"
               style={{ borderColor: 'var(--border-color)' }}
             >
               <div className="flex min-w-0 items-center gap-3">
@@ -179,7 +179,9 @@ export default async function AdminArticlesPage({
                   </p>
                 </div>
               </div>
-              <ArticleManagementActions articleId={article.id} status={article.status as ArticleStatus} />
+              <div className="mt-3">
+                <ArticleManagementActions articleId={article.id} status={article.status as ArticleStatus} />
+              </div>
             </div>
           ))
         )}
