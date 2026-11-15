@@ -25,7 +25,12 @@ export default async function CategoriesPage() {
       <h1 className="text-2xl font-bold mb-6">分类</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visibleCategories.map((category, index) => (
-          <Link key={category.id} href="/software" className="uiverse-card p-6 text-center" style={{ animationDelay: index * 80 + 'ms' }}>
+          <Link
+            key={category.id}
+            href={`/software?category=${encodeURIComponent(category.slug)}`}
+            className="uiverse-card p-6 text-center"
+            style={{ animationDelay: index * 80 + 'ms' }}
+          >
             <h2 className="text-lg font-semibold mb-1">{category.name}</h2>
             <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{category.count} 个软件</p>
           </Link>

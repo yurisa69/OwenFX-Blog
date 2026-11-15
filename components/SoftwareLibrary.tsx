@@ -25,8 +25,14 @@ const categoryColors: Record<string, string> = {
   'Windows软件': '#A855F7',
 };
 
-export default function SoftwareLibrary({ items }: { items: SoftwareItem[] }) {
-  const [activeCategory, setActiveCategory] = useState('全部');
+export default function SoftwareLibrary({
+  items,
+  initialCategory = '全部',
+}: {
+  items: SoftwareItem[];
+  initialCategory?: string;
+}) {
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const filteredItems = activeCategory === '全部'
     ? items
     : items.filter((item) => item.category?.name === activeCategory);
