@@ -88,9 +88,19 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
         <h2 className="font-semibold">软件列表</h2>
         <button type="button" className="uiverse-btn uiverse-btn-primary" onClick={() => { reset(); setFormOpen(true); }}>添加软件</button>
       </div>
-      {rows.length === 0 ? <p className="text-sm opacity-70">暂无软件条目</p> : rows.map(row => <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 border-t py-3">
-        <div className="flex items-center gap-3">{row.image_url ? <img src={row.image_url} alt="" className="h-10 w-10 rounded-xl object-cover" /> : <div className="h-10 w-10 rounded-xl" style={{ background: 'var(--bg-tertiary)' }} />}<div><p className="text-sm font-semibold">{row.title}</p><p className="text-xs opacity-60">{row.slug} · {row.status}</p></div></div>
-        <div className="flex gap-2"><button type="button" className="admin-nav-link" onClick={() => edit(row)}>编辑</button><button type="button" className="admin-nav-link" onClick={() => void toggle(row)}>{row.status === 'published' ? '撤回为草稿' : '发布'}</button></div>
+      {rows.length === 0 ? <p className="text-sm opacity-70">暂无软件条目</p> : rows.map((row, index) => <div key={row.id} className="border-t py-3" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="flex min-w-0 items-center gap-3">
+          <span aria-label={`第 ${index + 1} 个软件`} className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-md border px-2 text-xs font-semibold tabular-nums" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>{index + 1}</span>
+          {row.image_url ? <img src={row.image_url} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover" /> : <div className="h-10 w-10 shrink-0 rounded-xl" style={{ background: 'var(--bg-tertiary)' }} />}
+          <div className="min-w-0">
+            <p className="font-medium">{row.title}</p>
+            <p className="mt-1 text-xs opacity-60">{row.slug} · {row.status === 'published' ? '已发布' : '草稿'}</p>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-start gap-2">
+          <button type="button" className="admin-nav-link !text-rose-400" onClick={() => edit(row)}>编辑</button>
+          <button type="button" className={`admin-nav-link ${row.status === 'published' ? '!text-red-500' : '!text-green-500'}`} onClick={() => void toggle(row)}>{row.status === 'published' ? '撤回为草稿' : '发布'}</button>
+        </div>
       </div>)}
     </section>
   </div>;
