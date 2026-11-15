@@ -8,7 +8,7 @@ export async function GET() {
   const auth = await authorizeAdmin();
   if ('response' in auth) return auth.response;
   const { data, error } = await auth.supabase.from('software')
-    .select('id,title,slug,description,developer,version,file_size,platform,image_url,official_download_url,introduction_markdown,screenshots,status,software_download_links(id,provider,label,share_url,access_code)')
+    .select('id,title,slug,description,developer,version,file_size,platform,image_url,official_download_url,introduction_markdown,screenshots,status,archive_previous_status,trash_previous_status,deleted_at,software_download_links(id,provider,label,share_url,access_code)')
     .order('updated_at', { ascending: false }).limit(300);
   if (error) return NextResponse.json({ error: '软件列表读取失败，请确认数据库迁移已执行' }, { status: 500 });
   return NextResponse.json({ software: data ?? [] });

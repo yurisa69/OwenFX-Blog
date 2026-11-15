@@ -85,3 +85,5 @@ The analytics table and its other records were retained. The separate `software_
 - Existing production must continue to be changed only through reviewed, forward-only SQL migrations. Do not replay historical files against production.
 
 The production schema snapshot is stored in `supabase/schema/production-baseline.sql`; platform-specific dependencies are documented in `supabase/docs/PLATFORM_DEPENDENCIES.md`.
+
+- `20261116120000` `software_trash_archive_states`: adds software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time. Applied to production; existing software rows retained.

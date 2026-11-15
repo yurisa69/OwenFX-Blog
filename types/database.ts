@@ -242,6 +242,9 @@ export type Database = {
         file_size: string | null;
         platform: string | null;
         status: string;
+        archive_previous_status: string | null;
+        trash_previous_status: string | null;
+        deleted_at: string | null;
         featured: boolean;
         updated_at: string;
         created_at: string;
