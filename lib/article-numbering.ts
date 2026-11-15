@@ -230,12 +230,63 @@ function stripExistingHeadingNumber(heading: string): string {
 }
 
 /**
- * Repairs only recognizable numbering prefixes on H1-H3 headings.
- * It never changes heading levels, body text, code fences, or list structure.
- * Orphan headings and numbered H4+ headings remain for manual review.
+ * Detects the previous article layout: article title in H1, major sections in
+ * numbered H2, and nested sections in H3/H4. That layout is promoted one level
+ * so it matches the current H1/H2/H3 policy before numbering is normalized.
+ */
+function usesLegacyHeadingHierarchy(markdown: string): boolean {
+  const lines = markdown.split(/\r?\n/);
+  let inFence = false;
+  let fenceCharacter = '';
+  let fenceLength = 0;
+  let hasArticleTitle = false;
+  let hasNumberedH2 = false;
+  let hasNumberedH1Step = false;
+
+  for (const line of lines) {
+    const fence = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (!inFence && fence) {
+      inFence = true;
+      fenceCharacter = fence[1][0];
+      fenceLength = fence[1].length;
+      continue;
+    }
+    if (inFence) {
+      const closing = line.match(/^\s{0,3}(`{3,}|~{3,})\s*$/);
+      if (closing && closing[1][0] === fenceCharacter && closing[1].length >= fenceLength) {
+        inFence = false;
+        fenceCharacter = '';
+        fenceLength = 0;
+      }
+      continue;
+    }
+
+    const match = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (!match) continue;
+    const level = match[1].length;
+    const heading = stripExistingHeadingNumber(match[2].trim());
+    if (level === 1 && !isStructuralHeading(heading)) {
+      if (!hasArticleTitle && !/^(?:[零〇一二三四五六七八九十百千万]+)[、.．-]/.test(match[2].trim())) {
+        hasArticleTitle = true;
+      } else if (/^[零〇一二三四五六七八九十百千万]+、/.test(match[2].trim())) {
+        hasNumberedH1Step = true;
+      }
+    }
+    if (level === 2 && /^\d+(?:\.\d+)*[.、．-]?\s*\S/.test(match[2].trim())) {
+      hasNumberedH2 = true;
+    }
+  }
+
+  return hasArticleTitle && hasNumberedH2 && !hasNumberedH1Step;
+}
+
+/**
+ * Repairs article heading hierarchy and numbering when the legacy layout is
+ * unambiguous. It preserves body text, code fences, and list structure.
  */
 export function autoFixArticleNumbering(markdown: string): { markdown: string; fixedCount: number } {
   const parts = markdown.split(/(\r\n|\n)/);
+  const legacyHierarchy = usesLegacyHeadingHierarchy(markdown);
   let inFence = false;
   let fenceCharacter = '';
   let fenceLength = 0;
@@ -268,8 +319,9 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
 
     const rawHeading = line.match(/^(#{1,6}\s+)(.*?)(\s+#+\s*)?$/);
     if (!rawHeading) continue;
-    const level = rawHeading[1].trim().length;
-    if (level > 3) continue;
+    const originalLevel = rawHeading[1].trim().length;
+    if (originalLevel > (legacyHierarchy ? 4 : 3)) continue;
+    const level = legacyHierarchy && originalLevel >= 2 ? originalLevel - 1 : originalLevel;
 
     const originalHeading = rawHeading[2].trim();
     const cleanHeading = stripExistingHeadingNumber(originalHeading);
@@ -304,18 +356,17 @@ export function autoFixArticleNumbering(markdown: string): { markdown: string; f
         nextHeading = expectedSub + '. ' + cleanHeading;
         expectedSub += 1;
       }
-    } else if (sectionType === 'steps' && hasSeenH2 && expectedTertiary <= 50) {
-      const circled = expectedTertiary <= 20
-        ? String.fromCodePoint(0x245f + expectedTertiary)
-        : expectedTertiary <= 35
-          ? String.fromCodePoint(0x323c + expectedTertiary)
-          : String.fromCodePoint(0x328d + expectedTertiary);
-      nextHeading = circled + ' ' + cleanHeading;
-      expectedTertiary += 1;
+    } else if (level === 3) {
+      if (sectionType === 'steps' && hasSeenH2 && expectedTertiary <= 50) {
+        const circled = circleNumberForMessage(expectedTertiary);
+        nextHeading = circled + ' ' + cleanHeading;
+        expectedTertiary += 1;
+      }
     }
 
-    if (nextHeading !== originalHeading) {
-      parts[partIndex] = rawHeading[1] + nextHeading + (rawHeading[3] || '');
+    const nextPrefix = '#'.repeat(level) + ' ';
+    if (nextPrefix !== rawHeading[1] || nextHeading !== originalHeading) {
+      parts[partIndex] = nextPrefix + nextHeading + (rawHeading[3] || '');
       fixedCount += 1;
     }
   }

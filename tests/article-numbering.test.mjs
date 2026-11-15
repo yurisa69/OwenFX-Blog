@@ -317,3 +317,58 @@ test('auto-fix is idempotent and leaves orphan or H4 numbering issues for manual
   assert.equal(second.markdown, first.markdown);
   assert.equal(validateArticleNumbering(first.markdown).length, 2);
 });
+
+
+test('auto-fixes the legacy H2/H3 article hierarchy into current H1/H2/H3 rules', () => {
+  const source = [
+    '# Uptime Kuma 部署教程',
+    '',
+    '## 1. 项目与部署方案',
+    '正文内容保持不变。',
+    '### 本文部署结构',
+    '- 保留原列表。',
+    '## 2. 部署前检查',
+    '### 2.1 检查系统版本',
+    '### 2.2 检查 Docker',
+    '## 3. 常见问题排查',
+    '### 3.1 浏览器无法访问',
+    '### 3.2 服务状态异常',
+    '## 总结',
+    '### 官方资料',
+  ].join('\\n');
+  const result = autoFixArticleNumbering(source);
+  assert.equal(result.markdown, [
+    '# Uptime Kuma 部署教程',
+    '',
+    '# 一、项目与部署方案',
+    '正文内容保持不变。',
+    '## 1. 本文部署结构',
+    '- 保留原列表。',
+    '# 二、部署前检查',
+    '## 1. 检查系统版本',
+    '## 2. 检查 Docker',
+    '# 三、常见问题排查',
+    '## 1. 浏览器无法访问',
+    '## 2. 服务状态异常',
+    '# 总结',
+    '## 官方资料',
+  ].join('\\n'));
+  assert.deepEqual(validateArticleNumbering(result.markdown), []);
+  assert.ok(result.fixedCount >= 10);
+});
+
+test('legacy hierarchy conversion ignores fenced code blocks and is idempotent', () => {
+  const source = [
+    '# 文章标题',
+    '```markdown',
+    '## 1. 代码中的旧标题',
+    '```',
+    '## 1. 正式步骤',
+    '### 1.1 子步骤',
+  ].join('\\n');
+  const first = autoFixArticleNumbering(source);
+  const second = autoFixArticleNumbering(first.markdown);
+  assert.deepEqual(validateArticleNumbering(first.markdown), []);
+  assert.equal(second.markdown, first.markdown);
+  assert.equal(second.fixedCount, 0);
+});
