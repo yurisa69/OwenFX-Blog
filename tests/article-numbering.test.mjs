@@ -335,7 +335,7 @@ test('auto-fixes the legacy H2/H3 article hierarchy into current H1/H2/H3 rules'
     '### 3.2 服务状态异常',
     '## 总结',
     '### 官方资料',
-  ].join('\\n');
+  ].join('\n');
   const result = autoFixArticleNumbering(source);
   assert.equal(result.markdown, [
     '# Uptime Kuma 部署教程',
@@ -352,7 +352,7 @@ test('auto-fixes the legacy H2/H3 article hierarchy into current H1/H2/H3 rules'
     '## 2. 服务状态异常',
     '# 总结',
     '## 官方资料',
-  ].join('\\n'));
+  ].join('\n'));
   assert.deepEqual(validateArticleNumbering(result.markdown), []);
   assert.ok(result.fixedCount >= 10);
 });
@@ -365,7 +365,7 @@ test('legacy hierarchy conversion ignores fenced code blocks and is idempotent',
     '```',
     '## 1. 正式步骤',
     '### 1.1 子步骤',
-  ].join('\\n');
+  ].join('\n');
   const first = autoFixArticleNumbering(source);
   const second = autoFixArticleNumbering(first.markdown);
   assert.deepEqual(validateArticleNumbering(first.markdown), []);
