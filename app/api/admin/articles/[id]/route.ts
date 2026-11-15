@@ -7,7 +7,7 @@ import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquir
 import { createServiceClient } from '@/lib/supabase/service';
 import { validateArticleWriteInput } from '@/lib/article-input';
 import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
-import { getArticleNumberingPublishError } from '@/lib/article-numbering';
+import { getArticleNumberingUpdateError } from '@/lib/article-numbering';
 
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -35,8 +35,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { title, slug, content, excerpt, status, expectedBlobSha } = validation.value;
   const requestId = typeof input?.request_id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.request_id)
     ? input.request_id : randomUUID();
-  const numberingError = getArticleNumberingPublishError(status, content);
-  if (numberingError) return NextResponse.json(numberingError, { status: 422 });
   const imageError = validateMarkdownImageUrls(content);
   if (imageError) return NextResponse.json({ error: imageError }, { status: 422 });
 
@@ -45,6 +43,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .eq('id', id).maybeSingle();
   if (readError || !previous) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   if (!previous.github_path) return NextResponse.json({ error: '文章缺少 GitHub 正文路径，请先检查文章记录。' }, { status: 409 });
+  const numberingError = getArticleNumberingUpdateError(
+    status, content, previous.published_at, previous.content_hash, hashMarkdown(content),
+  );
+  if (numberingError) return NextResponse.json(numberingError, { status: 422 });
   const path = articleMarkdownPath(slug);
   const { data: duplicate } = await auth.supabase.from('articles').select('id').eq('slug', slug).neq('id', id).maybeSingle();
   if (duplicate) return NextResponse.json({ error: '这个 Slug 已被使用' }, { status: 409 });

@@ -165,3 +165,38 @@ export function getArticleNumberingRevisionRestoreError(
   if (Number.isFinite(createdAt) && createdAt < effectiveAt) return null;
   return getArticleNumberingPublishError(status, markdown);
 }
+
+
+/**
+ * Returns true only for an article published before the numbering policy
+ * became effective. Missing or invalid timestamps are never grandfathered.
+ */
+export function isHistoricalArticleBeforeNumberingPolicy(publishedAt: string | null | undefined) {
+  const timestamp = publishedAt ? Date.parse(publishedAt) : Number.NaN;
+  return Number.isFinite(timestamp) && timestamp < Date.parse(ARTICLE_NUMBERING_EFFECTIVE_AT);
+}
+
+export function getArticleNumberingEditorIssues(
+  markdown: string,
+  publishedAt: string | null | undefined,
+  originalMarkdown: string,
+) {
+  if (isHistoricalArticleBeforeNumberingPolicy(publishedAt) && markdown === originalMarkdown) return [];
+  return validateArticleNumbering(markdown);
+}
+
+export function getArticleNumberingUpdateError(
+  status: string,
+  markdown: string,
+  publishedAt: string | null | undefined,
+  previousContentHash: string | null | undefined,
+  currentContentHash: string,
+) {
+  if (status !== 'published') return null;
+  if (
+    isHistoricalArticleBeforeNumberingPolicy(publishedAt)
+    && previousContentHash
+    && previousContentHash === currentContentHash
+  ) return null;
+  return getArticleNumberingPublishError(status, markdown);
+}

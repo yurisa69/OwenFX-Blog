@@ -7,7 +7,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
   const { supabase } = await requireContentEditor();
   const { id } = await params;
   const { data } = await supabase.from('articles')
-    .select('id,title,slug,excerpt,status,github_path,github_sha,content_hash')
+    .select('id,title,slug,excerpt,status,github_path,github_sha,content_hash,published_at')
     .eq('id', id).maybeSingle();
   if (!data) notFound();
 

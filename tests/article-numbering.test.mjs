@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   ARTICLE_NUMBERING_EFFECTIVE_AT,
   getArticleNumberingPublishError,
+  getArticleNumberingEditorIssues,
+  getArticleNumberingUpdateError,
   getArticleNumberingRevisionRestoreError,
   validateArticleNumbering,
 } from '../lib/article-numbering.ts';
@@ -160,4 +162,32 @@ test('allows restoring a draft revision without numbering validation', () => {
 
 test('records the verified policy effective timestamp', () => {
   assert.equal(ARTICLE_NUMBERING_EFFECTIVE_AT, '2026-11-14T19:04:41.000Z');
+});
+
+
+test('hides numbering warnings for an unchanged pre-policy article in the editor', () => {
+  const legacy = '## 1. 项目与部署方案\\n\\n### 本文部署结构';
+  assert.deepEqual(getArticleNumberingEditorIssues(legacy, '2026-11-14T17:34:10Z', legacy), []);
+});
+
+test('shows numbering warnings after editing a pre-policy article body', () => {
+  const legacy = '## 1. 项目与部署方案';
+  assert.equal(getArticleNumberingEditorIssues(legacy + '\\n\\n新增内容', '2026-11-14T17:34:10Z', legacy).length, 1);
+});
+
+test('allows unchanged historical article republishing but validates changed content', () => {
+  const legacy = '## 1. 项目与部署方案';
+  assert.equal(getArticleNumberingUpdateError('published', legacy, '2026-11-14T17:34:10Z', 'same-hash', 'same-hash'), null);
+  assert.equal(getArticleNumberingUpdateError('published', legacy + '\\n修改', '2026-11-14T17:34:10Z', 'old-hash', 'new-hash').error, '文章编号不符合规范，请修正后再发布。');
+});
+
+test('always validates post-policy articles and does not grandfather unknown timestamps', () => {
+  const legacy = '## 1. 项目与部署方案';
+  for (const publishedAt of ['2026-11-14T19:04:41Z', null, 'invalid']) {
+    assert.equal(getArticleNumberingUpdateError('published', legacy, publishedAt, 'same-hash', 'same-hash').error, '文章编号不符合规范，请修正后再发布。');
+  }
+});
+
+test('draft updates do not run numbering publish validation', () => {
+  assert.equal(getArticleNumberingUpdateError('draft', '## 1. Draft', null, null, 'hash'), null);
 });
