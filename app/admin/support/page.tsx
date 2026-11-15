@@ -32,7 +32,6 @@ export default async function SupportPage() {
           >
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">{item.title}</h2>
-              <span aria-hidden="true" className="text-lg opacity-50 transition-transform group-hover:translate-x-1">→</span>
             </div>
             <p className="text-sm opacity-70">{item.description}</p>
             <p className="text-xs" style={{ color: 'var(--accent)' }}>进入设置</p>
