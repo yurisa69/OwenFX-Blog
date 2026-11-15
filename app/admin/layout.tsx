@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireContentEditor } from '@/lib/admin-auth';
+import AdminPointerHoverReset from '@/components/admin/AdminPointerHoverReset';
 
 const navGroups = [
   {
@@ -39,7 +40,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireContentEditor();
 
   return (
-    <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
+    <section className="admin-shell mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
+      <AdminPointerHoverReset />
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <aside className="admin-sidebar md:sticky md:top-24 md:flex md:w-[248px] md:shrink-0 md:flex-col md:self-start">
           <div className="admin-brand-header border-b px-5 py-5" style={{ borderColor: 'var(--border-color)' }}>
@@ -104,12 +106,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         @media(min-width:768px){.admin-brand-header{margin-left:-16px;margin-top:-16px;padding:0 0 20px 0}.admin-brand{transform:translate(10px,-26px) scale(1.2);transform-origin:left center}.admin-brand-owen{font-size:1.7em}.admin-brand-n{font-size:2.176em}.admin-brand-f{font-size:2.15em;top:.1em}.admin-brand-x{font-size:1em}.admin-brand-studio{font-size:1.22em;margin-left:.1em}}
         .admin-sidebar-link{display:flex;min-width:0;min-height:40px;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:8px 10px;color:var(--text-secondary);font-size:14px;transition:background .18s,border-color .18s,color .18s}
         .admin-sidebar-link:hover{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
+        html.admin-pointer-hover-suppressed .admin-sidebar-link:hover{border-color:transparent;background:transparent;color:var(--text-secondary)}
         .admin-write-article-btn{font-size:14px}
         .admin-sidebar-icon{display:inline-flex;width:20px;flex:0 0 20px;align-items:center;justify-content:center;font-size:15px;color:var(--text-tertiary)}
         .admin-sidebar-link-disabled{cursor:not-allowed;opacity:.58}.admin-sidebar nav>div>p{font-size:12px}.admin-sidebar-link-disabled>span:last-child{font-size:10.8px}
         .admin-sidebar-link-disabled:hover{border-color:transparent;background:transparent;color:var(--text-secondary)}
         .admin-nav-link{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--border-color);border-radius:9px;color:var(--text-secondary);font-size:13px;transition:color .18s,border-color .18s,background .18s}
         .admin-nav-link:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
+        html.admin-pointer-hover-suppressed .admin-nav-link:hover{border-color:var(--border-color);background:transparent}
         .admin-panel{border:1px solid var(--border-color);border-radius:14px;background:var(--bg-glass);padding:18px}
         @media(max-width:767px){.admin-sidebar nav{display:flex;flex-direction:column;gap:14px}.admin-sidebar nav>div{min-width:0}.admin-sidebar-link{min-height:42px;padding:8px}.admin-sidebar-link-disabled{font-size:14px}}
       `}</style>
