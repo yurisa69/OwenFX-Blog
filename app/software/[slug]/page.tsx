@@ -4,7 +4,6 @@ import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import TrackLink from '@/components/TrackLink';
-import SoftwareLinkReportButton from '@/components/SoftwareLinkReportButton';
 import SoftwareSupport from '@/components/SoftwareSupport';
 import ArticleContent from '@/components/ArticleContent';
 import { formatChineseDate } from '@/lib/date';
@@ -275,13 +274,13 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               </summary>
               <div className="relative left-[calc(-100%-0.75rem)] mt-3 grid w-[calc(200%+0.75rem)] grid-cols-4 items-start gap-x-3 gap-y-3 pt-1">
                 {quickProviders.map(({ key, label, link }) => link ? (
-                  <SoftwareLinkReportButton key={key} href={link.share_url} targetKey={key}
-                    softwareId={software.id} downloadLinkId={link.id}
+                  <TrackLink key={key} href={link.share_url} eventType="software_click" targetKey={key}
+                    softwareId={software.id}
                     className="flex w-full min-w-0 flex-col items-center gap-1 text-xs transition-opacity hover:opacity-80">
                     <ProviderIcon provider={key} />
                     <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
                     {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
-                  </SoftwareLinkReportButton>
+                  </TrackLink>
                 ) : (
                   <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
                     className="flex w-full min-w-0 flex-col items-center gap-1 text-xs">
@@ -293,11 +292,11 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
                 <div className="relative left-[calc(-100%-0.75rem)] mt-3 flex w-[calc(200%+0.75rem)] flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
                   {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
-                    <SoftwareLinkReportButton key={link.id} href={link.share_url} targetKey={link.provider}
-                      softwareId={software.id} downloadLinkId={link.id}
+                    <TrackLink key={link.id} href={link.share_url} eventType="software_click" targetKey={link.provider}
+                      softwareId={software.id}
                       className="text-xs font-medium text-[var(--accent)]">
                       {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
-                    </SoftwareLinkReportButton>
+                    </TrackLink>
                   ))}
                 </div>
               )}
