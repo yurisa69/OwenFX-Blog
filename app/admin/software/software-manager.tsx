@@ -58,7 +58,32 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
     if (!response.ok) setError(body.error || '状态更新失败'); else await load();
   }
 
+  const totalCount = rows.length;
+  const publishedCount = rows.filter(row => row.status === 'published').length;
+  const archivedCount = rows.filter(row => row.status === 'archived').length;
+  const draftCount = rows.filter(row => row.status === 'draft').length;
+  const stats = [
+    { label: '软件总数', value: totalCount, hint: '全部软件资料' },
+    { label: '已发布', value: publishedCount, hint: '公开展示的软件' },
+    { label: '已归档', value: archivedCount, hint: '已归档的软件' },
+    { label: '草稿箱', value: draftCount, hint: '尚未发布的软件' },
+  ];
+
   return <div className="space-y-5">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 className="text-lg font-semibold">软件库管理</h2>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>管理软件资料、官方图标、官方下载入口与第三方网盘链接。OwenFX 不托管安装包。</p>
+      </div>
+      <button type="button" className="admin-nav-link" onClick={() => { reset(); setFormOpen(true); }}>添加软件</button>
+    </div>
+    <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+      {stats.map(stat => <div key={stat.label} className="admin-panel">
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{stat.label}</p>
+        <p className="mt-3 text-3xl font-bold tabular-nums">{stat.value}</p>
+        <p className="mt-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>{stat.hint}</p>
+      </div>)}
+    </section>
     {formOpen && <form onSubmit={save} className="admin-panel grid gap-3 sm:grid-cols-2">
       <h2 className="sm:col-span-2 font-semibold">{editId ? '编辑软件' : '添加软件'}</h2>
       <input required className="rounded-lg border bg-transparent p-2" placeholder="软件名称" value={form.title} onChange={e => change('title', e.target.value)} />
@@ -86,7 +111,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
     <section className="admin-panel">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold">软件列表</h2>
-        <button type="button" className="uiverse-btn uiverse-btn-primary" onClick={() => { reset(); setFormOpen(true); }}>添加软件</button>
+        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>最多显示 300 个，按最近更新时间排序</p>
       </div>
       {rows.length === 0 ? <p className="text-sm opacity-70">暂无软件条目</p> : rows.map((row, index) => <div key={row.id} className="border-t py-3" style={{ borderColor: 'var(--border-color)' }}>
         <div className="flex min-w-0 items-center gap-3">
