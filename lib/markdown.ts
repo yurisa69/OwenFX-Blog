@@ -155,7 +155,7 @@ function rehypeWrapHeadingNumbers() {
       if (node.type === 'element' && node.tagName === 'h3' && node.children?.length) {
         const first = node.children[0];
         if (first.type === 'text' && typeof first.value === 'string') {
-          const match = first.value.match(/^(\\d+)\\.\\s+(.*)$/s);
+          const match = first.value.match(/^(\d+)\.\s+(.*)$/s);
           if (match) {
             node.children = [
               {

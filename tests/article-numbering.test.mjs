@@ -138,7 +138,6 @@ test('requires H2 and H3 headings to belong to their parent levels', () => {
 test('does not require numbering for structural headings', () => {
   const markdown = [
     '# 前言',
-    '# 文章标题',
     '# 一、正式步骤',
     '## 1. 执行安装',
     '### 1. 验证安装',

@@ -121,3 +121,17 @@ test('sanitizes unsafe image URLs while retaining safe image URLs', () => {
   const safe = markdownToHtml('![安全图片](https://example.com/image.png)');
   assert.match(safe, /src="https:\/\/example\.com\/image\.png"/);
 });
+
+test('renders H3 numeric prefixes as circular badge elements', () => {
+  const html = markdownToHtml([
+    '# 文章标题',
+    '',
+    '# 一、环境准备',
+    '',
+    '## 1. 检查服务器',
+    '',
+    '### 1. 查看系统状态',
+  ].join('\n'));
+  assert.match(html, /<h3><span class="article-heading-number">1<\/span> 查看系统状态<\/h3>/);
+  assert.doesNotMatch(html, /<h3>1\. 查看系统状态<\/h3>/);
+});
