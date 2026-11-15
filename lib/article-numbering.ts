@@ -64,11 +64,6 @@ function isStructuralHeading(heading: string) {
   return structuralHeadingPattern.test(heading.trim());
 }
 
-function hasLegacyNumberAfterCurrentPrefix(value: string): boolean {
-  const headingText = value.trimStart();
-  return /^(?:\d{1,3}(?:\.\d+)*(?:[、.．-]\s*|\s+)|[零〇一二三四五六七八九十百千万]+(?:[、.．-]\s*|\s+)|[①-⑳㉑-㉟㊱-㊿](?:[、.．-])?\s+|[（(【[]\d+[）)】\]]\s*)/.test(headingText);
-}
-
 export function validateArticleNumbering(markdown: string): ArticleNumberingIssue[] {
   const issues: ArticleNumberingIssue[] = [];
   const lines = markdown.split(/\r?\n/);
@@ -139,9 +134,6 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '一级标题应使用 H1 和中文数字加顿号，例如「# 一、环境准备」。');
       } else {
         const actual = parseChineseNumber(numbered[1]);
-        if (actual !== null && hasLegacyNumberAfterCurrentPrefix(numbered[2])) {
-          addIssue(lineNumber, level, heading, '一级标题内容仍残留旧编号，请删除重复编号。');
-        }
         if (actual !== expectedMajor) {
           addIssue(lineNumber, level, heading, '一级标题应按顺序编号为「' + expectedMajor + '」，当前为「' + numbered[1] + '」。');
         }
@@ -169,9 +161,6 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '二级标题应使用阿拉伯数字加英文句点，例如「## 1. 检查环境」。');
       } else {
         const actual = Number(numbered[1]);
-        if (hasLegacyNumberAfterCurrentPrefix(numbered[2])) {
-          addIssue(lineNumber, level, heading, '二级标题内容仍残留旧编号，请删除重复编号。');
-        }
         if (actual !== expectedSub) {
           addIssue(lineNumber, level, heading, '当前一级标题下的二级标题应从「' + expectedSub + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }
@@ -196,9 +185,6 @@ export function validateArticleNumbering(markdown: string): ArticleNumberingIssu
         addIssue(lineNumber, level, heading, '三级标题应使用 Unicode 带圈阿拉伯数字，例如「### ① 检查运行状态」。');
       } else {
         const actual = parseCircledNumber(numbered[1]) ?? 0;
-        if (actual > 0 && hasLegacyNumberAfterCurrentPrefix(numbered[2])) {
-          addIssue(lineNumber, level, heading, '三级标题内容仍残留旧编号，请删除重复编号。');
-        }
         if (actual !== expectedTertiary) {
           addIssue(lineNumber, level, heading, '当前二级标题下的三级标题应从「' + circleNumberForMessage(expectedTertiary) + '」开始并连续递增，当前为「' + numbered[1] + '」。');
         }

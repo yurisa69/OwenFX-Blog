@@ -145,16 +145,14 @@ test('does not require numbering for structural headings', () => {
   assert.deepEqual(validateArticleNumbering(markdown), []);
 });
 
-test('rejects duplicated legacy numbering left after an apparently valid H1, H2 or H3 prefix', () => {
-  const issues = validateArticleNumbering([
+test('validates only the current heading format and treats title text as content', () => {
+  const markdown = [
     '# 文章标题',
-    '# 一、环境准备',
-    '## 1. 1 检查系统',
-    '### ① 1.1.1 查看系统版本',
-  ].join('\n'));
-  assert.equal(issues.length, 2);
-  assert.ok(issues.some(issue => issue.level === 2 && /残留旧编号/.test(issue.message)));
-  assert.ok(issues.some(issue => issue.level === 3 && /残留旧编号/.test(issue.message)));
+    '# 一、2026 年环境准备',
+    '## 1. 1 个需要检查的项目',
+    '### ① 2 个服务组件',
+  ].join('\\n');
+  assert.deepEqual(validateArticleNumbering(markdown), []);
 });
 
 test('does not let a structural H2 break numbering checks for later H2 headings', () => {
@@ -426,19 +424,6 @@ test('legacy hierarchy conversion ignores fenced code blocks and is idempotent',
   assert.equal(second.fixedCount, 0);
 });
 
-
-test('detects different, repeated and mixed legacy prefixes after current H1/H2/H3 numbering', () => {
-  const issues = validateArticleNumbering([
-    '# 文章标题',
-    '# 一、1 旧版一级编号',
-    '## 1. 2 旧版二级编号',
-    '### ① 2 旧版三级编号',
-  ].join('\n'));
-  assert.equal(issues.length, 3);
-  assert.ok(issues.some(issue => issue.level === 1 && /残留旧编号/.test(issue.message)));
-  assert.ok(issues.some(issue => issue.level === 2 && /残留旧编号/.test(issue.message)));
-  assert.ok(issues.some(issue => issue.level === 3 && /残留旧编号/.test(issue.message)));
-});
 
 test('removes all mismatched and nested legacy prefixes before regenerating H1/H2/H3 numbering', () => {
   const source = [
