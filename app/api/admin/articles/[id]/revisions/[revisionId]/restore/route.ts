@@ -4,7 +4,7 @@ import { authorizeContentEditor } from '@/lib/admin-api';
 import { articleMarkdownCacheTag, articleMarkdownPath, hashMarkdown, readLatestMarkdownCommitSha, readMarkdownFileFresh, writeMarkdownFile } from '@/lib/github-articles';
 import { createArticleSyncJob, claimArticleSyncJob, updateArticleSyncJob, acquireArticleSyncLock, releaseArticleSyncLock } from '@/lib/article-sync';
 import { createServiceClient } from '@/lib/supabase/service';
-import { getArticleNumberingPublishError } from '@/lib/article-numbering';
+import { getArticleNumberingRevisionRestoreError } from '@/lib/article-numbering';
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string; revisionId: string }> }) {
   const auth = await authorizeContentEditor();
@@ -15,7 +15,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     .eq('id', id).maybeSingle();
   if (!article) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
   const { data: revision } = await auth.supabase.from('article_revisions')
-    .select('id,title,excerpt,github_path,github_sha,content_hash')
+    .select('id,title,excerpt,github_path,github_sha,content_hash,created_at')
     .eq('id', revisionId).eq('article_id', id).maybeSingle();
   if (!revision?.github_path || !revision.github_sha) {
     return NextResponse.json({ error: '该历史版本没有可恢复的 GitHub 文件引用' }, { status: 422 });
@@ -24,7 +24,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   try { historical = await readMarkdownFileFresh(revision.github_path, revision.github_sha); }
   catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : '读取历史版本失败' }, { status: 502 }); }
   if (!historical) return NextResponse.json({ error: 'GitHub 中找不到该历史版本文件' }, { status: 404 });
-  const numberingError = getArticleNumberingPublishError(article.status, historical.content);
+  const numberingError = getArticleNumberingRevisionRestoreError(article.status, historical.content, revision.created_at);
   if (numberingError) return NextResponse.json(numberingError, { status: 422 });
 
   const path = articleMarkdownPath(article.slug);

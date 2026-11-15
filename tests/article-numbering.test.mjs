@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getArticleNumberingPublishError, validateArticleNumbering } from '../lib/article-numbering.ts';
+import {
+  ARTICLE_NUMBERING_EFFECTIVE_AT,
+  getArticleNumberingPublishError,
+  getArticleNumberingRevisionRestoreError,
+  validateArticleNumbering,
+} from '../lib/article-numbering.ts';
 
 test('accepts Chinese major steps and Arabic substeps that reset per section', () => {
   const markdown = [
@@ -125,4 +130,34 @@ test('rejects publishing with a structured list of numbering issues', () => {
   assert.equal(result.error, '文章编号不符合规范，请修正后再发布。');
   assert.equal(result.issues.length, 1);
   assert.equal(result.issues[0].line, 1);
+});
+
+test('allows restoring a non-compliant revision created before the policy took effect', () => {
+  assert.equal(
+    getArticleNumberingRevisionRestoreError('published', '## 1. 历史大步骤', '2026-11-14T17:34:10Z'),
+    null,
+  );
+});
+
+test('enforces numbering when restoring a revision created after the policy took effect', () => {
+  const result = getArticleNumberingRevisionRestoreError('published', '## 1. 新版大步骤', '2026-11-14T19:04:41Z');
+  assert.equal(result.error, '文章编号不符合规范，请修正后再发布。');
+});
+
+test('enforces numbering when a revision timestamp is missing or invalid', () => {
+  for (const createdAt of [null, undefined, 'not-a-date']) {
+    const result = getArticleNumberingRevisionRestoreError('published', '## 1. 无法确认时间的版本', createdAt);
+    assert.equal(result.error, '文章编号不符合规范，请修正后再发布。');
+  }
+});
+
+test('allows restoring a draft revision without numbering validation', () => {
+  assert.equal(
+    getArticleNumberingRevisionRestoreError('draft', '## 1. 草稿章节', '2026-11-15T00:00:00Z'),
+    null,
+  );
+});
+
+test('records the verified policy effective timestamp', () => {
+  assert.equal(ARTICLE_NUMBERING_EFFECTIVE_AT, '2026-11-14T19:04:41.000Z');
 });

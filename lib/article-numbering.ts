@@ -144,3 +144,24 @@ export function getArticleNumberingPublishError(status: string, markdown: string
     issues,
   };
 }
+
+// The article numbering policy became effective when its first guideline commit
+// landed on main. Keep this timestamp in UTC to make historical checks stable.
+export const ARTICLE_NUMBERING_EFFECTIVE_AT = '2026-11-14T19:04:41.000Z';
+
+/**
+ * Historical revisions created before the policy took effect may be restored
+ * unchanged. Newer revisions, and revisions without a trustworthy timestamp,
+ * continue through the normal publish validator.
+ */
+export function getArticleNumberingRevisionRestoreError(
+  status: string,
+  markdown: string,
+  revisionCreatedAt: string | null | undefined,
+) {
+  if (status !== 'published') return null;
+  const createdAt = revisionCreatedAt ? Date.parse(revisionCreatedAt) : Number.NaN;
+  const effectiveAt = Date.parse(ARTICLE_NUMBERING_EFFECTIVE_AT);
+  if (Number.isFinite(createdAt) && createdAt < effectiveAt) return null;
+  return getArticleNumberingPublishError(status, markdown);
+}
