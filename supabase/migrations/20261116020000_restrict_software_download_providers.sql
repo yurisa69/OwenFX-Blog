@@ -12,7 +12,7 @@ BEGIN
   IF NOT public.is_owenfx_admin() THEN RAISE EXCEPTION 'Administrator permission required'; END IF;
   IF jsonb_typeof(p_links) IS DISTINCT FROM 'array' THEN RAISE EXCEPTION 'Links must be a JSON array'; END IF;
   IF EXISTS (
-    SELECT 1 FROM jsonb_array_elements(p_links) AS item
+    SELECT 1 FROM jsonb_array_elements(p_links) AS items(item)
     WHERE item->>'provider' NOT IN ('uc', 'quark', 'baidu', 'thunder')
        OR COALESCE(item->>'share_url', '') !~* '^https://'
   ) THEN RAISE EXCEPTION 'Unsupported provider or invalid HTTPS share URL'; END IF;
@@ -24,5 +24,6 @@ BEGIN
   FROM jsonb_array_elements(p_links) WITH ORDINALITY AS links(item, ordinality);
 END;
 $function$;
+REVOKE ALL ON FUNCTION public.replace_software_download_links(uuid, jsonb) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.replace_software_download_links(uuid, jsonb) TO authenticated;
 COMMIT;

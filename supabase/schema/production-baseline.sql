@@ -1018,6 +1018,32 @@ GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE pub
 -- GRANT: service_role.tags
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.tags TO service_role;
 
+-- FUNCTION: public.replace_software_download_links
+CREATE OR REPLACE FUNCTION public.replace_software_download_links(p_software_id uuid, p_links jsonb)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public
+AS $function$
+BEGIN
+  IF NOT public.is_owenfx_admin() THEN RAISE EXCEPTION 'Administrator permission required'; END IF;
+  IF jsonb_typeof(p_links) IS DISTINCT FROM 'array' THEN RAISE EXCEPTION 'Links must be a JSON array'; END IF;
+  IF EXISTS (
+    SELECT 1 FROM jsonb_array_elements(p_links) AS items(item)
+    WHERE COALESCE(item->>'provider', '') NOT IN ('uc', 'quark', 'baidu', 'thunder')
+       OR COALESCE(item->>'share_url', '') !~* '^https://'
+  ) THEN RAISE EXCEPTION 'Unsupported provider or invalid HTTPS share URL'; END IF;
+  DELETE FROM public.software_download_links WHERE software_id = p_software_id;
+  INSERT INTO public.software_download_links (software_id, provider, label, share_url, access_code, sort_order, active)
+  SELECT p_software_id, item->>'provider', LEFT(COALESCE(NULLIF(item->>'label', ''), '网盘下载'), 80),
+    item->>'share_url', NULLIF(LEFT(COALESCE(item->>'access_code', ''), 32), ''),
+    (ordinality - 1)::integer, true
+  FROM jsonb_array_elements(p_links) WITH ORDINALITY AS links(item, ordinality);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.replace_software_download_links(uuid, jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.replace_software_download_links(uuid, jsonb) TO authenticated;
+
 -- PLATFORM DEPENDENCY: database-wide DDL event trigger.
 -- This project-owned trigger invokes public.rls_auto_enable() after DDL commands.
 -- It is included as a verified dependency, although event triggers are not
