@@ -37,7 +37,7 @@ export default function SoftwareLinkFeedbackButton({
     String(Children.toArray(item.props.children)[0] ?? '').includes('提取码')
   );
   const linkChildren = codeElement ? childItems.filter(item => item !== codeElement) : childItems;
-  const accessCode = codeElement && isValidElement(codeElement)
+  const accessCode = codeElement && isValidElement<{ children?: ReactNode }>(codeElement)
     ? String(Children.toArray(codeElement.props.children).at(-1) ?? '').trim()
     : '';
 
