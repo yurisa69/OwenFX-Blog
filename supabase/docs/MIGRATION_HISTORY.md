@@ -84,7 +84,7 @@ The analytics table and its other records were retained. The separate `software_
 - Do not run a full migration replay against a new project until a separately reviewed bootstrap procedure covers the baseline, Auth dependencies, event triggers, extensions, grants, RLS, and external services.
 - Existing production must continue to be changed only through reviewed, forward-only SQL migrations. Do not replay historical files against production.
 
-- `20261116020000` `restrict_software_download_providers`: limits software download links to UC, Quark, Baidu and Thunder; adds an admin-only atomic link replacement RPC. Existing download-link table retained.
+- `20261116005317` `restrict_software_download_providers`: limits software download links to UC, Quark, Baidu and Thunder; adds an admin-only atomic link replacement RPC. Existing download-link table retained.
 
 The production schema snapshot is stored in `supabase/schema/production-baseline.sql`; platform-specific dependencies are documented in `supabase/docs/PLATFORM_DEPENDENCIES.md`.
 
