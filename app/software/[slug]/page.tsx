@@ -19,17 +19,6 @@ const categoryColors: Record<string, string> = {
   'Windows软件': '#A855F7',
 };
 
-const providerNames: Record<string, string> = {
-  uc: 'UC网盘',
-  quark: '夸克网盘',
-  baidu: '百度网盘',
-  thunder: '迅雷网盘',
-  aliyun: '阿里云盘',
-  tianyi: '天翼云盘',
-  '123pan': '123云盘',
-  other: '其他网盘',
-};
-
 function formatPlatforms(platform: string | null) {
   if (!platform) return [];
   return [...new Set(platform
@@ -166,7 +155,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
     .filter(Boolean));
   const platforms = formatPlatforms(software.platform);
   const links = [...(software.software_download_links || [])]
-    .filter((link: { active?: boolean }) => link.active !== false)
+    .filter((link: { active?: boolean; provider: string }) => link.active !== false && ['uc', 'quark', 'baidu', 'thunder'].includes(link.provider))
     .sort((a, b) => a.sort_order - b.sort_order);
   const quickProviders = [
     { key: 'uc', label: 'UC' },
@@ -283,24 +272,14 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
                     {link.access_code && <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>提取码 {link.access_code}</span>}
                   </SoftwareLinkFeedbackButton>
                 ) : (
-                  <div key={key} aria-disabled="true" title={providerNames[key] + '暂未添加链接'}
+                  <div key={key} aria-disabled="true" title={label + '暂未添加链接'}
                     className="flex w-full min-w-0 flex-col items-center gap-1 text-xs">
                     <ProviderIcon provider={key} />
                     <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
                   </div>
                 ))}
               </div>
-              {links.some((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)) && (
-                <div className="relative left-[calc(-100%-0.75rem)] mt-3 flex w-[calc(200%+0.75rem)] flex-wrap gap-x-4 gap-y-2 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
-                  {links.filter((link: { provider: string }) => !['uc', 'quark', 'baidu', 'thunder'].includes(link.provider)).map(link => (
-                    <SoftwareLinkFeedbackButton key={link.id} href={link.share_url} targetKey={link.provider}
-                      softwareId={software.id} downloadLinkId={link.id}
-                      className="text-xs font-medium text-[var(--accent)]">
-                      {providerNames[link.provider] || link.provider}{link.access_code ? ' · 提取码 ' + link.access_code : ''}
-                    </SoftwareLinkFeedbackButton>
-                  ))}
-                </div>
-              )}
+
             </details>
             {!software.official_download_url && links.length === 0 && <p className="col-span-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>官方下载入口暂未添加。</p>}
           </div>

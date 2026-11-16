@@ -430,7 +430,7 @@ ALTER TABLE public.software ADD CONSTRAINT software_status_check CHECK (status =
 ALTER TABLE public.software_download_links ADD CONSTRAINT software_download_links_pkey PRIMARY KEY (id);
 
 -- CONSTRAINT: public.software_download_links.software_download_links_provider_check
-ALTER TABLE public.software_download_links ADD CONSTRAINT software_download_links_provider_check CHECK (provider = ANY (ARRAY['baidu'::text, 'quark'::text, 'aliyun'::text, 'tianyi'::text, '123pan'::text, 'other'::text]));
+ALTER TABLE public.software_download_links ADD CONSTRAINT software_download_links_provider_check CHECK (provider = ANY (ARRAY['uc'::text, 'quark'::text, 'baidu'::text, 'thunder'::text]));
 
 -- CONSTRAINT: public.software_download_links.software_download_links_software_id_fkey
 ALTER TABLE public.software_download_links ADD CONSTRAINT software_download_links_software_id_fkey FOREIGN KEY (software_id) REFERENCES software(id) ON DELETE CASCADE;

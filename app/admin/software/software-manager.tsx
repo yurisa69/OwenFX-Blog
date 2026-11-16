@@ -7,7 +7,7 @@ type LinkItem = { provider: string; label: string; share_url: string; access_cod
 type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; file_size: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; status: string; archive_previous_status?: string | null; trash_previous_status?: string | null; deleted_at?: string | null; software_download_links?: LinkItem[] };
 
 const emptyLink = (): LinkItem => ({ provider: 'quark', label: '夸克网盘', share_url: '', access_code: '' });
-const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'baidu', label: '百度网盘' }, { value: 'thunder', label: '迅雷网盘' }, { value: 'aliyun', label: '阿里云盘' }, { value: 'tianyi', label: '天翼云盘' }, { value: '123pan', label: '123云盘' }, { value: 'other', label: '其他' }];
+const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'baidu', label: '百度网盘' }, { value: 'thunder', label: '迅雷网盘' }];
 
 export default function SoftwareManager({ initialCreate = false }: { initialCreate?: boolean }) {
   const [rows, setRows] = useState<SoftwareRow[]>([]);

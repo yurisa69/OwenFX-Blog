@@ -336,6 +336,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      replace_software_download_links: {
+        Args: { p_software_id: string; p_links: Json };
+        Returns: undefined;
+      };
       is_owenfx_content_editor: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
