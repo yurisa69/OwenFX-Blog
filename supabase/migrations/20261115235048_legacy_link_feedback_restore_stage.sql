@@ -1,0 +1,5 @@
+-- Retired historical migration stage.
+-- The current software link feedback schema is created by
+-- 20261116002611_create_clean_software_link_feedbacks.sql.
+-- This placeholder intentionally performs no schema changes.
+-- Historical migration version is retained for migration-ledger continuity.

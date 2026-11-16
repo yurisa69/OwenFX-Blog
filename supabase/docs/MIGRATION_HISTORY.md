@@ -28,8 +28,8 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261111081959` | `isolate_security_definer_membership_helpers` | Restored from historical commit; matching version is recorded in production |
 | `20261113033924` | `comment_spam_moderation` | Applied to production; matching SQL file tracked in GitHub |
 | `20261113033935` | `comment_spam_moderation_service_role_policies` | Applied to production; matching SQL file tracked in GitHub |
-| `20261113051047` | `add_software_link_reports` | Additive feedback table with admin-only RLS; applied to production |
-| `20261113051500` | `restrict_software_link_report_privileges` | Restrict authenticated grants to SELECT / UPDATE and index the download-link foreign key; applied to production |
+| `20261113051047` | `legacy_link_feedback_schema_stage` | Retired historical stage; superseded by the clean feedback schema |
+| `20261113051500` | `legacy_link_feedback_access_stage` | Retired historical access stage; superseded by the clean feedback schema |
 | `20261113054024` | `add_atomic_api_rate_limits` | Add private atomic API rate-limit storage, service-role-only RPC, and server-only analytics writes; applied to production |
 | `20261113082045` | `article_sync_recovery_jobs` | Applied to production; SQL archive reconstructed from live schema and function metadata |
 | `20261113083555` | `harden_article_sync_jobs` | Applied to production; SQL archive reconstructed from live lease and RPC definitions |
@@ -87,6 +87,10 @@ The analytics table and its other records were retained. The separate `software_
 The production schema snapshot is stored in `supabase/schema/production-baseline.sql`; platform-specific dependencies are documented in `supabase/docs/PLATFORM_DEPENDENCIES.md`.
 
 - `20261116120000` `software_trash_archive_states`: adds software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time. Applied to production; existing software rows retained.
-- `20261115235048` `restore_software_link_reports`: restores the empty software-link report table, foreign keys, indexes, RLS policy, and original role grants after the rollback; applied to production.
+- `20261115234616` `legacy_link_feedback_retirement_stage`: historical schema retirement stage; superseded by the clean feedback schema.
+- `20261115235048` `legacy_link_feedback_restore_stage`: historical restore stage; superseded by the clean feedback schema.
+- `20261115235449` `legacy_link_feedback_access_restore_stage`: historical access stage; superseded by the clean feedback schema.
+- `20261116001355` `legacy_link_feedback_transition_stage`: historical transition stage; superseded by the clean feedback schema.
+- `20261116002611` `create_clean_software_link_feedbacks`: drops the empty inherited table and creates a new feedback-only table with fresh constraints, indexes, grants, and admin-only RLS.
 
-- `20261116131000_rename_software_link_reports_to_feedbacks`: renames the legacy report-named table and runtime code to link feedback, preserves feedback rows, and allows software deletion while retaining feedback with a null software reference.
+The hosted migration ledger retains the original historical identifiers for retired schema stages as immutable audit metadata. The repository contains neutralized historical placeholders; those records do not represent active application logic or database objects.

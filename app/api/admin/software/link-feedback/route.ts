@@ -38,5 +38,5 @@ export async function PATCH(request: Request) {
     entity_id: id,
     details: { status },
   });
-  return NextResponse.json({ report: data });
+  return NextResponse.json({ feedback: data });
 }
