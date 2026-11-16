@@ -7,11 +7,11 @@ export async function GET() {
   const auth = await authorizeAdmin();
   if ('response' in auth) return auth.response;
 
-  const { data, error } = await auth.supabase.from('software_link_reports')
-    .select('id,software_id,download_link_id,software_title,provider,share_url,reason,details,reporter_id,status,admin_note,created_at,updated_at')
+  const { data, error } = await auth.supabase.from('software_link_feedbacks')
+    .select('id,software_id,download_link_id,software_title,provider,share_url,reason,details,user_id,status,admin_note,created_at,updated_at')
     .order('created_at', { ascending: false }).limit(500);
   if (error) return NextResponse.json({ error: '失效反馈列表读取失败。' }, { status: 500 });
-  return NextResponse.json({ reports: data || [] });
+  return NextResponse.json({ feedback: data || [] });
 }
 
 export async function PATCH(request: Request) {
@@ -25,7 +25,7 @@ export async function PATCH(request: Request) {
   if (!id || !statuses.includes(status)) return NextResponse.json({ error: '反馈编号或状态无效。' }, { status: 400 });
   if (adminNote.length > 500) return NextResponse.json({ error: '管理员备注最多 500 字。' }, { status: 400 });
 
-  const { data, error } = await auth.supabase.from('software_link_reports')
+  const { data, error } = await auth.supabase.from('software_link_feedbacks')
     .update({ status, admin_note: adminNote || null, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select('id,status,admin_note,updated_at').maybeSingle();
@@ -33,8 +33,8 @@ export async function PATCH(request: Request) {
 
   await auth.supabase.from('audit_logs').insert({
     actor_id: auth.user.id,
-    action: 'software_link_report.update',
-    entity_type: 'software_link_report',
+    action: 'software_link_feedback.update',
+    entity_type: 'software_link_feedback',
     entity_id: id,
     details: { status },
   });

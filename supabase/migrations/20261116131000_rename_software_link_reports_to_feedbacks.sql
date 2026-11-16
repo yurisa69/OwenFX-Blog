@@ -1,0 +1,24 @@
+-- Rename legacy report-named storage to explicit software link feedback.
+-- Preserve feedback rows and remove the software-delete restriction without cascading data loss.
+BEGIN;
+ALTER TABLE public.software_link_reports RENAME TO software_link_feedbacks;
+ALTER TABLE public.software_link_feedbacks RENAME COLUMN reporter_id TO user_id;
+ALTER TABLE public.software_link_feedbacks ALTER COLUMN software_id DROP NOT NULL;
+ALTER TABLE public.software_link_feedbacks DROP CONSTRAINT software_link_reports_software_id_fkey;
+ALTER TABLE public.software_link_feedbacks
+  ADD CONSTRAINT software_link_feedbacks_software_id_fkey
+  FOREIGN KEY (software_id) REFERENCES public.software(id) ON DELETE SET NULL;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_pkey TO software_link_feedbacks_pkey;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_download_link_id_fkey TO software_link_feedbacks_download_link_id_fkey;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_reporter_id_fkey TO software_link_feedbacks_user_id_fkey;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_admin_note_check TO software_link_feedbacks_admin_note_check;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_details_check TO software_link_feedbacks_details_check;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_reason_check TO software_link_feedbacks_reason_check;
+ALTER TABLE public.software_link_feedbacks RENAME CONSTRAINT software_link_reports_status_check TO software_link_feedbacks_status_check;
+ALTER INDEX public.software_link_reports_status_created_idx RENAME TO software_link_feedbacks_status_created_idx;
+ALTER INDEX public.software_link_reports_reporter_created_idx RENAME TO software_link_feedbacks_user_created_idx;
+ALTER INDEX public.software_link_reports_software_created_idx RENAME TO software_link_feedbacks_software_created_idx;
+ALTER INDEX public.software_link_reports_download_link_idx RENAME TO software_link_feedbacks_download_link_idx;
+ALTER POLICY "Admins manage software link reports"
+  ON public.software_link_feedbacks RENAME TO "Admins manage software link feedback";
+COMMIT;

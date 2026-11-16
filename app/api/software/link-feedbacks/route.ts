@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     .eq('software_id', softwareId).eq('active', true).maybeSingle();
   if (linkError || !link) return NextResponse.json({ error: '该下载链接不存在或已停用。' }, { status: 404 });
 
-  const bucketKey = createRateLimitBucketKey('software-link-report', user.id);
+  const bucketKey = createRateLimitBucketKey('software-link-feedback', user.id);
   const { data: withinLimit, error: rateError } = await service.rpc('consume_api_rate_limit', {
     p_bucket_key: bucketKey,
     p_limit: 5,
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const { error: insertError } = await service.from('software_link_reports').insert({
+  const { error: insertError } = await service.from('software_link_feedbacks').insert({
     software_id: software.id,
     download_link_id: link.id,
     software_title: software.title,
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     share_url: link.share_url,
     reason,
     details: details || null,
-    reporter_id: user.id,
+    user_id: user.id,
   });
   if (insertError) return NextResponse.json({ error: '反馈提交失败，请稍后重试。' }, { status: 500 });
 

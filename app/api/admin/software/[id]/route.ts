@@ -59,9 +59,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     values = { status: ['draft','published','archived'].includes(item.trash_previous_status || '') ? item.trash_previous_status : 'draft', trash_previous_status: null, deleted_at: null, updated_at: now }; auditAction = 'software.restore_trash';
   } else if (action === 'permanent_delete') {
     if (item.status !== 'trashed') return NextResponse.json({ error: '只能永久删除回收站中的软件。' }, { status: 409 });
-    const { count, error: reportError } = await auth.supabase.from('software_link_reports').select('id', { count: 'exact', head: true }).eq('software_id', id);
-    if (reportError) return NextResponse.json({ error: '无法确认下载链接举报记录，已停止删除。' }, { status: 500 });
-    if ((count || 0) > 0) return NextResponse.json({ error: '该软件存在下载链接举报记录。为保留举报数据，暂不能永久删除。' }, { status: 409 });
     const { data: deleted, error: deleteError } = await auth.supabase.from('software').delete().eq('id', id).eq('status', 'trashed').select('id').maybeSingle();
     if (deleteError || !deleted) return NextResponse.json({ error: '永久删除失败，请检查关联数据后重试。' }, { status: 409 });
     await auth.supabase.from('audit_logs').insert({ actor_id: auth.user.id, action: 'software.permanent_delete', entity_type: 'software', entity_id: id, details: { title: item.title } });

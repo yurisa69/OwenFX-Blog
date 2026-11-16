@@ -11,7 +11,7 @@ const reasons = [
   { value: 'other', label: '其他问题' },
 ];
 
-export default function SoftwareLinkReportButton({
+export default function SoftwareLinkFeedbackButton({
   href, targetKey, softwareId, downloadLinkId, className, children,
 }: {
   href: string;
@@ -34,7 +34,7 @@ export default function SoftwareLinkReportButton({
     setMessage('');
     setLoginRequired(false);
     try {
-      const response = await fetch('/api/software/link-reports', {
+      const response = await fetch('/api/software/link-feedbacks', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ softwareId, downloadLinkId, reason, details }),
@@ -67,11 +67,11 @@ export default function SoftwareLinkReportButton({
       {open && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
           onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="link-report-title"
+          <section role="dialog" aria-modal="true" aria-labelledby="link-feedback-title"
             className="w-full max-w-md rounded-2xl border p-5 shadow-2xl"
             style={{ background: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 id="link-report-title" className="font-semibold">反馈网盘链接问题</h2>
+              <h2 id="link-feedback-title" className="font-semibold">反馈网盘链接问题</h2>
               <button type="button" onClick={() => setOpen(false)} aria-label="关闭" className="text-xl opacity-60">×</button>
             </div>
             <form onSubmit={submit} className="space-y-3">

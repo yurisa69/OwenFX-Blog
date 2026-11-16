@@ -272,23 +272,23 @@ export type Database = {
         Relationship<'software_download_links_software_id_fkey', 'software_id', 'software', 'id'>,
       ]>;
 
-      software_link_reports: Table<{
+      software_link_feedbacks: Table<{
         id: string;
-        software_id: string;
+        software_id: string | null;
         download_link_id: string | null;
         software_title: string;
         provider: string;
         share_url: string;
         reason: string;
         details: string | null;
-        reporter_id: string | null;
+        user_id: string | null;
         status: string;
         admin_note: string | null;
         created_at: string;
         updated_at: string;
-      }, 'software_id' | 'software_title' | 'provider' | 'share_url' | 'reason', [
-        Relationship<'software_link_reports_software_id_fkey', 'software_id', 'software', 'id'>,
-        Relationship<'software_link_reports_download_link_id_fkey', 'download_link_id', 'software_download_links', 'id'>,
+      }, 'software_title' | 'provider' | 'share_url' | 'reason', [
+        Relationship<'software_link_feedbacks_software_id_fkey', 'software_id', 'software', 'id'>,
+        Relationship<'software_link_feedbacks_download_link_id_fkey', 'download_link_id', 'software_download_links', 'id'>,
       ]>;
 
       software_tags: Table<{

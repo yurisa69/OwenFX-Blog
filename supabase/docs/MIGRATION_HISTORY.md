@@ -88,3 +88,5 @@ The production schema snapshot is stored in `supabase/schema/production-baseline
 
 - `20261116120000` `software_trash_archive_states`: adds software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time. Applied to production; existing software rows retained.
 - `20261115235048` `restore_software_link_reports`: restores the empty software-link report table, foreign keys, indexes, RLS policy, and original role grants after the rollback; applied to production.
+
+- `20261116131000_rename_software_link_reports_to_feedbacks`: renames the legacy report-named table and runtime code to link feedback, preserves feedback rows, and allows software deletion while retaining feedback with a null software reference.
