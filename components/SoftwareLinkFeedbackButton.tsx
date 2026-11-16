@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { Children, isValidElement, useState, type FormEvent, type ReactNode } from 'react';
 import TrackLink from '@/components/TrackLink';
 
 const reasons = [
@@ -27,6 +27,29 @@ export default function SoftwareLinkFeedbackButton({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [loginRequired, setLoginRequired] = useState(false);
+  const [copyMessage, setCopyMessage] = useState('');
+
+  // The detail page passes the access-code label as the final span child.
+  // Keep it outside the share link so copying never triggers navigation.
+  const childItems = Children.toArray(children);
+  const codeElement = [...childItems].reverse().find(item =>
+    isValidElement(item) && item.type === 'span' &&
+    String(Children.toArray(item.props.children)[0] ?? '').includes('提取码')
+  );
+  const linkChildren = codeElement ? childItems.filter(item => item !== codeElement) : childItems;
+  const accessCode = codeElement && isValidElement(codeElement)
+    ? String(Children.toArray(codeElement.props.children).at(-1) ?? '').trim()
+    : '';
+
+  async function copyAccessCode() {
+    if (!accessCode) return;
+    try {
+      await navigator.clipboard.writeText(accessCode);
+      setCopyMessage('已复制');
+    } catch {
+      setCopyMessage('复制失败，请手动复制');
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +82,16 @@ export default function SoftwareLinkFeedbackButton({
   return (
     <div className="flex flex-col items-center gap-1">
       <TrackLink href={href} eventType="software_click" targetKey={targetKey}
-        softwareId={softwareId} className={className}>{children}</TrackLink>
+        softwareId={softwareId} className={className}>{linkChildren}</TrackLink>
+      {accessCode && (
+        <button type="button" onClick={() => void copyAccessCode()}
+          className="text-center text-[10px] leading-5 transition hover:text-[var(--accent)]"
+          style={{ color: 'var(--text-tertiary)' }}
+          aria-label={`复制提取码 ${accessCode}`}>
+          <span>提取码 {accessCode}</span>
+          {copyMessage && <span className="ml-1">{copyMessage}</span>}
+        </button>
+      )}
       <button type="button" onClick={() => { setOpen(true); setMessage(''); }}
         className="text-[10px] opacity-55 transition hover:opacity-100 hover:text-[var(--accent)]">
         反馈失效
