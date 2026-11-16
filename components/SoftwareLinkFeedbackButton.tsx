@@ -33,7 +33,7 @@ export default function SoftwareLinkFeedbackButton({
   // Keep it outside the share link so copying never triggers navigation.
   const childItems = Children.toArray(children);
   const codeElement = [...childItems].reverse().find(item =>
-    isValidElement(item) && item.type === 'span' &&
+    isValidElement<{ children?: ReactNode }>(item) && item.type === 'span' &&
     String(Children.toArray(item.props.children)[0] ?? '').includes('提取码')
   );
   const linkChildren = codeElement ? childItems.filter(item => item !== codeElement) : childItems;
