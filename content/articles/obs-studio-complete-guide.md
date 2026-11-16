@@ -17,6 +17,15 @@ OBS Studio 是一款免费、开源、跨平台的视频录制与直播软件。
 ### ① 从官方渠道下载
 
 OBS Studio 官方下载地址：
+
+[OBS Studio 官方下载](https://obsproject.com/download)
+
+根据操作系统选择 Windows、macOS 或 Linux 版本。不要从不明软件下载站获取安装包，也不要为了“解锁功能”安装来历不明的修改版。
+
+截至本文编写时，OBS 官方发布页已列出 OBS Studio 33.0.1。版本更新可能改变界面、插件兼容性和部分功能，安装时以官方发布页显示的最新稳定版为准：
+
+[OBS Studio 官方版本发布页](https://github.com/obsproject/obs-studio/releases)
+
 ### ② 安装时需要注意什么
 
 Windows 用户下载官方安装程序后，按向导完成安装即可。普通用户通常不需要修改安装目录，也不需要额外安装所谓的录屏解码包。
@@ -576,6 +585,7 @@ OBS Studio 的学习路线可以分成三个阶段：
 
 ## 官方资料
 
+- [OBS Studio 官方下载](https://obsproject.com/download)
 - [OBS Studio 官方快速入门指南](https://obsproject.com/kb/quick-start-guide)
 - [OBS Studio 功能总览](https://obsproject.com/kb/obs-studio-overview)
 - [来源类型指南](https://obsproject.com/kb/sources-guide)
