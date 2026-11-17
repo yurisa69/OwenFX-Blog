@@ -1,16 +1,20 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { requireContentEditor } from '@/lib/admin-auth';
 import AdminSidebar from './AdminSidebar';
 import './admin.css';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireContentEditor();
+  const cookieStore = await cookies();
+  const initialTheme = cookieStore.get('admin-theme')?.value === 'light' ? 'light' : 'dark';
 
   return (
-    <div className="admin-theme-root min-h-screen" data-admin-theme="dark">
+    <div className="admin-theme-root min-h-screen" data-admin-theme={initialTheme} suppressHydrationWarning>
+      <script dangerouslySetInnerHTML={{ __html: `(() => { try { const root = document.currentScript && document.currentScript.parentElement; const match = document.cookie.match(/(?:^|; )admin-theme=(dark|light)(?:;|$)/); const cookieTheme = match ? match[1] : null; const storedTheme = localStorage.getItem("admin-theme"); const theme = cookieTheme || (storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark"); if (root) { root.setAttribute("data-admin-theme", theme); root.style.colorScheme = theme; } if (!cookieTheme && (storedTheme === "light" || storedTheme === "dark")) document.cookie = "admin-theme=" + storedTheme + "; Path=/; Max-Age=31536000; SameSite=Lax"; } catch {} })();` }} />
     <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
-        <AdminSidebar />
+        <AdminSidebar initialTheme={initialTheme} />
 
         <main className="min-w-0 flex-1">
           <header className="mb-5 flex flex-wrap items-center justify-between gap-3">

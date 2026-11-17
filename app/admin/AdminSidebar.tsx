@@ -60,7 +60,7 @@ function isActivePath(pathname: string, href: string) {
     : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 'light' }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -200,7 +200,7 @@ export default function AdminSidebar() {
               <path d="M12 21 4 7h16l-8 14Z" />
             </svg>
           </button>
-          <AdminThemeToggle />
+          <AdminThemeToggle initialTheme={initialTheme} />
           </div>
         </header>
       </div>
