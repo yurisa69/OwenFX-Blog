@@ -86,7 +86,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <h1 className="text-xs font-medium tracking-[.16em]" style={{ color: 'var(--accent)' }}>OWENFX STUDIO</h1>
               <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>内容管理中心 · 统一管理文章创作、软件资源与网站运营。</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="admin-quick-actions flex flex-wrap gap-2">
               <Link href="/admin/articles/new" className="uiverse-btn uiverse-btn-primary admin-write-article-btn">写文章</Link>
               <Link href="/admin/integrations" className="uiverse-btn uiverse-btn-primary">AI 导入</Link>
               <Link href="/admin/software?create=1" className="uiverse-btn uiverse-btn-primary">添加软件</Link>
@@ -111,7 +111,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         .admin-nav-link{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--border-color);border-radius:9px;color:var(--text-secondary);font-size:13px;transition:color .18s,border-color .18s,background .18s}
         .admin-nav-link:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
         .admin-panel{border:1px solid var(--border-color);border-radius:14px;background:var(--bg-glass);padding:18px}
-        @media(max-width:767px){.admin-sidebar nav{display:flex;flex-direction:column;gap:14px}.admin-sidebar nav>div{min-width:0}.admin-sidebar-link{min-height:42px;padding:8px}.admin-sidebar-link-disabled{font-size:14px}}
+        @media(max-width:767px){.admin-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}.admin-quick-actions a{min-width:0;justify-content:center;padding:9px 4px;white-space:nowrap;font-size:12px}.admin-sidebar nav{display:flex;flex-direction:column;gap:14px}.admin-sidebar nav>div{min-width:0}.admin-sidebar-link{min-height:42px;padding:8px}.admin-sidebar-link-disabled{font-size:14px}}
       `}</style>
     </section>
   );
