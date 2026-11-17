@@ -62,6 +62,7 @@ function isActivePath(pathname: string, href: string) {
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(navGroups.map(group => group.title));
 
@@ -174,7 +175,7 @@ export default function AdminSidebar() {
   function Footer() {
     return (
       <div className="admin-sidebar-footer">
-        <Link href="/" className="admin-sidebar-link" >
+        <Link href="/" className="admin-sidebar-link" title={collapsed ? "BLOG" : undefined}>
           <span className="admin-gradient-text font-semibold tracking-wide">BLOG »</span>
         </Link>
       </div>
@@ -188,7 +189,7 @@ export default function AdminSidebar() {
           <div className="flex items-center gap-2">
           <button
             type="button"
-            className="admin-nav-icon-btn"
+            className="admin-nav-icon-btn md:hidden"
             aria-label={mobileOpen ? '关闭管理菜单' : '打开管理菜单'}
             aria-expanded={mobileOpen}
             aria-controls="admin-mobile-navigation"
@@ -204,8 +205,25 @@ export default function AdminSidebar() {
         </header>
       </div>
 
+      <aside className={`admin-sidebar admin-sidebar-desktop hidden md:flex ${collapsed ? 'admin-sidebar-collapsed' : ''}`}>
+        <div className="admin-sidebar-brand-row">
+          <Brand />
+          <button
+            type="button"
+            className="admin-sidebar-collapse"
+            onClick={() => setCollapsed(value => !value)}
+            aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+          >
+            {collapsed ? '›' : '‹'}
+          </button>
+        </div>
+        <Navigation compact={collapsed} />
+        <Footer />
+      </aside>
+
       {mobileOpen && (
-        <div className="admin-sidebar-mobile-overlay">
+        <div className="admin-sidebar-mobile-overlay md:hidden">
           <button
             type="button"
             className="admin-sidebar-mobile-backdrop"
