@@ -14,7 +14,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
   const [rows, setRows] = useState<SoftwareRow[]>([]);
   const [editId, setEditId] = useState('');
   const [formOpen, setFormOpen] = useState(initialCreate);
-  const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
+  const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: '', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -32,7 +32,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
   function reset() {
     setEditId('');
     setFormOpen(false);
-    setForm({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
+    setForm({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: '', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
     setLinks([]);
   }
   async function save(event: React.FormEvent) {
