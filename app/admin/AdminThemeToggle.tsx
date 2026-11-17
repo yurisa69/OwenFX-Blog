@@ -12,6 +12,7 @@ export default function AdminThemeToggle() {
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
     setTheme(saved);
     root?.setAttribute('data-admin-theme', saved);
+    root?.setAttribute('data-theme', saved);
     root?.style.setProperty('color-scheme', saved);
   }, []);
 
@@ -20,6 +21,7 @@ export default function AdminThemeToggle() {
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
     localStorage.setItem('admin-theme', next);
     root?.setAttribute('data-admin-theme', next);
+    root?.setAttribute('data-theme', next);
     root?.style.setProperty('color-scheme', next);
     setTheme(next);
     event.currentTarget.blur();
