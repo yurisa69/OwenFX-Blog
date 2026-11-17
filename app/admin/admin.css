@@ -36,8 +36,9 @@ body:has(.admin-theme-root[data-admin-theme="light"]){--bg-primary:#f8fafc;--bg-
 .admin-sidebar-collapsed .admin-sidebar-footer .admin-sidebar-link{justify-content:center;font-size:11px}
 .admin-sidebar-mobile-trigger{display:flex;width:100%;min-height:42px;align-items:center;gap:10px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-glass);padding:9px 12px;color:var(--text-secondary);font-size:14px}
 .admin-sidebar-mobile-overlay{position:fixed;inset:0;z-index:80}
-.admin-sidebar-mobile-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(0,0,0,.48)}
-.admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:269px;flex-direction:column;overflow-y:auto;border-right:1px solid var(--border-color);background:var(--bg-glass);padding:18px 14px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.admin-sidebar-mobile-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:269px;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-right:1px solid rgba(255,255,255,.13);background:linear-gradient(160deg,rgb(15,20,39),rgb(5,9,20));padding:18px 14px;box-shadow:0 12px 40px rgba(2,6,23,.58)}
+.admin-theme-root[data-admin-theme="light"] .admin-sidebar-mobile-panel{border-right-color:rgba(99,102,241,.18);background:linear-gradient(160deg,rgb(248,250,255),rgb(230,235,248))}
 .admin-sidebar-mobile-panel .admin-sidebar-brand-row{margin:0 0 14px;padding:0 0 14px}
 .admin-sidebar-mobile-panel .admin-brand{transform:none}
 .admin-sidebar-mobile-panel .admin-sidebar-nav{gap:8px}

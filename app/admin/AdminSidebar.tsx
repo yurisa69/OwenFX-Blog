@@ -77,6 +77,17 @@ export default function AdminSidebar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen]);
+
   function toggleGroup(title: string) {
     setExpandedGroups(current => current.includes(title)
       ? current.filter(item => item !== title)
