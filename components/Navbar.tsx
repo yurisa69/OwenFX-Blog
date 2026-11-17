@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
 import ArticleActionIcon from '@/components/ArticleActionIcon';
 import Avatar from '@/components/Avatar';
@@ -36,7 +36,7 @@ function CloseIcon() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>;
 }
 
-function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | null }) {
+export default function Navbar({ initialUser = null }: { initialUser?: NavUser | null }) {
   const router = useRouter();
   const [user, setUser] = useState<NavUser | null>(initialUser);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -396,10 +396,4 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
       )}
     </>
   );
-}
-
-export default function Navbar({ initialUser = null }: { initialUser?: NavUser | null }) {
-  const pathname = usePathname();
-  if (pathname.startsWith('/admin')) return null;
-  return <SiteNavbarContent initialUser={initialUser} />;
 }
