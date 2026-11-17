@@ -62,7 +62,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         .admin-sidebar-mobile-trigger{display:flex;width:100%;min-height:42px;align-items:center;gap:10px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-glass);padding:9px 12px;color:var(--text-secondary);font-size:14px}
         .admin-sidebar-mobile-overlay{position:fixed;inset:0;z-index:80}
         .admin-sidebar-mobile-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(0,0,0,.48)}
-        .admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:min(84vw,320px);flex-direction:column;overflow-y:auto;border-right:1px solid var(--border-color);background:var(--bg-glass);padding:18px 14px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 12px 40px rgba(0,0,0,.2)}
+        .admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:min(58.8vw,224px);flex-direction:column;overflow-y:auto;border-right:1px solid var(--border-color);background:var(--bg-glass);padding:18px 14px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 12px 40px rgba(0,0,0,.2)}
         .admin-sidebar-mobile-panel .admin-sidebar-brand-row{margin:0 0 14px;padding:0 0 14px}
         .admin-sidebar-mobile-panel .admin-brand{transform:none}
         .admin-sidebar-mobile-panel .admin-sidebar-nav{gap:8px}
