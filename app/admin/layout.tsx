@@ -6,7 +6,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireContentEditor();
 
   return (
-    <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
+    <section className="admin-layout-shell mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <AdminSidebar />
 
@@ -27,6 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
 
       <style>{`
+        body:has(.admin-layout-shell) > main{padding-top:0!important;padding-bottom:0!important}
+        body:has(.admin-layout-shell) > main > div{max-width:none!important;padding-left:0!important;padding-right:0!important}
+
         .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--text-secondary)}
         .admin-sidebar-desktop{position:sticky;top:6rem;align-self:flex-start;width:248px;min-width:248px;flex-direction:column;transition:width .2s ease,min-width .2s ease}
         .admin-sidebar-brand-row{position:relative;display:flex;min-height:52px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);padding:0 4px 14px 0;margin-bottom:12px}
