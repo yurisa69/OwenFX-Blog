@@ -1,39 +1,6 @@
 import Link from 'next/link';
 import { requireContentEditor } from '@/lib/admin-auth';
-
-const navGroups = [
-  {
-    title: '工作概览',
-    items: [{ label: 'Studio', href: '/admin', icon: '⌂' }],
-  },
-  {
-    title: '内容创作',
-    items: [
-      { label: '文章管理', href: '/admin/articles', icon: '▤' },
-      { label: '同步任务', href: '/admin/article-sync', icon: '↻' },
-      { label: 'AI 文章导入', href: '/admin/integrations', icon: '✧' },
-    ],
-  },
-  {
-    title: '后台功能',
-    items: [
-      { label: '软件管理', href: '/admin/software', icon: '▦' },
-      { label: '媒体资源', href: null, icon: '▧' },
-      { label: '分类标签', href: null, icon: '◇' },
-    ],
-  },
-  {
-    title: '互动运营',
-    items: [
-      { label: '流量统计', href: '/admin/analytics', icon: '▥' },
-      { label: '安全监控', href: '/admin/security', icon: '◈' },
-      { label: '评论管理', href: '/admin/comments', icon: '◌' },
-      { label: '用户管理', href: null, icon: '♙' },
-      { label: '赞赏设置', href: '/admin/support', icon: '⚙' },
-      { label: '失效反馈', href: '/admin/link-feedback', icon: '☁' },
-    ],
-  },
-];
+import AdminSidebar from './AdminSidebar';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireContentEditor();
@@ -41,44 +8,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
-        <aside className="admin-sidebar md:sticky md:top-24 md:flex md:w-[248px] md:shrink-0 md:flex-col md:self-start">
-          <div className="admin-brand-header border-b px-5 py-5" style={{ borderColor: 'var(--border-color)' }}>
-            <Link href="/admin" className="admin-brand text-xl font-bold tracking-tight md:text-2xl" style={{ color: 'var(--text-primary)' }}>
-              <span className="admin-brand-owen">Owe</span><span className="admin-brand-n">n</span><span className="admin-brand-f">F</span><span className="admin-brand-x">X</span>{' '}
-              <span className="gradient-text admin-brand-studio">Studio</span>
-            </Link>
-          </div>
-
-          <nav aria-label="OwenFX Studio 工作空间导航" className="flex-1 space-y-5 overflow-x-auto px-3 py-4 md:overflow-visible">
-            {navGroups.map(group => (
-              <div key={group.title}>
-                <p className="mb-2 px-3 text-[10px] font-semibold tracking-[.18em] gradient-text" style={{ color: 'var(--text-tertiary)' }}>
-                  {group.title}
-                </p>
-                <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-1">
-                  {group.items.map(item => item.href ? (
-                    <Link key={item.label} href={item.href} className="admin-sidebar-link">
-                      {item.icon ? <span className="admin-sidebar-icon" aria-hidden="true">{item.icon}</span> : null}
-                      <span>{item.label}</span>
-                    </Link>
-                  ) : (
-                    <span key={item.label} aria-disabled="true" title="该模块尚未开放" className="admin-sidebar-link admin-sidebar-link-disabled">
-                      <span className="admin-sidebar-icon" aria-hidden="true">{item.icon}</span>
-                      <span>{item.label}</span>
-                      <span className="ml-auto text-[9px] opacity-60">规划中</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </nav>
-
-          <div className="border-t p-3" style={{ borderColor: 'var(--border-color)' }}>
-            <Link href="/" className="admin-sidebar-link">
-              <span className="gradient-text font-semibold tracking-wide">BLOG »</span>
-            </Link>
-          </div>
-        </aside>
+        <AdminSidebar />
 
         <main className="min-w-0 flex-1">
           <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -97,21 +27,52 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
 
       <style>{`
-        .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
-        .admin-brand-header{position:relative;transform:translateY(-2px)}
-        .admin-brand{display:inline-flex;align-items:baseline;white-space:nowrap;gap:0}.admin-sidebar nav,.admin-sidebar>div:last-child{transform:translateY(-4px)}
-        .admin-brand-owen,.admin-brand-x,.admin-brand-studio{font-family:var(--font-splash),cursive;font-weight:400}.admin-brand-owen{font-size:1.55em;letter-spacing:-.055em;line-height:.8}.admin-brand-n{font-family:var(--font-caramel),cursive;font-size:1.984em;font-weight:400;letter-spacing:-.055em;line-height:.8}.admin-brand-f{position:relative;top:.08em;font-family:var(--font-caramel),cursive;font-size:1.9em;font-weight:400;line-height:.65}.admin-brand-x{font-size:1em;letter-spacing:-.06em}.admin-brand-studio{margin-left:.08em;font-size:1.12em;letter-spacing:-.035em}
-        @media(min-width:768px){.admin-brand-header{margin-left:-16px;margin-top:-16px;padding:0 0 20px 0}.admin-brand{transform:translate(10px,-26px) scale(1.2);transform-origin:left center}.admin-brand-owen{font-size:1.7em}.admin-brand-n{font-size:2.176em}.admin-brand-f{font-size:2.15em;top:.1em}.admin-brand-x{font-size:1em}.admin-brand-studio{font-size:1.22em;margin-left:.1em}}
+        .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--text-secondary)}
+        .admin-sidebar-desktop{position:sticky;top:6rem;align-self:flex-start;width:248px;min-width:248px;flex-direction:column;transition:width .2s ease,min-width .2s ease}
+        .admin-sidebar-brand-row{position:relative;display:flex;min-height:52px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);padding:0 4px 14px 0;margin-bottom:12px}
+        .admin-brand{display:inline-flex;align-items:baseline;white-space:nowrap;gap:0}.admin-brand-owen,.admin-brand-x,.admin-brand-studio{font-family:var(--font-splash),cursive;font-weight:400}.admin-brand-owen{font-size:1.55em;letter-spacing:-.055em;line-height:.8}.admin-brand-n{font-family:var(--font-caramel),cursive;font-size:1.984em;font-weight:400;letter-spacing:-.055em;line-height:.8}.admin-brand-f{position:relative;top:.08em;font-family:var(--font-caramel),cursive;font-size:1.9em;font-weight:400;line-height:.65}.admin-brand-x{font-size:1em;letter-spacing:-.06em}.admin-brand-studio{margin-left:.08em;font-size:1.12em;letter-spacing:-.035em}
+        @media(min-width:768px){.admin-sidebar-desktop{display:flex}.admin-sidebar-mobile-trigger,.admin-sidebar-mobile-overlay{display:none!important}.admin-sidebar-brand-row{margin-left:-16px;margin-top:-16px;padding:0 0 14px 0}.admin-brand{transform:translate(10px,-18px) scale(1.2);transform-origin:left center}.admin-brand-owen{font-size:1.7em}.admin-brand-n{font-size:2.176em}.admin-brand-f{font-size:2.15em}.admin-brand-x{font-size:1em}.admin-brand-studio{font-size:1.22em;margin-left:.1em}}
+        .admin-sidebar-nav{display:flex;flex:1;flex-direction:column;gap:10px;overflow:visible;padding:4px 0}
         .admin-sidebar-link{display:flex;min-width:0;min-height:40px;align-items:center;gap:10px;border:1px solid transparent;border-radius:10px;padding:8px 10px;color:var(--text-secondary);font-size:14px;transition:background .18s,border-color .18s,color .18s}
         .admin-sidebar-link:hover{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
-        .admin-write-article-btn{font-size:14px}
+        .admin-sidebar-link-active{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
         .admin-sidebar-icon{display:inline-flex;width:20px;flex:0 0 20px;align-items:center;justify-content:center;font-size:15px;color:var(--text-tertiary)}
-        .admin-sidebar-link-disabled{cursor:not-allowed;opacity:.58}.admin-sidebar nav>div>p{font-size:12px}.admin-sidebar-link-disabled>span:last-child{font-size:10.8px}
+        .admin-sidebar-group{min-width:0}
+        .admin-sidebar-group-toggle{display:flex;width:100%;min-height:38px;align-items:center;gap:9px;border:1px solid transparent;border-radius:10px;padding:7px 10px;color:var(--text-tertiary);font-size:12px;font-weight:600;letter-spacing:.08em;text-align:left;transition:background .18s,border-color .18s,color .18s}
+        .admin-sidebar-group-toggle:hover{border-color:var(--border-color);background:var(--accent-bg);color:var(--text-primary)}
+        .admin-sidebar-group-active{color:var(--accent)}
+        .admin-sidebar-group-short{display:none;width:20px;flex:0 0 20px;text-align:center;font-size:13px}
+        .admin-sidebar-group-description{margin-left:2px;font-size:10px;font-weight:400;letter-spacing:0;opacity:.72}
+        .admin-sidebar-chevron{margin-left:auto;font-size:17px;line-height:1}
+        .admin-sidebar-group-items{display:flex;flex-direction:column;gap:2px;padding:2px 0 4px 8px}
+        .admin-sidebar-planned{margin-left:auto;font-size:10px;opacity:.6}
+        .admin-sidebar-link-disabled{cursor:not-allowed;opacity:.58}
         .admin-sidebar-link-disabled:hover{border-color:transparent;background:transparent;color:var(--text-secondary)}
+        .admin-sidebar-collapse{display:inline-flex;width:30px;height:30px;flex:0 0 30px;align-items:center;justify-content:center;border:1px solid var(--border-color);border-radius:9px;background:var(--bg-glass);color:var(--text-secondary);font-size:20px;line-height:1;transition:background .18s,border-color .18s,color .18s}
+        .admin-sidebar-collapse:hover{border-color:var(--accent);background:var(--accent-bg);color:var(--text-primary)}
+        .admin-sidebar-footer{border-top:1px solid var(--border-color);padding:10px 0 0}
+        .admin-sidebar-collapsed{width:76px;min-width:76px}
+        .admin-sidebar-collapsed .admin-sidebar-brand-row{justify-content:center}
+        .admin-sidebar-collapsed .admin-brand{display:none}
+        .admin-sidebar-collapsed .admin-sidebar-group-title,.admin-sidebar-collapsed .admin-sidebar-group-description,.admin-sidebar-collapsed .admin-sidebar-chevron,.admin-sidebar-collapsed .admin-sidebar-link-label,.admin-sidebar-collapsed .admin-sidebar-planned{display:none}
+        .admin-sidebar-collapsed .admin-sidebar-group-short{display:inline-block}
+        .admin-sidebar-collapsed .admin-sidebar-group-toggle,.admin-sidebar-collapsed .admin-sidebar-link{justify-content:center;padding-left:8px;padding-right:8px}
+        .admin-sidebar-collapsed .admin-sidebar-group-items{padding-left:0}
+        .admin-sidebar-collapsed .admin-sidebar-footer .admin-sidebar-link{justify-content:center;font-size:11px}
+        .admin-sidebar-mobile-trigger{display:flex;width:100%;min-height:42px;align-items:center;gap:10px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-glass);padding:9px 12px;color:var(--text-secondary);font-size:14px}
+        .admin-sidebar-mobile-overlay{position:fixed;inset:0;z-index:80}
+        .admin-sidebar-mobile-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(0,0,0,.48)}
+        .admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:min(84vw,320px);flex-direction:column;overflow-y:auto;border-right:1px solid var(--border-color);background:var(--bg-glass);padding:18px 14px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 12px 40px rgba(0,0,0,.2)}
+        .admin-sidebar-mobile-panel .admin-sidebar-brand-row{margin:0 0 14px;padding:0 0 14px}
+        .admin-sidebar-mobile-panel .admin-brand{transform:none}
+        .admin-sidebar-mobile-panel .admin-sidebar-nav{gap:8px}
+        .admin-sidebar-mobile-panel .admin-sidebar-group-items{padding-left:8px}
+        .admin-sidebar-mobile-panel .admin-sidebar-footer{margin-top:auto}
+        .admin-write-article-btn{font-size:14px}
         .admin-nav-link{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--border-color);border-radius:9px;color:var(--text-secondary);font-size:13px;transition:color .18s,border-color .18s,background .18s}
         .admin-nav-link:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
         .admin-panel{border:1px solid var(--border-color);border-radius:14px;background:var(--bg-glass);padding:18px}
-        @media(max-width:767px){.admin-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}.admin-quick-actions a{min-width:0;justify-content:center;padding:9px 4px;white-space:nowrap;font-size:12px}.admin-sidebar nav{display:flex;flex-direction:column;gap:14px}.admin-sidebar nav>div{min-width:0}.admin-sidebar-link{min-height:42px;padding:8px}.admin-sidebar-link-disabled{font-size:14px}}
+        @media(max-width:767px){.admin-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}.admin-quick-actions a{min-width:0;justify-content:center;padding:9px 4px;white-space:nowrap;font-size:12px}}
       `}</style>
     </section>
   );
