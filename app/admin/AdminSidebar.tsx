@@ -1,18 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import ThemeToggle from '@/components/ThemeToggle';
+import { useEffect, useState } from 'react';
 
-type NavItem = { label: string; href: string | null; icon: string };
+type NavItem = {
+  label: string;
+  href: string | null;
+  icon: string;
+};
 
 const overview: NavItem = { label: '工作概览', href: '/admin', icon: '⌂' };
 
-const navGroups: Array<{ title: string; description: string; items: NavItem[] }> = [
+const navGroups: Array<{
+  title: string;
+  description: string;
+  short: string;
+  items: NavItem[];
+}> = [
   {
     title: 'Studio',
     description: '内容创作',
+    short: 'S',
     items: [
       { label: '文章管理', href: '/admin/articles', icon: '▤' },
       { label: '同步任务', href: '/admin/article-sync', icon: '↻' },
@@ -21,7 +30,8 @@ const navGroups: Array<{ title: string; description: string; items: NavItem[] }>
   },
   {
     title: '后台功能',
-    description: '资源配置',
+    description: '',
+    short: '▦',
     items: [
       { label: '软件管理', href: '/admin/software', icon: '▦' },
       { label: '媒体资源', href: null, icon: '▧' },
@@ -30,7 +40,8 @@ const navGroups: Array<{ title: string; description: string; items: NavItem[] }>
   },
   {
     title: '互动运营',
-    description: '网站运营',
+    description: '',
+    short: '◈',
     items: [
       { label: '流量统计', href: '/admin/analytics', icon: '▥' },
       { label: '安全监控', href: '/admin/security', icon: '◈' },
@@ -50,140 +61,171 @@ function isActivePath(pathname: string, href: string) {
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(navGroups.map(group => group.title));
 
   useEffect(() => {
-    setOpenGroup(null);
+    const activeGroup = navGroups.find(group =>
+      group.items.some(item => item.href && isActivePath(pathname, item.href))
+    );
+    if (activeGroup) {
+      setExpandedGroups(current => current.includes(activeGroup.title)
+        ? current
+        : [...current, activeGroup.title]);
+    }
     setMobileOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileOpen(false);
-    };
-    document.addEventListener('keydown', close);
-    return () => document.removeEventListener('keydown', close);
-  }, [mobileOpen]);
+  function toggleGroup(title: string) {
+    setExpandedGroups(current => current.includes(title)
+      ? current.filter(item => item !== title)
+      : [...current, title]);
+  }
 
-  const overviewActive = isActivePath(pathname, '/admin');
-
-  function GroupLinks({ group, mobile = false }: { group: typeof navGroups[number]; mobile?: boolean }) {
+  function Navigation({ compact = false }: { compact?: boolean }) {
     return (
-      <div className={mobile
-        ? 'flex flex-col gap-1 border-l border-[var(--border-color)] ml-3 mt-1 pl-3'
-        : 'absolute left-0 top-full z-[60] mt-2 min-w-52 rounded-xl border border-[var(--border-color)] bg-[var(--bg-glass)] p-2 shadow-xl backdrop-blur-2xl'
-      }>
-        {group.items.map(item => item.href ? (
-          <Link
-            key={item.label}
-            href={item.href}
-            aria-current={isActivePath(pathname, item.href) ? 'page' : undefined}
-            className={`nav-link-pill flex w-full justify-start gap-2 text-sm ${isActivePath(pathname, item.href) ? 'bg-[var(--accent-bg)] text-[var(--text-primary)]' : ''}`}
-            onClick={() => setMobileOpen(false)}
-          >
-            <span className="w-5 text-center text-[var(--text-tertiary)]" aria-hidden="true">{item.icon}</span>
-            {item.label}
-          </Link>
-        ) : (
-          <span key={item.label} aria-disabled="true" className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[var(--text-tertiary)] opacity-60">
-            <span className="w-5 text-center" aria-hidden="true">{item.icon}</span>
-            {item.label}
-            <span className="ml-auto text-[10px]">规划中</span>
-          </span>
-        ))}
+      <nav aria-label="OwenFX Studio 工作空间导航" className="admin-sidebar-nav">
+        <Link
+          href="/admin"
+          title={compact ? overview.label : undefined}
+          aria-current={isActivePath(pathname, '/admin') ? 'page' : undefined}
+          className={`admin-sidebar-link ${isActivePath(pathname, '/admin') ? 'admin-sidebar-link-active' : ''}`}
+        >
+          <span className="admin-sidebar-icon" aria-hidden="true">{overview.icon}</span>
+          <span className="admin-sidebar-link-label">{overview.label}</span>
+        </Link>
+
+        {navGroups.map(group => {
+          const expanded = expandedGroups.includes(group.title);
+          const hasActiveItem = group.items.some(item => item.href && isActivePath(pathname, item.href));
+
+          return (
+            <div className="admin-sidebar-group" key={group.title}>
+              <button
+                type="button"
+                className={`admin-sidebar-group-toggle ${hasActiveItem ? 'admin-sidebar-group-active' : ''}`}
+                onClick={() => toggleGroup(group.title)}
+                aria-expanded={expanded}
+                title={compact ? group.title : undefined}
+              >
+                <span className="admin-sidebar-group-short" aria-hidden="true">{group.short}</span>
+                <span className="admin-sidebar-group-title">{group.title}</span>
+                <span className="admin-sidebar-group-description">{group.description}</span>
+                <span className="admin-sidebar-chevron" aria-hidden="true">{expanded ? '⌄' : '›'}</span>
+              </button>
+
+              {expanded && (
+                <div className="admin-sidebar-group-items">
+                  {group.items.map(item => item.href ? (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      title={compact ? item.label : undefined}
+                      aria-current={isActivePath(pathname, item.href) ? 'page' : undefined}
+                      className={`admin-sidebar-link ${isActivePath(pathname, item.href) ? 'admin-sidebar-link-active' : ''}`}
+                    >
+                      <span className="admin-sidebar-icon" aria-hidden="true">{item.icon}</span>
+                      <span className="admin-sidebar-link-label">{item.label}</span>
+                    </Link>
+                  ) : (
+                    <span
+                      key={item.label}
+                      aria-disabled="true"
+                      title={item.label + '（规划中）'}
+                      className="admin-sidebar-link admin-sidebar-link-disabled"
+                    >
+                      <span className="admin-sidebar-icon" aria-hidden="true">{item.icon}</span>
+                      <span className="admin-sidebar-link-label">{item.label}</span>
+                      <span className="admin-sidebar-planned">规划中</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  function Brand() {
+    return (
+      <div className="admin-brand-header">
+        <Link href="/admin" className="admin-brand text-xl font-bold tracking-tight md:text-2xl" style={{ color: 'var(--text-primary)' }}>
+          <span className="admin-brand-owen">Owe</span><span className="admin-brand-n">n</span><span className="admin-brand-f">F</span><span className="admin-brand-x">X</span>{' '}
+          <span className="gradient-text admin-brand-studio">Studio</span>
+        </Link>
+      </div>
+    );
+  }
+
+  function Footer() {
+    return (
+      <div className="admin-sidebar-footer">
+        <Link href="/" className="admin-sidebar-link" title={collapsed ? 'BLOG' : undefined}>
+          <span className="gradient-text font-semibold tracking-wide">BLOG »</span>
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="glass-nav fixed inset-x-0 top-0 z-50">
-      <header className="h-14 flex items-center">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
-          <Link href="/admin" className="flex shrink-0 items-center gap-2">
-            <span className="text-lg font-bold tracking-tight text-[var(--accent)]">OwenFX</span>
-            <span className="text-sm font-medium text-[var(--text-secondary)]">Studio</span>
-          </Link>
+    <>
+      <button
+        type="button"
+        className="admin-sidebar-mobile-trigger md:hidden"
+        onClick={() => setMobileOpen(true)}
+        aria-expanded={mobileOpen}
+        aria-controls="admin-mobile-navigation"
+      >
+        <span aria-hidden="true">☰</span>
+        <span>管理菜单</span>
+        <span className="ml-auto" aria-hidden="true">⌄</span>
+      </button>
 
-          <nav aria-label="后台管理导航" className="hidden items-center gap-1 md:flex">
-            <Link
-              href="/admin"
-              aria-current={overviewActive ? 'page' : undefined}
-              className={`nav-link-pill text-sm ${overviewActive ? 'bg-[var(--accent-bg)] text-[var(--text-primary)]' : ''}`}
-            >
-              {overview.label}
-            </Link>
-            {navGroups.map(group => {
-              const active = group.items.some(item => item.href && isActivePath(pathname, item.href));
-              const expanded = openGroup === group.title;
-              return (
-                <div className="relative" key={group.title}>
-                  <button
-                    type="button"
-                    className={`nav-link-pill gap-1 text-sm ${active || expanded ? 'bg-[var(--accent-bg)] text-[var(--text-primary)]' : ''}`}
-                    aria-expanded={expanded}
-                    onClick={() => setOpenGroup(expanded ? null : group.title)}
-                  >
-                    {group.title}
-                    <span className="text-xs opacity-60" aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
-                  </button>
-                  {expanded && <GroupLinks group={group} />}
-                </div>
-              );
-            })}
-          </nav>
-
-          <div className="flex shrink-0 items-center gap-2">
-            <ThemeToggle />
-            <Link href="/" className="nav-link-pill text-sm">BLOG »</Link>
-            <button
-              type="button"
-              className="nav-icon-btn md:hidden"
-              aria-label={mobileOpen ? '关闭管理菜单' : '打开管理菜单'}
-              aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen(value => !value)}
-            >
-              {mobileOpen
-                ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>}
-            </button>
-          </div>
+      <aside className={`admin-sidebar admin-sidebar-desktop hidden md:flex ${collapsed ? 'admin-sidebar-collapsed' : ''}`}>
+        <div className="admin-sidebar-brand-row">
+          <Brand />
+          <button
+            type="button"
+            className="admin-sidebar-collapse"
+            onClick={() => setCollapsed(value => !value)}
+            aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+          >
+            {collapsed ? '›' : '‹'}
+          </button>
         </div>
-      </header>
+        <Navigation compact={collapsed} />
+        <Footer />
+      </aside>
 
       {mobileOpen && (
-        <div className="border-t border-[var(--border-color)] px-4 py-3 shadow-lg md:hidden">
-          <nav aria-label="移动端后台管理导航" className="flex flex-col gap-1">
-            <Link
-              href="/admin"
-              aria-current={overviewActive ? 'page' : undefined}
-              className={`nav-link-pill w-full justify-start text-sm ${overviewActive ? 'bg-[var(--accent-bg)] text-[var(--text-primary)]' : ''}`}
-              onClick={() => setMobileOpen(false)}
-            >
-              {overview.label}
-            </Link>
-            {navGroups.map(group => {
-              const active = group.items.some(item => item.href && isActivePath(pathname, item.href));
-              const expanded = openGroup === group.title;
-              return (
-                <div key={group.title}>
-                  <button
-                    type="button"
-                    className={`nav-link-pill flex w-full justify-between text-left text-sm ${active || expanded ? 'bg-[var(--accent-bg)] text-[var(--text-primary)]' : ''}`}
-                    aria-expanded={expanded}
-                    onClick={() => setOpenGroup(expanded ? null : group.title)}
-                  >
-                    <span>{group.title}<span className="ml-2 text-xs text-[var(--text-tertiary)]">{group.description}</span></span>
-                    <span aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
-                  </button>
-                  {expanded && <GroupLinks group={group} mobile />}
-                </div>
-              );
-            })}
-          </nav>
+        <div className="admin-sidebar-mobile-overlay md:hidden">
+          <button
+            type="button"
+            className="admin-sidebar-mobile-backdrop"
+            onClick={() => setMobileOpen(false)}
+            aria-label="关闭管理菜单"
+          />
+          <aside id="admin-mobile-navigation" className="admin-sidebar admin-sidebar-mobile-panel">
+            <div className="admin-sidebar-brand-row">
+              <Brand />
+              <button
+                type="button"
+                className="admin-sidebar-collapse"
+                onClick={() => setMobileOpen(false)}
+                aria-label="关闭菜单"
+              >
+                ×
+              </button>
+            </div>
+            <Navigation />
+            <Footer />
+          </aside>
         </div>
       )}
-    </div>
+    </>
   );
 }
