@@ -8,12 +8,19 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
   const [theme, setTheme] = useState<Theme>(initialTheme);
 
   useLayoutEffect(() => {
-    // AdminLayout's pre-hydration initializer owns cookie/localStorage migration.
-    // This component only mirrors the already-resolved admin root theme.
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
-    const saved: Theme = root?.dataset.adminTheme === 'light' ? 'light' : initialTheme;
+    const cookieMatch = document.cookie.match(/(?:^|; )admin-theme=(dark|light)(?:;|$)/);
+    let stored: string | null = null;
+    try { stored = localStorage.getItem('admin-theme'); } catch {}
+    const saved: Theme = cookieMatch?.[1] === 'light' || (!cookieMatch && stored === 'light') ? 'light' : 'dark';
+
+    root?.setAttribute('data-admin-theme', saved);
     root?.style.setProperty('color-scheme', saved);
     setTheme(saved);
+
+    if (!cookieMatch) {
+      document.cookie = 'admin-theme=' + saved + '; Path=/; Max-Age=31536000; SameSite=Lax';
+    }
   }, [initialTheme]);
 
   function handleToggle(event: React.MouseEvent<HTMLButtonElement>) {
