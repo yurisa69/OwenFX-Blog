@@ -18,13 +18,14 @@
 ## 3. Adding a database change
 
 1. Inspect the existing schema, related application code, constraints, indexes, triggers, grants, and RLS policies before editing.
-2. Create a timestamped SQL migration in `supabase/migrations/` using the Supabase CLI migration generator.
+2. Create a timestamped SQL migration in `supabase/migrations/` using `supabase migration new <descriptive-name>`. Do not hand-write or edit the 14-digit timestamp.
 3. Keep each migration focused on one logical change. Prefer safe, forward-only changes and preserve existing data.
 4. Review the SQL manually. For destructive changes, document affected tables/columns, row counts, dependencies, rollback/recovery strategy, and obtain explicit approval before execution.
 5. Validate the migration in a disposable local/test database when available. Never use production as a trial-and-error environment.
 6. Apply the reviewed migration to production as a separate, deliberate database operation. Verify the resulting schema, migration ledger, RLS policies, and relevant application queries.
 7. Update the baseline and migration history documentation when the production schema changes.
-8. Only after database validation, update the application code and deploy it through the normal GitHub-to-Vercel workflow.
+8. Update `supabase/migration-ledger.json` from the verified production migration list so the applied version is permanently tracked.
+9. Only after database validation, update the application code and deploy it through the normal GitHub-to-Vercel workflow.
 
 ## 4. Production safety rules
 
@@ -34,7 +35,10 @@
 - Never commit database passwords, Supabase access tokens, service-role keys, or connection strings.
 - Do not export production user/business rows into GitHub. Schema-only artifacts are allowed after review.
 - Do not use `CASCADE` or drop tables/columns without dependency and data-impact review plus explicit approval.
-- Never rewrite migration files that have already been applied to production. Add a new forward migration to correct them.
+- Never rename, rewrite, or delete migration files that have already been applied to production. Add a new forward migration to correct them.
+- Keep `supabase/migration-ledger.json` synchronized with the verified production migration ledger. It is a version-presence guard, not a substitute for checking the live database.
+- Run `npm run check:supabase-migrations` before every commit that changes migration files. The GitHub Actions migration-history guard runs on pushes to `main` and pull requests targeting `main`.
+- The guard ensures every version in the applied-production snapshot has a matching local SQL file and rejects duplicate or malformed timestamps. It permits extra local files for migrations that are still pending application. Update the snapshot only after confirming the migration appears in the live production ledger.
 - Do not invent historical SQL or migration version numbers. Record unrecoverable history gaps explicitly.
 - Keep Supabase migration operations independent from website source commits where possible. A website-only change must not require a database operation.
 
@@ -53,6 +57,7 @@ For page, style, component, and application-code-only changes:
 Before closing a database change, verify:
 
 - The intended migration file exists and matches the reviewed SQL.
+- Every applied production migration version is present in `supabase/migration-ledger.json` and in the local migration directory.
 - The expected migration version appears in the production ledger.
 - Tables, columns, constraints, indexes, functions, triggers, and policies match the intended result.
 - RLS remains enabled on exposed `public` tables and policies enforce the intended ownership/role boundary.

@@ -2,7 +2,7 @@
 
 Project: `gjzxultalptqwqmpagzj`  
 Database engine: PostgreSQL 17.11  
-Snapshot date: 2026-11-13
+Snapshot date: 2026-11-17
 
 This document reconciles the production migration ledger with the SQL files tracked in GitHub. The eight earlier historical SQL files listed below were recovered from the supplied `owenfx-Backup.zip` archive, whose SQL checksums match its manifest. They were reviewed against the live production schema and selectively reconciled: retired database objects and policies were not restored. Two additional migrations were restored to GitHub from the historical repository commit and are also present in the production migration ledger. These files are historical records, not instructions to replay migrations against production.
 
@@ -38,6 +38,7 @@ This document reconciles the production migration ledger with the SQL files trac
 | `20261113092936` | `article_sync_locks_service_role_policy` | Add an explicit service-role-only RLS policy for the private lock table |
 | `20261114135410` | `remove_unused_categories` | Remove unused categories after checking references; applied to production |
 | `20261115221034` | `article_trash_archive_states` | Add explicit archive restoration and soft-delete/recycle-bin states; applied to production |
+| `20261115232549` | `software_trash_archive_states` | Add software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time; applied to production |
 
 The production ledger now also contains the additive `20261115221034_article_trash_archive_states` migration. The 21 earlier versions have their previously reconciled SQL files in GitHub. The two initial article-sync migrations are reconstructed archival records based on verified production schema, constraints, and current RPC definitions; the three newer article-sync migrations are tracked with the SQL applied to production.
 
@@ -88,7 +89,7 @@ The analytics table and its other records were retained. The separate `software_
 
 The production schema snapshot is stored in `supabase/schema/production-baseline.sql`; platform-specific dependencies are documented in `supabase/docs/PLATFORM_DEPENDENCIES.md`.
 
-- `20261116120000` `software_trash_archive_states`: adds software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time. Applied to production; existing software rows retained.
+- `20261115232549` `software_trash_archive_states`: adds software archive restoration and recycle-bin state columns, extends the status constraint, and indexes status with update time. Applied to production; existing software rows retained. Its GitHub filename uses the exact production ledger version.
 - `20261115234616` `legacy_link_feedback_retirement_stage`: historical schema retirement stage; superseded by the clean feedback schema.
 - `20261115235048` `legacy_link_feedback_restore_stage`: historical restore stage; superseded by the clean feedback schema.
 - `20261115235449` `legacy_link_feedback_access_restore_stage`: historical access stage; superseded by the clean feedback schema.
@@ -96,3 +97,5 @@ The production schema snapshot is stored in `supabase/schema/production-baseline
 - `20261116002611` `create_clean_software_link_feedbacks`: drops the empty inherited table and creates a new feedback-only table with fresh constraints, indexes, grants, and admin-only RLS.
 
 The hosted migration ledger retains the original historical identifiers for retired schema stages as immutable audit metadata. The repository contains neutralized historical placeholders; those records do not represent active application logic or database objects.
+
+The machine-readable production migration-version snapshot is `supabase/migration-ledger.json`. The repository check verifies that every applied production version remains represented by exactly one local SQL filename and rejects duplicate or malformed timestamps. It intentionally permits additional local SQL files as pending migrations. After a reviewed migration is applied to production, update the snapshot from the live Supabase migration ledger in the same repository change. Never rename or delete an applied migration.

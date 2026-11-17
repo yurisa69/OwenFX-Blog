@@ -1,0 +1,151 @@
+{
+  "projectRef": "gjzxultalptqwqmpagzj",
+  "verifiedAt": "2026-11-17",
+  "description": "Snapshot of applied production migration versions. Extra local SQL files are allowed as pending migrations; every version listed here must remain present in supabase/migrations.",
+  "appliedMigrations": [
+    {
+      "version": "20261105221034",
+      "name": "secure_verification_codes"
+    },
+    {
+      "version": "20261105221115",
+      "name": "content_platform"
+    },
+    {
+      "version": "20261105221137",
+      "name": "resource_monetization"
+    },
+    {
+      "version": "20261105221150",
+      "name": "software_catalog"
+    },
+    {
+      "version": "20261105221158",
+      "name": "software_analytics"
+    },
+    {
+      "version": "20261106055944",
+      "name": "add_bio_to_profiles"
+    },
+    {
+      "version": "20261106060102",
+      "name": "allow_users_insert_own_profile"
+    },
+    {
+      "version": "20261106061754",
+      "name": "add_article_user_interactions"
+    },
+    {
+      "version": "20261107040934",
+      "name": "import_reference_mock_articles"
+    },
+    {
+      "version": "20261107045725",
+      "name": "article_github_content_and_api_devices"
+    },
+    {
+      "version": "20261107050640",
+      "name": "restrict_api_devices_to_owner_scope"
+    },
+    {
+      "version": "20261107060000",
+      "name": "r2_unified_media_assets"
+    },
+    {
+      "version": "20261109164831",
+      "name": "remove_legacy_verification_codes"
+    },
+    {
+      "version": "20261110090913",
+      "name": "remove_legacy_resource_click_policy"
+    },
+    {
+      "version": "20261111081909",
+      "name": "harden_software_publication_and_rls_access"
+    },
+    {
+      "version": "20261111081959",
+      "name": "isolate_security_definer_membership_helpers"
+    },
+    {
+      "version": "20261113033924",
+      "name": "comment_spam_moderation"
+    },
+    {
+      "version": "20261113033935",
+      "name": "comment_spam_moderation_service_role_policies"
+    },
+    {
+      "version": "20261113051047",
+      "name": "add_software_link_reports"
+    },
+    {
+      "version": "20261113051500",
+      "name": "restrict_software_link_report_privileges"
+    },
+    {
+      "version": "20261113054024",
+      "name": "add_atomic_api_rate_limits"
+    },
+    {
+      "version": "20261113082045",
+      "name": "article_sync_recovery_jobs"
+    },
+    {
+      "version": "20261113083555",
+      "name": "harden_article_sync_jobs"
+    },
+    {
+      "version": "20261113092735",
+      "name": "article_sync_article_locks"
+    },
+    {
+      "version": "20261113092747",
+      "name": "release_failed_article_sync_leases"
+    },
+    {
+      "version": "20261113092936",
+      "name": "article_sync_locks_service_role_policy"
+    },
+    {
+      "version": "20261113102017",
+      "name": "list_article_sync_jobs"
+    },
+    {
+      "version": "20261114135410",
+      "name": "remove_unused_categories"
+    },
+    {
+      "version": "20261115221034",
+      "name": "article_trash_archive_states"
+    },
+    {
+      "version": "20261115232549",
+      "name": "software_trash_archive_states"
+    },
+    {
+      "version": "20261115234616",
+      "name": "remove_software_link_reports"
+    },
+    {
+      "version": "20261115235048",
+      "name": "restore_software_link_reports"
+    },
+    {
+      "version": "20261115235449",
+      "name": "restore_software_link_reports_privilege_restrictions"
+    },
+    {
+      "version": "20261116001355",
+      "name": "rename_software_link_reports_to_feedbacks"
+    },
+    {
+      "version": "20261116002611",
+      "name": "create_clean_software_link_feedbacks"
+    },
+    {
+      "version": "20261116005317",
+      "name": "restrict_software_download_providers"
+    }
+  ]
+}
