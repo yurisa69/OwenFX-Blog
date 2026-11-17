@@ -75,7 +75,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
   return <div className="space-y-5">
     <div>
       <h2 className="text-lg font-semibold">软件库管理</h2>
-      <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>管理软件资料、官方图标、官方下载入口与网盘链接。OwenFX 不托管安装包。</p>
+      <p className="mt-1 text-sm" style={{ color: 'var(--text-tertiary)' }}>管理软件资料、官方图标、官方下载与网盘链接。</p>
     </div>
     <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
       {stats.map(stat => <div key={stat.label} className="admin-panel">
