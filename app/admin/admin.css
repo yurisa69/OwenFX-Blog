@@ -69,3 +69,7 @@ body:has(.admin-theme-root[data-admin-theme="light"]){--bg-primary:#f8fafc;--bg-
 .admin-theme-root[data-admin-theme="light"] .prose-block .hljs-title,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-function,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-section{color:#6d28d9}
 .admin-theme-root[data-admin-theme="light"] .prose-block .hljs-built_in,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-type,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-params{color:#9a3412}
 .admin-theme-root[data-admin-theme="light"] .prose-block .hljs-variable,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-property{color:#1f2937}
+
+/* Hide the mobile admin drawer scrollbar without disabling scrolling. */
+.admin-sidebar-mobile-panel{scrollbar-width:none;-ms-overflow-style:none}
+.admin-sidebar-mobile-panel::-webkit-scrollbar{display:none;width:0;height:0}
