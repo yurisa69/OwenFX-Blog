@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import AdminThemeToggle from './AdminThemeToggle';
 
 type NavItem = {
   label: string;
@@ -173,6 +174,7 @@ export default function AdminSidebar() {
     <>
       <div className="glass-nav fixed inset-x-0 top-0 z-50">
         <header className="h-14 flex items-center px-4 md:px-6">
+          <div className="flex items-center gap-2">
           <button
             type="button"
             className="nav-icon-btn"
@@ -186,6 +188,8 @@ export default function AdminSidebar() {
               <path d="M12 21 4 7h16l-8 14Z" />
             </svg>
           </button>
+          <AdminThemeToggle />
+          </div>
         </header>
       </div>
 

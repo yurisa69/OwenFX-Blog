@@ -6,6 +6,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireContentEditor();
 
   return (
+    <div className="admin-theme-root min-h-screen" data-admin-theme="dark">
     <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <AdminSidebar />
@@ -27,6 +28,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
 
       <style>{`
+        .admin-theme-root{--bg-primary:#0b0f1a;--bg-secondary:#111827;--bg-tertiary:#1e293b;--bg-glass:rgba(20,28,48,0.55);--border-color:rgba(99,102,241,0.15);--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-tertiary:#64748b;--accent:#818cf8;--accent-bg:rgba(129,140,248,0.1);--success:#34d399;--confirm-action-bg:linear-gradient(145deg,rgba(15,23,42,0.42),rgba(15,23,42,0.58));--confirm-action-ring:linear-gradient(90deg,#c084fc,#8b5cf6,#6366f1,#38bdf8,#93c5fd,#d8b4fe,#c084fc);--confirm-action-text:rgb(226,232,240);--confirm-action-hover-text:#fff;--confirm-action-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 0 18px rgba(99,102,241,0.16);--confirm-action-hover-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px rgba(99,102,241,0.24);min-height:100vh;background:var(--bg-primary);color:var(--text-primary);transition:background-color .18s,color .18s}
+        .admin-theme-root[data-admin-theme="light"]{--bg-primary:#f8fafc;--bg-secondary:#f1f5f9;--bg-tertiary:#e2e8f0;--bg-glass:rgba(248,250,252,0.7);--border-color:rgba(99,102,241,0.2);--text-primary:#0f172a;--text-secondary:#475569;--text-tertiary:#94a3b8;--accent:#6366f1;--accent-bg:rgba(99,102,241,0.1);--confirm-action-bg:linear-gradient(145deg,rgba(255,255,255,0.68),rgba(255,255,255,0.86));--confirm-action-text:rgb(15,23,42);--confirm-action-hover-text:rgb(15,23,42);--confirm-action-shadow:0 0 18px rgba(99,102,241,0.12),inset 0 1px 0 rgba(255,255,255,0.72);--confirm-action-hover-shadow:0 0 24px rgba(99,102,241,0.18),inset 0 1px 0 rgba(255,255,255,0.82)}
         .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--text-secondary)}
         .admin-sidebar-desktop{position:sticky;top:6rem;align-self:flex-start;width:248px;min-width:248px;flex-direction:column;transition:width .2s ease,min-width .2s ease}
         .admin-sidebar-brand-row{position:relative;display:flex;min-height:52px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);padding:0 4px 14px 0;margin-bottom:12px}
@@ -75,5 +78,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         @media(max-width:767px){.admin-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}.admin-quick-actions a{min-width:0;justify-content:center;padding:9px 4px;white-space:nowrap;font-size:12px}}
       `}</style>
     </section>
+    </div>
   );
 }
