@@ -7,6 +7,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
+      <div className="glass-nav fixed inset-x-0 top-0 z-50" aria-hidden="true">
+        <header className="h-14" />
+      </div>
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <AdminSidebar />
 
