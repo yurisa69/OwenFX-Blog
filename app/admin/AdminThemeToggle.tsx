@@ -10,29 +10,15 @@ export default function AdminThemeToggle() {
   useEffect(() => {
     const saved: Theme = localStorage.getItem('admin-theme') === 'light' ? 'light' : 'dark';
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
-    const body = document.body;
-    const previousBodyTheme = body.getAttribute('data-theme');
-    const previousBodyAdminTheme = body.getAttribute('data-admin-theme');
-    const previousColorScheme = body.style.colorScheme;
-
     const applyTheme = (value: Theme) => {
       root?.setAttribute('data-admin-theme', value);
-      root?.setAttribute('data-theme', value);
       root?.style.setProperty('color-scheme', value);
-      body.setAttribute('data-admin-theme', value);
-      body.setAttribute('data-theme', value);
-      body.style.colorScheme = value;
     };
 
     setTheme(saved);
     applyTheme(saved);
 
     return () => {
-      if (previousBodyTheme === null) body.removeAttribute('data-theme');
-      else body.setAttribute('data-theme', previousBodyTheme);
-      if (previousBodyAdminTheme === null) body.removeAttribute('data-admin-theme');
-      else body.setAttribute('data-admin-theme', previousBodyAdminTheme);
-      body.style.colorScheme = previousColorScheme;
     };
   }, []);
 
@@ -41,11 +27,7 @@ export default function AdminThemeToggle() {
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
     localStorage.setItem('admin-theme', next);
     root?.setAttribute('data-admin-theme', next);
-    root?.setAttribute('data-theme', next);
     root?.style.setProperty('color-scheme', next);
-    document.body.setAttribute('data-admin-theme', next);
-    document.body.setAttribute('data-theme', next);
-    document.body.style.colorScheme = next;
     setTheme(next);
     event.currentTarget.blur();
   }
@@ -54,7 +36,7 @@ export default function AdminThemeToggle() {
     <button
       type="button"
       onClick={handleToggle}
-      className="nav-icon-btn"
+      className="admin-nav-icon-btn"
       aria-label={theme === 'dark' ? '切换后台到浅色模式' : '切换后台到深色模式'}
     >
       {theme === 'dark' ? (

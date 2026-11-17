@@ -47,8 +47,8 @@ export default function AuthLoginPage() {
         <p className="mb-6 mt-2 text-sm opacity-70">欢迎回来</p>
         {notice && <p role="status" className="mb-4 rounded-xl border p-3 text-sm" style={{ borderColor: 'var(--border-color)', color: 'var(--success)' }}>{notice}</p>}
         <form onSubmit={submit} className="space-y-4">
-          <input type="email" required autoComplete="email" className="admin-input w-full" placeholder="邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
-          <PasswordInput required autoComplete="current-password" className="admin-input w-full" placeholder="密码" value={password} onChange={event => setPassword(event.target.value)} />
+          <input type="email" required autoComplete="email" className="form-input w-full" placeholder="邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
+          <PasswordInput required autoComplete="current-password" className="form-input w-full" placeholder="密码" value={password} onChange={event => setPassword(event.target.value)} />
           {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
           <div className="flex justify-end">
             <Link href="/auth/forgot-password" className="text-xs underline" style={{ color: 'var(--accent)' }}>忘记密码？</Link>

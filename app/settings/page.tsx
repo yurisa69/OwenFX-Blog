@@ -314,7 +314,7 @@ export default function SettingsPage() {
         </div>
         <form onSubmit={handleEmailChange} className="account-settings-form">
           <label htmlFor="account-email">新邮件地址</label>
-          <input id="account-email" className="admin-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮件地址" />
+          <input id="account-email" className="form-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="输入新的邮件地址" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={emailBusy || !user?.email}>
             {emailBusy ? '发送验证邮件中…' : '发送邮件验证'}
           </button>
@@ -331,11 +331,11 @@ export default function SettingsPage() {
         </div>
         <form onSubmit={handlePasswordChange} className="account-settings-form">
           <label htmlFor="current-password">当前密码</label>
-          <PasswordInput id="current-password" className="admin-input" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
+          <PasswordInput id="current-password" className="form-input" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} placeholder="输入当前密码" />
           <label htmlFor="new-password">新密码</label>
-          <PasswordInput id="new-password" className="admin-input" autoComplete="new-password" minLength={12} required value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="至少 12 位" />
+          <PasswordInput id="new-password" className="form-input" autoComplete="new-password" minLength={12} required value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="至少 12 位" />
           <label htmlFor="confirm-password">确认新密码</label>
-          <PasswordInput id="confirm-password" className="admin-input" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="再次输入新密码（至少12位）" />
+          <PasswordInput id="confirm-password" className="form-input" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="再次输入新密码（至少12位）" />
           <button type="submit" className="profile-primary-action account-settings-submit" disabled={passwordBusy}>
             {passwordBusy ? '正在更新密码…' : '更新密码'}
           </button>

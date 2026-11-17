@@ -154,7 +154,7 @@ export default function AdminSidebar() {
       <div className="admin-brand-header">
         <Link href="/admin" className="admin-brand text-xl font-bold tracking-tight md:text-2xl" style={{ color: 'var(--text-primary)' }}>
           <span className="admin-brand-owen">Owe</span><span className="admin-brand-n">n</span><span className="admin-brand-f">F</span><span className="admin-brand-x">X</span>{' '}
-          <span className="gradient-text admin-brand-studio">Studio</span>
+          <span className="admin-gradient-text admin-brand-studio">Studio</span>
         </Link>
       </div>
     );
@@ -164,7 +164,7 @@ export default function AdminSidebar() {
     return (
       <div className="admin-sidebar-footer">
         <Link href="/" className="admin-sidebar-link" >
-          <span className="gradient-text font-semibold tracking-wide">BLOG »</span>
+          <span className="admin-gradient-text font-semibold tracking-wide">BLOG »</span>
         </Link>
       </div>
     );
@@ -172,18 +172,18 @@ export default function AdminSidebar() {
 
   return (
     <>
-      <div className="glass-nav fixed inset-x-0 top-0 z-50">
+      <div className="admin-glass-nav fixed inset-x-0 top-0 z-50">
         <header className="h-14 flex items-center px-4 md:px-6">
           <div className="flex items-center gap-2">
           <button
             type="button"
-            className="nav-icon-btn"
+            className="admin-nav-icon-btn"
             aria-label={mobileOpen ? '关闭管理菜单' : '打开管理菜单'}
             aria-expanded={mobileOpen}
             aria-controls="admin-mobile-navigation"
             onClick={() => setMobileOpen(value => !value)}
           >
-            <svg className="six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+            <svg className="admin-six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 3 20 17H4L12 3Z" />
               <path d="M12 21 4 7h16l-8 14Z" />
             </svg>

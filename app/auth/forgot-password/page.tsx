@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
           </>
         ) : (
           <form onSubmit={submit} className="space-y-4">
-            <input type="email" required autoComplete="email" className="admin-input w-full" placeholder="注册邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
+            <input type="email" required autoComplete="email" className="form-input w-full" placeholder="注册邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
             {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
             <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '发送中…' : '发送重置邮件'}</button>
             <p className="text-center text-xs opacity-70"><Link href="/auth/login" className="underline" style={{ color: 'var(--accent)' }}>返回登录</Link></p>
