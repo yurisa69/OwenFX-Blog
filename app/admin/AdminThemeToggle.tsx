@@ -10,10 +10,30 @@ export default function AdminThemeToggle() {
   useEffect(() => {
     const saved: Theme = localStorage.getItem('admin-theme') === 'light' ? 'light' : 'dark';
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
+    const body = document.body;
+    const previousBodyTheme = body.getAttribute('data-theme');
+    const previousBodyAdminTheme = body.getAttribute('data-admin-theme');
+    const previousColorScheme = body.style.colorScheme;
+
+    const applyTheme = (value: Theme) => {
+      root?.setAttribute('data-admin-theme', value);
+      root?.setAttribute('data-theme', value);
+      root?.style.setProperty('color-scheme', value);
+      body.setAttribute('data-admin-theme', value);
+      body.setAttribute('data-theme', value);
+      body.style.colorScheme = value;
+    };
+
     setTheme(saved);
-    root?.setAttribute('data-admin-theme', saved);
-    root?.setAttribute('data-theme', saved);
-    root?.style.setProperty('color-scheme', saved);
+    applyTheme(saved);
+
+    return () => {
+      if (previousBodyTheme === null) body.removeAttribute('data-theme');
+      else body.setAttribute('data-theme', previousBodyTheme);
+      if (previousBodyAdminTheme === null) body.removeAttribute('data-admin-theme');
+      else body.setAttribute('data-admin-theme', previousBodyAdminTheme);
+      body.style.colorScheme = previousColorScheme;
+    };
   }, []);
 
   function handleToggle(event: React.MouseEvent<HTMLButtonElement>) {
@@ -23,6 +43,9 @@ export default function AdminThemeToggle() {
     root?.setAttribute('data-admin-theme', next);
     root?.setAttribute('data-theme', next);
     root?.style.setProperty('color-scheme', next);
+    document.body.setAttribute('data-admin-theme', next);
+    document.body.setAttribute('data-theme', next);
+    document.body.style.colorScheme = next;
     setTheme(next);
     event.currentTarget.blur();
   }
