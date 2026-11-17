@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireContentEditor } from '@/lib/admin-auth';
 import AdminSidebar from './AdminSidebar';
+import './admin.css';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireContentEditor();
