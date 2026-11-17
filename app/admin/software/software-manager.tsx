@@ -6,15 +6,16 @@ import R2ImageUploader from '@/components/admin/R2ImageUploader';
 type LinkItem = { provider: string; label: string; share_url: string; access_code: string };
 type SoftwareRow = { id: string; title: string; slug: string; description: string | null; developer: string | null; version: string | null; platform: string | null; file_size: string | null; image_url: string | null; official_download_url: string | null; introduction_markdown: string | null; screenshots?: string[] | null; status: string; archive_previous_status?: string | null; trash_previous_status?: string | null; deleted_at?: string | null; software_download_links?: LinkItem[] };
 
-const emptyLink = (): LinkItem => ({ provider: 'quark', label: '夸克网盘', share_url: '', access_code: '' });
+const emptyLink = (): LinkItem => ({ provider: '', label: '', share_url: '', access_code: '' });
 const providers = [{ value: 'uc', label: 'UC网盘' }, { value: 'quark', label: '夸克网盘' }, { value: 'baidu', label: '百度网盘' }, { value: 'thunder', label: '迅雷网盘' }];
+const providerNames: Record<string, string> = { uc: 'UC', quark: '夸克', baidu: '百度', thunder: '迅雷' };
 
 export default function SoftwareManager({ initialCreate = false }: { initialCreate?: boolean }) {
   const [rows, setRows] = useState<SoftwareRow[]>([]);
   const [editId, setEditId] = useState('');
   const [formOpen, setFormOpen] = useState(initialCreate);
   const [form, setForm] = useState({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
-  const [links, setLinks] = useState<LinkItem[]>([emptyLink()]);
+  const [links, setLinks] = useState<LinkItem[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -32,7 +33,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
     setEditId('');
     setFormOpen(false);
     setForm({ title: '', slug: '', description: '', developer: '', version: '', file_size: '', platform: 'Windows', image_url: '', official_download_url: '', introduction_markdown: '', screenshots: '',  });
-    setLinks([emptyLink()]);
+    setLinks([]);
   }
   async function save(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setError('');
@@ -48,7 +49,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
     setEditId(row.id);
     setFormOpen(true);
     setForm({ title: row.title, slug: row.slug, description: row.description || '', developer: row.developer || '', version: row.version || '', file_size: row.file_size || '', platform: row.platform || '', image_url: row.image_url || '', official_download_url: row.official_download_url || '', introduction_markdown: row.introduction_markdown || '', screenshots: (row.screenshots || []).join('\n') });
-    setLinks(row.software_download_links?.length ? row.software_download_links : [emptyLink()]);
+    setLinks(row.software_download_links || []);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   async function manage(row: SoftwareRow, action: 'archive' | 'restore_archive' | 'restore_trash' | 'permanent_delete' | 'trash') {
@@ -98,7 +99,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
       <textarea rows={6} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件详细介绍（支持 Markdown 文本）" value={form.introduction_markdown} onChange={e => change('introduction_markdown', e.target.value)} />\n      <textarea rows={3} className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="软件截图 HTTPS 图片地址，每行一个（可选）" value={form.screenshots} onChange={e => change('screenshots', e.target.value)} />\n      <div className="space-y-2 sm:col-span-2">
         <div className="flex items-center justify-between"><strong className="text-sm">网盘下载链接</strong><button type="button" className="admin-nav-link" onClick={() => setLinks(items => [...items, emptyLink()])}>添加链接</button></div>
         {links.map((link, index) => <div key={index} className="grid gap-2 rounded-lg border p-3 sm:grid-cols-2">
-          <select className="rounded-lg border bg-transparent p-2" value={link.provider} onChange={e => setLinks(items => items.map((item, i) => i === index ? { ...item, provider: e.target.value } : item))}>{providers.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}</select>
+          <select className="rounded-lg border bg-transparent p-2" value={link.provider} required={Boolean(link.share_url.trim())} onChange={e => setLinks(items => items.map((item, i) => i === index ? { ...item, provider: e.target.value, label: providerNames[e.target.value] || '' } : item))}><option value="">请选择网盘</option>{providers.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}</select>
           <input className="rounded-lg border bg-transparent p-2" placeholder="链接显示名称" value={link.label} onChange={e => setLinks(items => items.map((item, i) => i === index ? { ...item, label: e.target.value } : item))} />
           <input type="url" className="rounded-lg border bg-transparent p-2 sm:col-span-2" placeholder="HTTPS 分享链接" value={link.share_url} onChange={e => setLinks(items => items.map((item, i) => i === index ? { ...item, share_url: e.target.value } : item))} />
           <input className="rounded-lg border bg-transparent p-2" placeholder="提取码（可选）" value={link.access_code} onChange={e => setLinks(items => items.map((item, i) => i === index ? { ...item, access_code: e.target.value } : item))} />
