@@ -9,23 +9,13 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
 
   useLayoutEffect(() => {
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
-    const initializedTheme = root?.dataset.adminTheme;
     const cookieMatch = document.cookie.match(/(?:^|; )admin-theme=(dark|light)(?:;|$)/);
     let stored: string | null = null;
     try { stored = localStorage.getItem('admin-theme'); } catch {}
+    const saved: Theme = cookieMatch?.[1] === 'light' || (!cookieMatch && stored === 'light') ? 'light' : 'dark';
 
-    // The layout's pre-hydration initializer is authoritative; do not re-apply
-    // a second theme value after the browser has already painted the page.
-    const saved: Theme = initializedTheme === 'light' || initializedTheme === 'dark'
-      ? initializedTheme
-      : cookieMatch?.[1] === 'light' || (!cookieMatch && stored === 'light') ? 'light' : 'dark';
-
-    if (root && root.dataset.adminTheme !== saved) {
-      root.dataset.adminTheme = saved;
-    }
-    if (root && root.style.colorScheme !== saved) {
-      root.style.colorScheme = saved;
-    }
+    root?.setAttribute('data-admin-theme', saved);
+    root?.style.setProperty('color-scheme', saved);
     setTheme(saved);
 
     if (!cookieMatch) {
@@ -34,19 +24,13 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
   }, [initialTheme]);
 
   function handleToggle(event: React.MouseEvent<HTMLButtonElement>) {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
-    const current: Theme = root?.dataset.adminTheme === 'light' ? 'light' : 'dark';
-    const next: Theme = current === 'dark' ? 'light' : 'dark';
-
-    // Change the single theme source first; React state only updates the icon.
-    if (root) {
-      root.dataset.adminTheme = next;
-      root.style.colorScheme = next;
-    }
-    setTheme(next);
-
     try { localStorage.setItem('admin-theme', next); } catch {}
     document.cookie = 'admin-theme=' + next + '; Path=/; Max-Age=31536000; SameSite=Lax';
+    root?.setAttribute('data-admin-theme', next);
+    root?.style.setProperty('color-scheme', next);
+    setTheme(next);
     event.currentTarget.blur();
   }
 
