@@ -1,7 +1,5 @@
-.admin-theme-root{--bg-primary:#0b0f1a;--bg-secondary:#111827;--bg-tertiary:#1e293b;--bg-glass:rgba(20,28,48,0.55);--border-color:rgba(99,102,241,0.15);--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-tertiary:#64748b;--accent:#818cf8;--accent-bg:rgba(129,140,248,0.1);--success:#34d399;--confirm-action-bg:linear-gradient(145deg,rgba(15,23,42,0.42),rgba(15,23,42,0.58));--confirm-action-ring:linear-gradient(90deg,#c084fc,#8b5cf6,#6366f1,#38bdf8,#93c5fd,#d8b4fe,#c084fc);--confirm-action-text:rgb(226,232,240);--confirm-action-hover-text:#fff;--confirm-action-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 0 18px rgba(99,102,241,0.16);--confirm-action-hover-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px rgba(99,102,241,0.24);min-height:100vh;background:var(--bg-primary);color:var(--text-primary);transition:--bg-primary .24s ease,--bg-secondary .24s ease,--bg-tertiary .24s ease,--bg-glass .24s ease,--border-color .24s ease,--text-primary .24s ease,--text-secondary .24s ease,--text-tertiary .24s ease,--accent .24s ease,--accent-bg .24s ease,background-color .24s ease,color .24s ease}
-.admin-theme-root[data-admin-theme="light"]{--bg-primary:#f8fafc;--bg-secondary:#f1f5f9;--bg-tertiary:#e2e8f0;--bg-glass:rgba(248,250,252,0.7);--border-color:rgba(99,102,241,0.2);--text-primary:#0f172a;--text-secondary:#475569;--text-tertiary:#94a3b8;--accent:#6366f1;--accent-bg:rgba(99,102,241,0.1);--confirm-action-bg:linear-gradient(145deg,rgba(255,255,255,0.68),rgba(255,255,255,0.86));--confirm-action-text:rgb(15,23,42);--confirm-action-hover-text:rgb(15,23,42);--confirm-action-shadow:0 0 18px rgba(99,102,241,0.12),inset 0 1px 0 rgba(255,255,255,0.72);--confirm-action-hover-shadow:0 0 24px rgba(99,102,241,0.18),inset 0 1px 0 rgba(255,255,255,0.82)}
-body:has(.admin-theme-root[data-admin-theme="dark"]){--bg-primary:#0b0f1a;--bg-secondary:#111827;--bg-tertiary:#1e293b;--bg-glass:rgba(20,28,48,0.55);--border-color:rgba(99,102,241,0.15);--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-tertiary:#64748b;--accent:#818cf8;--accent-bg:rgba(129,140,248,0.1);--success:#34d399;--confirm-action-bg:linear-gradient(145deg,rgba(15,23,42,0.42),rgba(15,23,42,0.58));--confirm-action-ring:linear-gradient(90deg,#c084fc,#8b5cf6,#6366f1,#38bdf8,#93c5fd,#d8b4fe,#c084fc);--confirm-action-text:rgb(226,232,240);--confirm-action-hover-text:#fff;--confirm-action-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 0 18px rgba(99,102,241,0.16);--confirm-action-hover-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px rgba(99,102,241,0.24);background:var(--bg-primary);color:var(--text-primary)}
-body:has(.admin-theme-root[data-admin-theme="light"]){--bg-primary:#f8fafc;--bg-secondary:#f1f5f9;--bg-tertiary:#e2e8f0;--bg-glass:rgba(248,250,252,0.7);--border-color:rgba(99,102,241,0.2);--text-primary:#0f172a;--text-secondary:#475569;--text-tertiary:#94a3b8;--accent:#6366f1;--accent-bg:rgba(99,102,241,0.1);--confirm-action-bg:linear-gradient(145deg,rgba(255,255,255,0.68),rgba(255,255,255,0.86));--confirm-action-text:rgb(15,23,42);--confirm-action-hover-text:rgb(15,23,42);--confirm-action-shadow:0 0 18px rgba(99,102,241,0.12),inset 0 1px 0 rgba(255,255,255,0.72);--confirm-action-hover-shadow:0 0 24px rgba(99,102,241,0.18),inset 0 1px 0 rgba(255,255,255,0.82);background:var(--bg-primary);color:var(--text-primary)}
+.admin-theme-root{--admin-bg-primary:#0b0f1a;--admin-bg-secondary:#111827;--admin-bg-tertiary:#1e293b;--admin-bg-glass:rgba(20,28,48,0.55);--admin-border-color:rgba(99,102,241,0.15);--admin-text-primary:#f1f5f9;--admin-text-secondary:#94a3b8;--admin-text-tertiary:#64748b;--admin-accent:#818cf8;--admin-accent-bg:rgba(129,140,248,0.1);--admin-success:#34d399;--admin-confirm-start:rgba(15,23,42,0.42);--admin-confirm-end:rgba(15,23,42,0.58);--admin-confirm-text:rgb(226,232,240);--admin-confirm-hover-text:#fff;--bg-primary:var(--admin-bg-primary);--bg-secondary:var(--admin-bg-secondary);--bg-tertiary:var(--admin-bg-tertiary);--bg-glass:var(--admin-bg-glass);--border-color:var(--admin-border-color);--text-primary:var(--admin-text-primary);--text-secondary:var(--admin-text-secondary);--text-tertiary:var(--admin-text-tertiary);--accent:var(--admin-accent);--accent-bg:var(--admin-accent-bg);--success:var(--admin-success);--confirm-action-bg:linear-gradient(145deg,var(--admin-confirm-start),var(--admin-confirm-end));--confirm-action-ring:linear-gradient(90deg,#c084fc,#8b5cf6,#6366f1,#38bdf8,#93c5fd,#d8b4fe,#c084fc);--confirm-action-text:var(--admin-confirm-text);--confirm-action-hover-text:var(--admin-confirm-hover-text);--confirm-action-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 0 18px rgba(99,102,241,0.16);--confirm-action-hover-shadow:inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px rgba(99,102,241,0.24);min-height:100vh;background:var(--bg-primary);color:var(--text-primary);transition:background-color .28s cubic-bezier(.22,1,.36,1),color .28s cubic-bezier(.22,1,.36,1)}
+.admin-theme-root[data-admin-theme="light"]{--admin-bg-primary:#f8fafc;--admin-bg-secondary:#f1f5f9;--admin-bg-tertiary:#e2e8f0;--admin-bg-glass:rgba(248,250,252,0.7);--admin-border-color:rgba(99,102,241,0.2);--admin-text-primary:#0f172a;--admin-text-secondary:#475569;--admin-text-tertiary:#94a3b8;--admin-accent:#6366f1;--admin-accent-bg:rgba(99,102,241,0.1);--admin-confirm-start:rgba(255,255,255,0.68);--admin-confirm-end:rgba(255,255,255,0.86);--admin-confirm-text:rgb(15,23,42);--admin-confirm-hover-text:rgb(15,23,42);--confirm-action-shadow:0 0 18px rgba(99,102,241,0.12),inset 0 1px 0 rgba(255,255,255,0.72);--confirm-action-hover-shadow:0 0 24px rgba(99,102,241,0.18),inset 0 1px 0 rgba(255,255,255,0.82)}
  .admin-sidebar{overflow:visible;border:0;border-radius:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--text-secondary)}
 .admin-sidebar-desktop{position:sticky;top:6rem;align-self:flex-start;width:248px;min-width:248px;flex-direction:column;transition:width .2s ease,min-width .2s ease}
 .admin-sidebar-brand-row{position:relative;display:flex;min-height:52px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);padding:0 4px 14px 0;margin-bottom:12px}
@@ -37,8 +35,8 @@ body:has(.admin-theme-root[data-admin-theme="light"]){--bg-primary:#f8fafc;--bg-
 .admin-sidebar-mobile-trigger{display:flex;width:100%;min-height:42px;align-items:center;gap:10px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-glass);padding:9px 12px;color:var(--text-secondary);font-size:14px}
 .admin-sidebar-mobile-overlay{position:fixed;inset:0;z-index:80}
 .admin-sidebar-mobile-backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:269px;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-right:1px solid rgba(255,255,255,.13);background:linear-gradient(160deg,rgb(15,20,39),rgb(5,9,20));padding:18px 14px;box-shadow:0 12px 40px rgba(2,6,23,.58)}
-.admin-theme-root[data-admin-theme="light"] .admin-sidebar-mobile-panel{border-right-color:rgba(99,102,241,.18);background:linear-gradient(160deg,rgb(248,250,255),rgb(230,235,248))}
+.admin-sidebar-mobile-panel{position:absolute;top:0;bottom:0;left:0;display:flex;width:269px;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-right:1px solid rgba(255,255,255,.13);background:linear-gradient(160deg,var(--bg-secondary),var(--bg-primary));padding:18px 14px;box-shadow:0 12px 40px rgba(2,6,23,.58)}
+.admin-theme-root[data-admin-theme="light"] .admin-sidebar-mobile-panel{border-right-color:rgba(99,102,241,.18);background:linear-gradient(160deg,var(--bg-secondary),var(--bg-primary))}
 .admin-sidebar-mobile-panel .admin-sidebar-brand-row{margin:0 0 14px;padding:0 0 14px}
 .admin-sidebar-mobile-panel .admin-brand{transform:none}
 .admin-sidebar-mobile-panel .admin-sidebar-nav{gap:8px}
@@ -76,16 +74,34 @@ body:has(.admin-theme-root[data-admin-theme="light"]){--bg-primary:#f8fafc;--bg-
 
 
 /* Smoothly interpolate admin theme color tokens instead of switching them instantly. */
-@property --bg-primary{syntax:"<color>";inherits:true;initial-value:#0b0f1a}
-@property --bg-secondary{syntax:"<color>";inherits:true;initial-value:#111827}
-@property --bg-tertiary{syntax:"<color>";inherits:true;initial-value:#1e293b}
-@property --bg-glass{syntax:"<color>";inherits:true;initial-value:rgba(20,28,48,.55)}
-@property --border-color{syntax:"<color>";inherits:true;initial-value:rgba(99,102,241,.15)}
-@property --text-primary{syntax:"<color>";inherits:true;initial-value:#f1f5f9}
-@property --text-secondary{syntax:"<color>";inherits:true;initial-value:#94a3b8}
-@property --text-tertiary{syntax:"<color>";inherits:true;initial-value:#64748b}
-@property --accent{syntax:"<color>";inherits:true;initial-value:#818cf8}
-@property --accent-bg{syntax:"<color>";inherits:true;initial-value:rgba(129,140,248,.1)}
-@property --success{syntax:"<color>";inherits:true;initial-value:#34d399}
-body:has(.admin-theme-root){transition:--bg-primary .24s ease,--bg-secondary .24s ease,--bg-tertiary .24s ease,--bg-glass .24s ease,--border-color .24s ease,--text-primary .24s ease,--text-secondary .24s ease,--text-tertiary .24s ease,--accent .24s ease,--accent-bg .24s ease,background-color .24s ease,color .24s ease}
-@media(prefers-reduced-motion:reduce){body:has(.admin-theme-root),.admin-theme-root{transition:none!important}}
+@property --admin-bg-primary{syntax:"<color>";inherits:true;initial-value:#0b0f1a}
+@property --admin-bg-secondary{syntax:"<color>";inherits:true;initial-value:#111827}
+@property --admin-bg-tertiary{syntax:"<color>";inherits:true;initial-value:#1e293b}
+@property --admin-bg-glass{syntax:"<color>";inherits:true;initial-value:rgba(20,28,48,.55)}
+@property --admin-border-color{syntax:"<color>";inherits:true;initial-value:rgba(99,102,241,.15)}
+@property --admin-text-primary{syntax:"<color>";inherits:true;initial-value:#f1f5f9}
+@property --admin-text-secondary{syntax:"<color>";inherits:true;initial-value:#94a3b8}
+@property --admin-text-tertiary{syntax:"<color>";inherits:true;initial-value:#64748b}
+@property --admin-accent{syntax:"<color>";inherits:true;initial-value:#818cf8}
+@property --admin-accent-bg{syntax:"<color>";inherits:true;initial-value:rgba(129,140,248,.1)}
+@property --admin-success{syntax:"<color>";inherits:true;initial-value:#34d399}
+.admin-theme-root{transition:background-color .28s cubic-bezier(.22,1,.36,1),color .28s cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:reduce){.admin-theme-root,.admin-theme-root *{transition:none!important;animation-duration:0.01ms!important;animation-iteration-count:1!important}}
+
+
+/* One consistent theme transition system, scoped to the admin application. */
+@property --admin-confirm-start{syntax:"<color>";inherits:true;initial-value:rgba(15,23,42,.42)}
+@property --admin-confirm-end{syntax:"<color>";inherits:true;initial-value:rgba(15,23,42,.58)}
+@property --admin-confirm-text{syntax:"<color>";inherits:true;initial-value:rgb(226,232,240)}
+@property --admin-confirm-hover-text{syntax:"<color>";inherits:true;initial-value:#fff}
+.admin-theme-root .admin-panel,
+.admin-theme-root .admin-glass-nav,
+.admin-theme-root .admin-nav-icon-btn,
+.admin-theme-root .admin-input,
+.admin-theme-root .admin-sidebar-link,
+.admin-theme-root .admin-sidebar-group-toggle,
+.admin-theme-root .admin-sidebar-collapse,
+.admin-theme-root .admin-sidebar-mobile-panel,
+.admin-theme-root .admin-nav-link,
+.admin-theme-root .admin-quick-link,
+.admin-theme-root .uiverse-btn-primary{transition-property:background-color,border-color,color,box-shadow,fill,stroke,transform;transition-duration:.28s;transition-timing-function:cubic-bezier(.22,1,.36,1)}
