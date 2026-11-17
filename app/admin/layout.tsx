@@ -7,16 +7,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
-      <div className="glass-nav fixed inset-x-0 top-0 z-50" aria-hidden="true">
-        <header className="h-14 flex items-center px-4 md:px-6">
-          <span className="nav-icon-btn" aria-hidden="true">
-            <svg className="six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
-              <path d="M12 3 20 17H4L12 3Z" />
-              <path d="M12 21 4 7h16l-8 14Z" />
-            </svg>
-          </span>
-        </header>
-      </div>
       <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
         <AdminSidebar />
 

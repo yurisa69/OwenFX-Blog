@@ -61,7 +61,6 @@ function isActivePath(pathname: string, href: string) {
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(navGroups.map(group => group.title));
 
@@ -163,7 +162,7 @@ export default function AdminSidebar() {
   function Footer() {
     return (
       <div className="admin-sidebar-footer">
-        <Link href="/" className="admin-sidebar-link" title={collapsed ? 'BLOG' : undefined}>
+        <Link href="/" className="admin-sidebar-link" >
           <span className="gradient-text font-semibold tracking-wide">BLOG »</span>
         </Link>
       </div>
@@ -172,37 +171,26 @@ export default function AdminSidebar() {
 
   return (
     <>
-      <button
-        type="button"
-        className="admin-sidebar-mobile-trigger md:hidden"
-        onClick={() => setMobileOpen(true)}
-        aria-expanded={mobileOpen}
-        aria-controls="admin-mobile-navigation"
-      >
-        <span aria-hidden="true">☰</span>
-        <span>管理菜单</span>
-        <span className="ml-auto" aria-hidden="true">⌄</span>
-      </button>
-
-      <aside className={`admin-sidebar admin-sidebar-desktop hidden md:flex ${collapsed ? 'admin-sidebar-collapsed' : ''}`}>
-        <div className="admin-sidebar-brand-row">
-          <Brand />
+      <div className="glass-nav fixed inset-x-0 top-0 z-50">
+        <header className="h-14 flex items-center px-4 md:px-6">
           <button
             type="button"
-            className="admin-sidebar-collapse"
-            onClick={() => setCollapsed(value => !value)}
-            aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
-            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            className="nav-icon-btn"
+            aria-label={mobileOpen ? '关闭管理菜单' : '打开管理菜单'}
+            aria-expanded={mobileOpen}
+            aria-controls="admin-mobile-navigation"
+            onClick={() => setMobileOpen(value => !value)}
           >
-            {collapsed ? '›' : '‹'}
+            <svg className="six-star-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3 20 17H4L12 3Z" />
+              <path d="M12 21 4 7h16l-8 14Z" />
+            </svg>
           </button>
-        </div>
-        <Navigation compact={collapsed} />
-        <Footer />
-      </aside>
+        </header>
+      </div>
 
       {mobileOpen && (
-        <div className="admin-sidebar-mobile-overlay md:hidden">
+        <div className="admin-sidebar-mobile-overlay">
           <button
             type="button"
             className="admin-sidebar-mobile-backdrop"
