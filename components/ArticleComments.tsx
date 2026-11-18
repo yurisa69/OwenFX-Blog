@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase';
 import { formatChineseDateLocal } from '@/lib/date';
@@ -35,15 +35,13 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const [honeypot, setHoneypot] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState('');
   const [likeStats, setLikeStats] = useState<Record<string, { count: number; liked: boolean }>>({});
   const [likeBusyId, setLikeBusyId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState('');
-  const [replySubmitting, setReplySubmitting] = useState(false);
-  const [replyNotice, setReplyNotice] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -116,13 +114,13 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
     const body = commentText.trim();
     if (!body || submitting) return;
     if (Array.from(body).length > 600) {
-      setNotice('每条评论最多 600 字。');
+      setNotice(replyingTo ? '每条回复最多 600 字。' : '每条评论最多 600 字。');
       return;
     }
 
     const supabase = getSupabaseBrowser();
     if (!supabase) {
-      setNotice('评论服务暂时不可用，请稍后再试。');
+      setNotice(replyingTo ? '回复服务暂时不可用，请稍后再试。' : '评论服务暂时不可用，请稍后再试。');
       return;
     }
 
@@ -138,23 +136,27 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       const response = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ articleId, body, website: honeypot }),
+        body: JSON.stringify(replyingTo
+          ? { articleId, body, parentCommentId: replyingTo }
+          : { articleId, body, website: honeypot }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.comment) {
-        throw new Error(result.error || '评论提交失败，请稍后重试。');
+        throw new Error(result.error || (replyingTo ? '回复提交失败，请稍后重试。' : '评论提交失败，请稍后重试。'));
       }
       const submitted = result.comment as CommentRow;
       if (submitted.status === 'approved' || submitted.status === 'pending') {
-        setComments(current => [submitted, ...current]);
+        setComments(current => replyingTo ? [...current, submitted] : [submitted, ...current]);
       }
+      const wasReply = Boolean(replyingTo);
       setCommentText('');
       setHoneypot('');
-      setNotice(submitted.status === 'approved'
-        ? '评论已发布并公开显示。'
-        : '评论已提交，审核通过后会公开显示。');
+      setReplyingTo(null);
+      setNotice(wasReply
+        ? submitted.status === 'approved' ? '回复已发布。' : '回复已提交，审核通过后会公开显示。'
+        : submitted.status === 'approved' ? '评论已发布并公开显示。' : '评论已提交，审核通过后会公开显示。');
     } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : '评论提交失败，请稍后重试。');
+      setNotice(cause instanceof Error ? cause.message : (replyingTo ? '回复提交失败，请稍后重试。' : '评论提交失败，请稍后重试。'));
     } finally {
       setSubmitting(false);
     }
@@ -184,36 +186,10 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
     }));
   };
 
-  const submitReply = async (parentCommentId: string) => {
-    const body = replyText.trim();
-    if (!body || replySubmitting) return;
-    if (Array.from(body).length > 600) { setReplyNotice('每条回复最多 600 字。'); return; }
-    const supabase = getSupabaseBrowser();
-    if (!supabase) { setReplyNotice('回复服务暂时不可用，请稍后再试。'); return; }
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) { login(); return; }
-    setReplySubmitting(true);
-    setReplyNotice('');
-    try {
-      const response = await fetch('/api/comments', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ articleId, body, parentCommentId }),
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.comment) throw new Error(result.error || '回复提交失败，请稍后重试。');
-      const submitted = result.comment as CommentRow;
-      if (submitted.status === 'approved' || submitted.status === 'pending') setComments(current => [...current, submitted]);
-      setReplyText('');
-      setReplyingTo(null);
-      setNotice(submitted.status === 'approved' ? '回复已发布。' : '回复已提交，审核通过后会公开显示。');
-      setReplyNotice('');
-    } catch (cause) {
-      setReplyNotice(cause instanceof Error ? cause.message : '回复提交失败，请稍后重试。');
-    } finally { setReplySubmitting(false); }
-  };
-
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
   const rootComments = comments.filter(comment => !comment.parent_comment_id);
+  const replyTarget = replyingTo ? comments.find(comment => comment.id === replyingTo) : null;
+  const replyTargetName = replyTarget ? getAuthor(replyTarget.author)?.display_name || '用户' : '';
 
   return (
     <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
@@ -233,15 +209,15 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           onChange={event => setHoneypot(event.target.value)} tabIndex={-1}
           autoComplete="off" aria-hidden="true"
           className="absolute -left-[10000px] h-px w-px opacity-0" />
-        <textarea value={commentText} onChange={event => setCommentText(Array.from(event.target.value).slice(0, 600).join(''))}
-          placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={1200}
+        <textarea ref={commentInputRef} value={commentText} onChange={event => setCommentText(Array.from(event.target.value).slice(0, 600).join(''))}
+          placeholder={user ? (replyingTo ? `回复 ${replyTargetName}...` : '写下评论...') : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
         <div className="w-full">
           {user ? (
             <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
               className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">
-              {submitting ? '提交中…' : '发表评论'}
+              {submitting ? '提交中…' : replyingTo ? '发送回复' : '发表评论'}
             </button>
           ) : (
             <button type="button" onClick={login}
@@ -295,30 +271,13 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                         <button type="button" onClick={() => {
                           if (!user) { login(); return; }
                           setReplyingTo(current => current === comment.id ? null : comment.id);
-                          setReplyText(''); setReplyNotice('');
+                          setCommentText(''); setNotice('');
+                          commentInputRef.current?.focus();
                         }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5h-8l-6 3v-3.5A2.5 2.5 0 0 1 2.5 16V7A2.5 2.5 0 0 1 5 4.5Z" />
                           </svg><span>回复</span>
                         </button>
-                      </div>
-                    )}
-                    {replyingTo === comment.id && (
-                      <div className="mt-2 space-y-2">
-                        <textarea value={replyText} onChange={event => setReplyText(Array.from(event.target.value).slice(0, 600).join(''))}
-                          rows={2} maxLength={1200} placeholder={`回复 ${name}...`}
-                          className="block w-full resize-none rounded-lg border p-2.5 text-sm outline-none"
-                          style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
-                        <div className="flex items-center justify-end gap-2">
-                          <button type="button" onClick={() => { setReplyingTo(null); setReplyText(''); setReplyNotice(''); }}
-                            className="rounded-lg px-3 py-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>取消</button>
-                          <button type="button" onClick={() => void submitReply(comment.id)}
-                            disabled={!replyText.trim() || replySubmitting}
-                            className="uiverse-btn uiverse-btn-primary rounded-lg !px-3 !py-1.5 text-xs">
-                            {replySubmitting ? '提交中…' : '发送回复'}
-                          </button>
-                        </div>
-                        {replyNotice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{replyNotice}</p>}
                       </div>
                     )}
                     {replies.length > 0 && (
