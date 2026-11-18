@@ -427,16 +427,39 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
 @media(max-width:767px){.profile-drawer-content{gap:13px;padding-top:14px}.profile-identity-card,.profile-edit-card{padding:14px}.profile-activity-tab{min-height:54px}}
 
 
-/* Article excerpt: use the same open, accent-line treatment on desktop and mobile. */
+/* Article excerpt: a subtle rainbow light line, shared by desktop and mobile. */
 .article-detail-surface .article-excerpt-card {
+  position: relative;
   border: 0;
-  border-left: 2px solid var(--accent);
   border-radius: 0;
   padding: .15rem 0 .15rem .85rem;
   background: transparent;
   box-shadow: none;
   color: var(--text-secondary);
   line-height: 1.85;
+}
+.article-detail-surface .article-excerpt-card::before {
+  content: "";
+  position: absolute;
+  top: .15rem;
+  bottom: .15rem;
+  left: 0;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff5f6d, #ffc371, #f9f871, #63e6be, #4dabf7, #9775fa, #ff5f6d);
+  background-size: 100% 300%;
+  animation: article-rainbow-line 6s linear infinite;
+  box-shadow: 0 0 7px rgba(151, 117, 250, .28);
+}
+@keyframes article-rainbow-line {
+  from { background-position: 0 0; }
+  to { background-position: 0 300%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .article-detail-surface .article-excerpt-card::before {
+    animation: none;
+    background-position: 0 50%;
+  }
 }
 
 
@@ -666,7 +689,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-variabl
   .article-detail-surface:hover { border-color:transparent; }
   .article-detail-surface > div:first-child { align-items:flex-start; text-align:left; margin-bottom:1rem; }
   .article-detail-surface h1 { margin-bottom:1rem; font-size:clamp(1.7rem,7vw,2.15rem); line-height:1.28; letter-spacing:-.035em; }
-  .article-detail-surface .article-excerpt-card { margin-bottom:1.25rem; border:0; border-left:2px solid var(--accent); border-radius:0; padding:.15rem 0 .15rem .85rem; background:transparent; box-shadow:none; color:var(--text-secondary); line-height:1.85; }
+  .article-detail-surface .article-excerpt-card { margin-bottom:1.25rem; border:0; border-radius:0; padding:.15rem 0 .15rem .85rem; background:transparent; box-shadow:none; color:var(--text-secondary); line-height:1.85; }
   .article-detail-surface > .border-t { padding-top:1.25rem; }
   .article-detail-surface .article-content { font-size:15px; line-height:1.9; }
   .article-detail-surface .article-content img { max-width:100%; height:auto; border-radius:12px; }
