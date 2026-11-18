@@ -108,14 +108,13 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
       }} />
     <div className="article-detail-page animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <article className="article-detail-surface uiverse-card mb-8 rounded-xl p-5 sm:p-7">
-        <div className="mb-3 flex flex-col items-center gap-1 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <div className="flex items-center justify-center gap-2">
-            <span className="monet-waterlily-flow font-semibold">OWEN</span>
-            <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)' }}><span className="monet-waterlily-flow">站长</span></span>
-          </div>
-          <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{publishedDate}</span>
+        <h1 className="mb-2 text-2xl font-bold leading-tight text-left sm:text-3xl">{article.title}</h1>
+        <div className="mb-6 flex items-center justify-start gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <span className="font-semibold monet-waterlily-flow">OWEN</span>
+          <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: 'var(--accent-bg)' }}><span className="monet-waterlily-flow">站长</span></span>
+          <span aria-hidden="true" style={{ color: 'var(--text-tertiary)' }}>•</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>{publishedDate}</span>
         </div>
-        <h1 className="mb-6 text-2xl font-bold leading-tight text-left sm:text-3xl">{article.title}</h1>
 
         {article.excerpt && (
           <p className="article-excerpt-card mb-6 rounded-lg px-4 py-3 text-sm leading-7">
