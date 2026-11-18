@@ -336,18 +336,23 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
               if (event.target === event.currentTarget && profileTab !== 'profile') setProfileTab('profile');
             }}>
               {editing ? (
-                <section className="profile-edit-card">
-                  <div className="profile-edit-heading">
-                    <div className="profile-avatar-ring profile-avatar-ring-edit">
-                      <div className="profile-avatar-inner">
-                        <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-lg font-semibold">编辑个人资料</h2>
-                      <button type="button" className="profile-secondary-action mt-2" onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? '上传中…' : '更换头像'}</button>
-                      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={handleAvatarUpload}/>
-                    </div>
+                <section className="profile-edit-card relative">
+                  <span className="absolute right-4 top-4 text-xs font-semibold tracking-wide text-[var(--text-tertiary)]">Edit</span>
+                  <div className="profile-edit-heading !justify-center !gap-0">
+                    <button
+                      type="button"
+                      className="mx-auto flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 disabled:cursor-wait"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploading}
+                      aria-label={uploading ? '头像上传中' : '点击头像更换头像'}
+                    >
+                      <span className="profile-avatar-ring profile-avatar-ring-edit">
+                        <span className="profile-avatar-inner">
+                          <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
+                        </span>
+                      </span>
+                    </button>
+                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={handleAvatarUpload}/>
                   </div>
                   <label className="profile-field-label">昵称</label>
                   <input className="profile-input" maxLength={MAX_DISPLAY_NAME_LENGTH * 2} value={profile.display_name} onChange={event => setProfile(value => ({...value, display_name:limitDisplayName(event.target.value)}))} placeholder="昵称（最多12个字符）"/>
