@@ -44,7 +44,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyingToName, setReplyingToName] = useState('');
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
-  const [commentSort, setCommentSort] = useState<'newest' | 'oldest' | 'popular'>('newest');
+  const [commentSort, setCommentSort] = useState<'newest' | 'oldest' | 'popular'>('oldest');
 
   useEffect(() => {
     if (notice !== '回复已发布！') return;
