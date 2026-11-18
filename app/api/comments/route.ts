@@ -20,8 +20,12 @@ export async function POST(request: Request) {
   const articleId = typeof input?.articleId === 'string' ? input.articleId : '';
   const body = typeof input?.body === 'string' ? input.body.trim() : '';
   const honeypot = typeof input?.website === 'string' ? input.website : '';
+  const parentCommentId = typeof input?.parentCommentId === 'string' ? input.parentCommentId : null;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(articleId)) {
     return NextResponse.json({ error: '文章信息无效，请刷新页面后重试。' }, { status: 400 });
+  }
+  if (parentCommentId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(parentCommentId)) {
+    return NextResponse.json({ error: '回复目标无效，请刷新页面后重试。' }, { status: 400 });
   }
   if (!body || Array.from(body).length > 600) {
     return NextResponse.json({ error: '评论内容不能为空，且最多 600 字。' }, { status: 400 });
@@ -40,6 +44,15 @@ export async function POST(request: Request) {
   const { data: article, error: articleError } = await service.from('articles')
     .select('id').eq('id', articleId).eq('status', 'published').maybeSingle();
   if (articleError || !article) return NextResponse.json({ error: '文章不存在或暂不接受评论。' }, { status: 404 });
+
+  if (parentCommentId) {
+    const { data: parent, error: parentError } = await service.from('comments')
+      .select('id,parent_comment_id').eq('id', parentCommentId).eq('article_id', articleId)
+      .eq('status', 'approved').is('deleted_at', null).maybeSingle();
+    if (parentError || !parent || parent.parent_comment_id) {
+      return NextResponse.json({ error: '只能回复当前文章中已公开的一级评论。' }, { status: 400 });
+    }
+  }
 
   const { data: isAdmin } = await supabase.rpc('is_owenfx_admin');
   const isSiteAdmin = isAdmin === true;
@@ -94,9 +107,9 @@ export async function POST(request: Request) {
       : akismetDecision === 'unavailable' ? '反垃圾服务暂不可用，转入人工审核' : null);
 
   const { data: comment, error: insertError } = await service.from('comments').insert({
-    article_id: articleId, author_id: user.id, body, status,
+    article_id: articleId, author_id: user.id, body, status, parent_comment_id: parentCommentId,
     moderation_source: moderationSource, moderation_reason: moderationReason,
-  }).select('id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)').single();
+  }).select('id,author_id,body,status,created_at,parent_comment_id,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)').single();
   if (insertError || !comment) return NextResponse.json({ error: '评论提交失败，请稍后重试。' }, { status: 500 });
 
   if (!isSiteAdmin && akismetDecision !== 'unavailable') {

@@ -166,6 +166,7 @@ export type Database = {
         author_id: string;
         body: string;
         status: string;
+        parent_comment_id: string | null;
         created_at: string;
         updated_at: string;
         moderation_source: string | null;
@@ -176,6 +177,15 @@ export type Database = {
       }, 'article_id' | 'author_id' | 'body', [
         Relationship<'comments_article_id_fkey', 'article_id', 'articles', 'id'>,
         Relationship<'comments_author_id_profiles_fkey', 'author_id', 'profiles', 'id'>,
+        Relationship<'comments_parent_comment_id_fkey', 'parent_comment_id', 'comments', 'id'>,
+      ]>;
+
+      comment_likes: Table<{
+        comment_id: string;
+        user_id: string;
+        created_at: string;
+      }, 'comment_id' | 'user_id', [
+        Relationship<'comment_likes_comment_id_fkey', 'comment_id', 'comments', 'id'>,
       ]>;
 
       media_assets: Table<{

@@ -12,6 +12,7 @@ type CommentRow = {
   body: string;
   status: 'approved' | 'pending' | 'rejected' | 'spam';
   created_at: string;
+  parent_comment_id: string | null;
   author?: CommentAuthor | CommentAuthor[] | null;
 };
 type CurrentUser = { id: string; name: string; avatar: string | null };
@@ -34,6 +35,12 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [honeypot, setHoneypot] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState('');
+  const [likeStats, setLikeStats] = useState<Record<string, { count: number; liked: boolean }>>({});
+  const [likeBusyId, setLikeBusyId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
+  const [replyNotice, setReplyNotice] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -60,7 +67,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         });
       }
 
-      const selection = 'id,author_id,body,status,created_at,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)';
+      const selection = 'id,author_id,body,status,created_at,parent_comment_id,author:profiles!comments_author_id_profiles_fkey(display_name,avatar_url)';
       const approvedQuery = supabase.from('comments').select(selection)
         .eq('article_id', articleId).eq('status', 'approved')
         .order('created_at', { ascending: false }).limit(100);
@@ -77,6 +84,23 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       const unique = Array.from(new Map(rows.map(row => [row.id, row])).values())
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setComments(unique);
+      const visibleCommentIds = unique.filter(row => row.status === 'approved').map(row => row.id);
+      if (visibleCommentIds.length) {
+        const { data: likes, error: likesError } = await supabase.from('comment_likes')
+          .select('comment_id,user_id').in('comment_id', visibleCommentIds);
+        if (!active) return;
+        if (!likesError) {
+          const nextStats: Record<string, { count: number; liked: boolean }> = {};
+          for (const id of visibleCommentIds) nextStats[id] = { count: 0, liked: false };
+          for (const like of likes || []) {
+            const stats = nextStats[like.comment_id];
+            if (!stats) continue;
+            stats.count += 1;
+            if (like.user_id === authUser?.id) stats.liked = true;
+          }
+          setLikeStats(nextStats);
+        } else setNotice('评论点赞暂时无法加载，请稍后重试。');
+      }
       if (approvedResult.error || pendingResult.error) setNotice('部分评论暂时无法显示，请稍后重试。');
       setCommentsLoaded(true);
     };
@@ -133,7 +157,60 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
     }
   };
 
+  const login = () => router.push('/login?next=' + encodeURIComponent(window.location.pathname));
+
+  const toggleCommentLike = async (comment: CommentRow) => {
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) { login(); return; }
+    if (likeBusyId === comment.id) return;
+    const current = likeStats[comment.id] || { count: 0, liked: false };
+    setLikeBusyId(comment.id);
+    const result = current.liked
+      ? await supabase.from('comment_likes').delete().eq('comment_id', comment.id).eq('user_id', session.user.id)
+      : await supabase.from('comment_likes').insert({ comment_id: comment.id, user_id: session.user.id });
+    setLikeBusyId(null);
+    if (result.error) {
+      setNotice(result.error.code === '23505' ? '你已经点过赞了。' : '点赞操作失败，请稍后重试。');
+      return;
+    }
+    setLikeStats(previous => ({
+      ...previous,
+      [comment.id]: { count: Math.max(0, current.count + (current.liked ? -1 : 1)), liked: !current.liked },
+    }));
+  };
+
+  const submitReply = async (parentCommentId: string) => {
+    const body = replyText.trim();
+    if (!body || replySubmitting) return;
+    if (Array.from(body).length > 600) { setReplyNotice('每条回复最多 600 字。'); return; }
+    const supabase = getSupabaseBrowser();
+    if (!supabase) { setReplyNotice('回复服务暂时不可用，请稍后再试。'); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) { login(); return; }
+    setReplySubmitting(true);
+    setReplyNotice('');
+    try {
+      const response = await fetch('/api/comments', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ articleId, body, parentCommentId }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.comment) throw new Error(result.error || '回复提交失败，请稍后重试。');
+      const submitted = result.comment as CommentRow;
+      if (submitted.status === 'approved' || submitted.status === 'pending') setComments(current => [...current, submitted]);
+      setReplyText('');
+      setReplyingTo(null);
+      setNotice(submitted.status === 'approved' ? '回复已发布。' : '回复已提交，审核通过后会公开显示。');
+      setReplyNotice('');
+    } catch (cause) {
+      setReplyNotice(cause instanceof Error ? cause.message : '回复提交失败，请稍后重试。');
+    } finally { setReplySubmitting(false); }
+  };
+
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
+  const rootComments = comments.filter(comment => !comment.parent_comment_id);
 
   return (
     <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
@@ -164,7 +241,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
               {submitting ? '提交中…' : '发表评论'}
             </button>
           ) : (
-            <button type="button" onClick={() => router.push('/login?next=' + encodeURIComponent(window.location.pathname))}
+            <button type="button" onClick={login}
               className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">登录后评论</button>
           )}
         </div>
@@ -183,10 +260,12 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         ) : comments.length === 0 ? (
           <p className="py-4 text-center text-sm" style={{ color: 'var(--text-tertiary)' }}>暂无评论，来发表第一条评论吧。</p>
         ) : (
-          <div className="space-y-4">
-            {comments.map(comment => {
+          <div className="space-y-5">
+            {rootComments.map(comment => {
               const author = getAuthor(comment.author);
               const name = author?.display_name || '用户';
+              const replies = comments.filter(item => item.parent_comment_id === comment.id);
+              const stats = likeStats[comment.id] || { count: 0, liked: false };
               return (
                 <article key={comment.id} className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs"
@@ -200,6 +279,80 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                       {comment.status === 'pending' && <span className="rounded-full px-2 py-0.5 text-[10px]" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>审核中</span>}
                     </div>
                     <p className="whitespace-pre-wrap break-words text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{comment.body}</p>
+                    {comment.status === 'approved' && (
+                      <div className="mt-2 flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                        <button type="button" onClick={() => void toggleCommentLike(comment)} disabled={likeBusyId === comment.id}
+                          aria-pressed={stats.liked} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]"
+                          style={stats.liked ? { color: 'var(--accent)' } : undefined}>
+                          <svg aria-hidden="true" viewBox="0 0 24 24" fill={stats.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-1.5 7a2 2 0 0 1-2 2H7" />
+                          </svg>
+                          <span>点赞{stats.count > 0 ? ` ${stats.count}` : ''}</span>
+                        </button>
+                        <button type="button" onClick={() => {
+                          if (!user) { login(); return; }
+                          setReplyingTo(current => current === comment.id ? null : comment.id);
+                          setReplyText(''); setReplyNotice('');
+                        }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
+                          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <path d="m9 17-5-5 5-5" /><path d="M4 12h10a6 6 0 0 1 6 6v1" />
+                          </svg><span>回复</span>
+                        </button>
+                      </div>
+                    )}
+                    {replyingTo === comment.id && (
+                      <div className="mt-2 space-y-2">
+                        <textarea value={replyText} onChange={event => setReplyText(Array.from(event.target.value).slice(0, 600).join(''))}
+                          rows={2} maxLength={1200} placeholder={`回复 ${name}...`}
+                          className="block w-full resize-none rounded-lg border p-2.5 text-sm outline-none"
+                          style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
+                        <div className="flex items-center justify-end gap-2">
+                          <button type="button" onClick={() => { setReplyingTo(null); setReplyText(''); setReplyNotice(''); }}
+                            className="rounded-lg px-3 py-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>取消</button>
+                          <button type="button" onClick={() => void submitReply(comment.id)}
+                            disabled={!replyText.trim() || replySubmitting}
+                            className="uiverse-btn uiverse-btn-primary rounded-lg !px-3 !py-1.5 text-xs">
+                            {replySubmitting ? '提交中…' : '发送回复'}
+                          </button>
+                        </div>
+                        {replyNotice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{replyNotice}</p>}
+                      </div>
+                    )}
+                    {replies.length > 0 && (
+                      <div className="mt-3 space-y-3 border-l-2 pl-3" style={{ borderColor: 'var(--border-color)' }}>
+                        {replies.map(reply => {
+                          const replyAuthor = getAuthor(reply.author);
+                          const replyName = replyAuthor?.display_name || '用户';
+                          const replyStats = likeStats[reply.id] || { count: 0, liked: false };
+                          return (
+                            <div key={reply.id} className="flex gap-2.5">
+                              <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px]"
+                                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                                {replyAuthor?.avatar_url ? <img src={replyAuthor.avatar_url} alt="" className="h-full w-full object-cover" /> : replyName.slice(0, 1).toUpperCase()}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="mb-1 flex flex-wrap items-center gap-2">
+                                  <span className={reply.author_id === user?.id ? "text-xs font-medium monet-waterlily-flow" : "text-xs font-medium"}>{replyName}</span>
+                                  <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{formatDate(reply.created_at)}</span>
+                                  {reply.status === 'pending' && <span className="rounded-full px-2 py-0.5 text-[10px]" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>审核中</span>}
+                                </div>
+                                <p className="whitespace-pre-wrap break-words text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{reply.body}</p>
+                                {reply.status === 'approved' && (
+                                  <button type="button" onClick={() => void toggleCommentLike(reply)} disabled={likeBusyId === reply.id}
+                                    aria-pressed={replyStats.liked} className="mt-1 inline-flex min-h-7 items-center gap-1.5 rounded-md text-xs transition hover:text-[var(--accent)]"
+                                    style={replyStats.liked ? { color: 'var(--accent)' } : { color: 'var(--text-tertiary)' }}>
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill={replyStats.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                                      <path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-1.5 7a2 2 0 0 1-2 2H7" />
+                                    </svg>
+                                    <span>点赞{replyStats.count > 0 ? ` ${replyStats.count}` : ''}</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </article>
               );
