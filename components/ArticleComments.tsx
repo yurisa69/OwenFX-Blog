@@ -26,7 +26,7 @@ function formatDate(value: string) {
   if (Number.isNaN(date.getTime())) return '';
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${formatChineseDateLocal(date)}•${hours}:${minutes}`;
+  return `${formatChineseDateLocal(date)} • ${hours}:${minutes}`;
 }
 
 export default function ArticleComments({ articleId }: { articleId: string }) {
@@ -266,9 +266,9 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
             className="max-w-[124px] rounded-lg border px-2 py-1.5 text-xs outline-none"
             style={{ background: 'var(--input-bg)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}
           >
-            <option value="newest">最新发布</option>
-            <option value="oldest">最早发布</option>
-            <option value="popular">最多点赞</option>
+            <option value="oldest">正序</option>
+            <option value="newest">倒序</option>
+            <option value="popular">最热</option>
           </select>
         </div>
         {!commentsLoaded ? (
@@ -293,13 +293,12 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
                       <span className={comment.author_id === user?.id ? "text-sm font-medium monet-waterlily-flow" : "text-sm font-medium"}>{name}</span>
-                      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{formatDate(comment.created_at)}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{formatDate(comment.created_at)} • {floorNumbers.get(comment.id)}楼</span>
                       {comment.status === 'pending' && <span className="rounded-full px-2 py-0.5 text-[10px]" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>审核中</span>}
                     </div>
                     <p className="whitespace-pre-wrap break-words text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{comment.body}</p>
                     {comment.status === 'approved' && (
                       <div className="mt-2 flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                        <span className="shrink-0 text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>{floorNumbers.get(comment.id)} 楼</span>
                         <button type="button" onClick={() => void toggleCommentLike(comment)} disabled={likeBusyId === comment.id}
                           aria-pressed={stats.liked} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]"
                           style={stats.liked ? { color: 'var(--accent)' } : undefined}>
