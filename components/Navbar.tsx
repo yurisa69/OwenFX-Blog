@@ -163,6 +163,10 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
 
 
   const loadProfileTab = async (tab: 'notifications' | 'likes' | 'bookmarks') => {
+    if (profileTab === tab) {
+      setProfileTab('profile');
+      return;
+    }
     setProfileTab(tab);
     if (!user?.id || profileLoadedTabs[tab] || profileListsLoading) return;
     const supabase = getSupabaseBrowser();
@@ -328,7 +332,9 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
               <span className="text-xs font-semibold tracking-[.18em] uppercase text-[var(--text-tertiary)]">OWENFX ACCOUNT</span>
               <button type="button" className="profile-round-action" aria-label="关闭" onClick={() => setDrawerOpen(false)}><CloseIcon/></button>
             </div>
-            <div className="profile-drawer-content">
+            <div className="profile-drawer-content" onClick={event => {
+              if (event.target === event.currentTarget && profileTab !== 'profile') setProfileTab('profile');
+            }}>
               {editing ? (
                 <section className="profile-edit-card">
                   <div className="profile-edit-heading">
@@ -385,7 +391,9 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                     </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
-                  {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite">
+                  {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite" onClick={event => {
+                    if (event.target === event.currentTarget) setProfileTab('profile');
+                  }}>
                     {profileListsLoading ? (
                       <div className="profile-list-empty">正在加载记录…</div>
                     ) : profileTab === 'notifications' ? (
