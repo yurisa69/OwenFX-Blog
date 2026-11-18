@@ -42,6 +42,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [likeStats, setLikeStats] = useState<Record<string, { count: number; liked: boolean }>>({});
   const [likeBusyId, setLikeBusyId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyingToName, setReplyingToName] = useState('');
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -153,6 +154,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       setCommentText('');
       setHoneypot('');
       setReplyingTo(null);
+      setReplyingToName('');
       setNotice(wasReply
         ? submitted.status === 'approved' ? '回复已发布。' : '回复已提交，审核通过后会公开显示。'
         : submitted.status === 'approved' ? '评论已发布并公开显示。' : '评论已提交，审核通过后会公开显示。');
@@ -189,8 +191,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
   const rootComments = comments.filter(comment => !comment.parent_comment_id);
-  const replyTarget = replyingTo ? comments.find(comment => comment.id === replyingTo) : null;
-  const replyTargetName = replyTarget ? getAuthor(replyTarget.author)?.display_name || '用户' : '';
+  const replyTargetName = replyingTo ? replyingToName : '';
 
   return (
     <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
@@ -274,6 +275,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                         <button type="button" onClick={() => {
                           if (!user) { login(); return; }
                           setReplyingTo(current => current === comment.id ? null : comment.id);
+                          setReplyingToName(current => replyingTo === comment.id ? '' : name);
                           setCommentText(''); setNotice('');
                           commentInputRef.current?.focus();
                         }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
@@ -318,14 +320,28 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                                 </div>
                                 <p className="whitespace-pre-wrap break-words text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{reply.body}</p>
                                 {reply.status === 'approved' && (
-                                  <button type="button" onClick={() => void toggleCommentLike(reply)} disabled={likeBusyId === reply.id}
-                                    aria-pressed={replyStats.liked} className="mt-1 inline-flex min-h-7 items-center gap-1.5 rounded-md text-xs transition hover:text-[var(--accent)]"
-                                    style={replyStats.liked ? { color: 'var(--accent)' } : { color: 'var(--text-tertiary)' }}>
-                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill={replyStats.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                                      <path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-1.5 7a2 2 0 0 1-2 2H7" />
-                                    </svg>
-                                    <span>点赞{replyStats.count > 0 ? ` ${replyStats.count}` : ''}</span>
-                                  </button>
+                                  <div className="mt-1 flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                                    <button type="button" onClick={() => void toggleCommentLike(reply)} disabled={likeBusyId === reply.id}
+                                      aria-pressed={replyStats.liked} className="inline-flex min-h-7 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]"
+                                      style={replyStats.liked ? { color: 'var(--accent)' } : undefined}>
+                                      <svg aria-hidden="true" viewBox="0 0 24 24" fill={replyStats.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                                        <path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 5-8c2 0 3 2 2 4l-1 4h6a2 2 0 0 1 2 2l-1.5 7a2 2 0 0 1-2 2H7" />
+                                      </svg>
+                                      <span>点赞{replyStats.count > 0 ? ` ${replyStats.count}` : ''}</span>
+                                    </button>
+                                    <button type="button" onClick={() => {
+                                      if (!user) { login(); return; }
+                                      setReplyingTo(reply.parent_comment_id);
+                                      setReplyingToName(replyName);
+                                      setCommentText(''); setNotice('');
+                                      commentInputRef.current?.focus();
+                                    }} className="inline-flex min-h-7 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
+                                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                                        <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5h-8l-6 3v-3.5A2.5 2.5 0 0 1 2.5 16V7A2.5 2.5 0 0 1 5 4.5Z" />
+                                      </svg>
+                                      <span>回复</span>
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             </div>
