@@ -136,8 +136,8 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
 
   return (
-    <section id="article-comments-card" className="uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
-      <div className="mb-5 flex flex-col items-center text-center">
+    <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
+      <div className="article-comments-identity mb-5 flex flex-col items-center text-center">
         <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
           style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
           {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
@@ -148,7 +148,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         </p>
       </div>
 
-      <div className="mb-5 space-y-2">
+      <div className="article-comments-compose mb-5 space-y-2">
         <input type="text" name="website" value={honeypot}
           onChange={event => setHoneypot(event.target.value)} tabIndex={-1}
           autoComplete="off" aria-hidden="true"
@@ -171,7 +171,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         {notice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}
       </div>
 
-      <div className="border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
+      <div className="article-comments-list border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-semibold">全部评论</h3>
           <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{comments.length} 条</span>

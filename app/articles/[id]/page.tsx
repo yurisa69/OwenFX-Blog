@@ -106,8 +106,8 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
       <script type="application/ld+json" dangerouslySetInnerHTML={{
         __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c'),
       }} />
-    <div className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <article className="uiverse-card mb-8 rounded-xl p-5 sm:p-7">
+    <div className="article-detail-page animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <article className="article-detail-surface uiverse-card mb-8 rounded-xl p-5 sm:p-7">
         <div className="mb-3 flex flex-col items-center gap-1 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
           <div className="flex items-center justify-center gap-2">
             <span className="monet-waterlily-flow font-semibold">OWEN</span>

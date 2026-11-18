@@ -71,8 +71,8 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   const activeStyle = { color: 'var(--accent)', background: 'var(--accent-bg)' };
 
   return (
-    <div className="mt-7 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
-      <div className="grid grid-cols-4 gap-1 sm:gap-3">
+    <div className="article-interactions mt-7 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
+      <div className="article-interactions-grid grid grid-cols-4 gap-1 sm:gap-3">
         <button type="button" onClick={() => void toggle('like')} disabled={busy !== null}
           aria-pressed={liked} className={actionClass} style={liked ? activeStyle : idleStyle}>
           <ArticleActionIcon type="like" active={liked} />
