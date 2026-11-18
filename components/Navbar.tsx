@@ -358,13 +358,13 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                   </section>
                   <nav className="profile-activity-tabs" aria-label="个人活动">
                     <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('likes')}>
-                      <ArticleActionIcon type="like" /><span>喜欢</span><b>{profileLoadedTabs.likes ? profileLikes.length : '—'}</b>
+                      <ArticleActionIcon type="like" /><span>喜欢</span>{profileLoadedTabs.likes && profileLikes.length > 0 && <b>{profileLikes.length}</b>}
                     </button>
                     <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('bookmarks')}>
-                      <ArticleActionIcon type="bookmark" /><span>收藏</span><b>{profileLoadedTabs.bookmarks ? profileBookmarks.length : '—'}</b>
+                      <ArticleActionIcon type="bookmark" /><span>收藏</span>{profileLoadedTabs.bookmarks && profileBookmarks.length > 0 && <b>{profileBookmarks.length}</b>}
                     </button>
                     <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('comments')}>
-                      <ArticleActionIcon type="comment" /><span>评论</span><b>{profileLoadedTabs.comments ? profileComments.length : '—'}</b>
+                      <ArticleActionIcon type="comment" /><span>评论</span>{profileLoadedTabs.comments && profileComments.length > 0 && <b>{profileComments.length}</b>}
                     </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
