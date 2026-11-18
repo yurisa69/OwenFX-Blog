@@ -3,6 +3,7 @@
 :root {
   --bg-primary: #0b0f1a;
   --bg-secondary: #111827;
+  --input-bg: rgba(2,6,23,0.28);
   --bg-tertiary: #1e293b;
   --bg-glass: rgba(20,28,48,0.55);
   --border-color: rgba(99,102,241,0.15);
@@ -17,6 +18,7 @@
 [data-theme="light"] {
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
+  --input-bg: #ffffff;
   --bg-tertiary: #e2e8f0;
   --bg-glass: rgba(248,250,252,0.7);
   --border-color: rgba(99,102,241,0.2);
@@ -247,7 +249,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-drawer-panel{back
 .profile-primary-action:hover{border-color:rgba(129,140,248,.55);box-shadow:0 0 22px rgba(99,102,241,.16)}
 .profile-primary-action:disabled,.profile-secondary-action:disabled{opacity:.55;cursor:not-allowed}
 .profile-field-label{display:block;margin:14px 0 6px;text-align:left;color:var(--text-secondary);font-size:12px}
-.profile-input{display:block;width:100%;min-height:42px;border:1px solid var(--border-color);border-radius:13px;background:rgba(2,6,23,.28);padding:10px 12px;color:var(--text-primary);font-size:14px;outline:none}
+.profile-input{display:block;width:100%;min-height:42px;border:1px solid var(--border-color);border-radius:13px;background:var(--input-bg);padding:10px 12px;color:var(--text-primary);font-size:14px;outline:none}
 .profile-input:focus{border-color:rgba(129,140,248,.6);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
 .profile-drawer-footer{border-top:1px solid var(--border-color);padding-top:16px}
 .profile-logout-action{margin-top:12px;width:100%;min-height:42px;border:1px solid rgba(248,113,113,.22);border-radius:999px;background:rgba(248,113,113,.07);color:#fca5a5;font-size:13px;transition:all .2s}
