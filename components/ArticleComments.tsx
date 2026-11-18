@@ -23,7 +23,10 @@ function getAuthor(author: CommentRow['author']): CommentAuthor {
 
 function formatDate(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : formatChineseDateLocal(date);
+  if (Number.isNaN(date.getTime())) return '';
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${formatChineseDateLocal(date)}•${hours}:${minutes}`;
 }
 
 export default function ArticleComments({ articleId }: { articleId: string }) {
