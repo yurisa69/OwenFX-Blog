@@ -258,7 +258,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
               const replies = comments.filter(item => item.parent_comment_id === comment.id);
               const stats = likeStats[comment.id] || { count: 0, liked: false };
               return (
-                <article key={comment.id} className="flex gap-3">
+                <article key={comment.id} className="flex gap-3 border-b pb-5 last:border-b-0 last:pb-0" style={{ borderColor: "var(--border-color)" }}>
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs"
                     style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
                     {author?.avatar_url ? <img src={author.avatar_url} alt="" className="h-full w-full object-cover" /> : name.slice(0, 1).toUpperCase()}
@@ -315,7 +315,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                           const replyName = replyAuthor?.display_name || '用户';
                           const replyStats = likeStats[reply.id] || { count: 0, liked: false };
                           return (
-                            <div key={reply.id} className="flex gap-2.5">
+                            <div key={reply.id} className="flex gap-2.5 border-b pb-3 last:border-b-0 last:pb-0" style={{ borderColor: "var(--border-color)" }}>
                               <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px]"
                                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
                                 {replyAuthor?.avatar_url ? <img src={replyAuthor.avatar_url} alt="" className="h-full w-full object-cover" /> : replyName.slice(0, 1).toUpperCase()}
