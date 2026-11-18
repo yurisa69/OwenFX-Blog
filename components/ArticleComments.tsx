@@ -44,6 +44,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyingToName, setReplyingToName] = useState('');
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
+  const [commentSort, setCommentSort] = useState<'newest' | 'oldest' | 'popular'>('newest');
 
   useEffect(() => {
     if (notice !== '回复已发布！') return;
@@ -199,6 +200,19 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
   const initial = user?.name.trim().charAt(0).toUpperCase() || 'U';
   const rootComments = comments.filter(comment => !comment.parent_comment_id);
+  const floorNumbers = new Map(
+    [...rootComments]
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .map((comment, index) => [comment.id, index + 1]),
+  );
+  const sortedRootComments = [...rootComments].sort((a, b) => {
+    if (commentSort === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    if (commentSort === 'popular') {
+      const likeDifference = (likeStats[b.id]?.count || 0) - (likeStats[a.id]?.count || 0);
+      if (likeDifference !== 0) return likeDifference;
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
   const replyTargetName = replyingTo ? replyingToName : '';
 
   return (
@@ -240,9 +254,22 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       </div>
 
       <div className="article-comments-list border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">全部评论</h3>
-          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{comments.length} 条</span>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="flex shrink-0 items-center gap-2">
+            <h3 className="text-sm font-semibold">全部评论</h3>
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{comments.length} 条</span>
+          </div>
+          <select
+            value={commentSort}
+            onChange={event => setCommentSort(event.target.value as 'newest' | 'oldest' | 'popular')}
+            aria-label="评论排序"
+            className="max-w-[124px] rounded-lg border px-2 py-1.5 text-xs outline-none"
+            style={{ background: 'var(--input-bg)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}
+          >
+            <option value="newest">最新发布</option>
+            <option value="oldest">最早发布</option>
+            <option value="popular">最多点赞</option>
+          </select>
         </div>
         {!commentsLoaded ? (
           <div className="space-y-4" aria-hidden="true">
@@ -252,7 +279,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           <p className="py-4 text-center text-sm" style={{ color: 'var(--text-tertiary)' }}>暂无评论，来发表第一条评论吧。</p>
         ) : (
           <div className="space-y-5">
-            {rootComments.map(comment => {
+            {sortedRootComments.map(comment => {
               const author = getAuthor(comment.author);
               const name = author?.display_name || '用户';
               const replies = comments.filter(item => item.parent_comment_id === comment.id);
@@ -272,6 +299,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                     <p className="whitespace-pre-wrap break-words text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{comment.body}</p>
                     {comment.status === 'approved' && (
                       <div className="mt-2 flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                        <span className="shrink-0 text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>{floorNumbers.get(comment.id)} 楼</span>
                         <button type="button" onClick={() => void toggleCommentLike(comment)} disabled={likeBusyId === comment.id}
                           aria-pressed={stats.liked} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]"
                           style={stats.liked ? { color: 'var(--accent)' } : undefined}>
