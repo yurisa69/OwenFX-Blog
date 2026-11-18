@@ -337,7 +337,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
             }}>
               {editing ? (
                 <section className="profile-edit-card relative">
-                  <span className="absolute right-4 top-4 text-xs font-semibold tracking-wide text-[var(--text-tertiary)]">Edit</span>
+                  <span className="absolute right-4 top-4 text-xl font-semibold tracking-wide text-[var(--text-tertiary)]">Edit</span>
                   <div className="profile-edit-heading !justify-center !gap-0">
                     <button
                       type="button"
