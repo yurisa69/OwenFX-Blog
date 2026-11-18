@@ -301,7 +301,6 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                     )}
                     {replies.length > 0 && expandedReplies[comment.id] && (
                       <div id={`article-replies-${comment.id}`} className="mt-3 space-y-3 border-l-2 pl-3" style={{ borderColor: 'var(--border-color)' }}>
-                      <div className="mt-3 space-y-3 border-l-2 pl-3" style={{ borderColor: 'var(--border-color)' }}>
                         {replies.map(reply => {
                           const replyAuthor = getAuthor(reply.author);
                           const replyName = replyAuthor?.display_name || '用户';
