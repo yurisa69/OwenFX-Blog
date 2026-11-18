@@ -193,18 +193,19 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
   return (
     <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
-      <div className="article-comments-identity mb-5 flex flex-col items-center text-center">
-        <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
-          style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-          {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
+      <div className="mb-5 md:grid md:grid-cols-[120px_minmax(0,1fr)] md:items-start md:gap-5">
+        <div className="article-comments-identity mb-5 flex flex-col items-center text-center md:mb-0 md:pt-1">
+          <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
+            style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+            {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
+          </div>
+          <p className={user ? "mt-2 max-w-full truncate text-sm font-semibold monet-waterlily-flow" : "mt-2 max-w-full truncate text-sm font-semibold"}
+            style={!user ? { color: 'var(--text-secondary)' } : undefined}>
+            {user?.name || '登录后发表评论'}
+          </p>
         </div>
-        <p className={user ? "mt-2 max-w-full truncate text-sm font-semibold monet-waterlily-flow" : "mt-2 max-w-full truncate text-sm font-semibold"}
-          style={!user ? { color: 'var(--text-secondary)' } : undefined}>
-          {user?.name || '登录后发表评论'}
-        </p>
-      </div>
 
-      <div className="article-comments-compose mb-5 space-y-2">
+        <div className="article-comments-compose space-y-2">
         <input type="text" name="website" value={honeypot}
           onChange={event => setHoneypot(event.target.value)} tabIndex={-1}
           autoComplete="off" aria-hidden="true"
@@ -225,6 +226,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           )}
         </div>
         {notice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}
+        </div>
       </div>
 
       <div className="article-comments-list border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
