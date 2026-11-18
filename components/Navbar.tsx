@@ -55,6 +55,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
   const [profileComments, setProfileComments] = useState<ProfileComment[]>([]);
   const [profileListsLoading, setProfileListsLoading] = useState(false);
   const [profileListsError, setProfileListsError] = useState('');
+  const [profileLoadedTabs, setProfileLoadedTabs] = useState<Record<'likes' | 'bookmarks' | 'comments', boolean>>({ likes: false, bookmarks: false, comments: false });
   const searchRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -160,40 +161,43 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
     return () => { active = false; };
   }, [user?.id]);
 
-  useEffect(() => {
-    if (!drawerOpen || !user?.id) return;
-    let active = true;
-    const loadActivity = async () => {
-      const supabase = getSupabaseBrowser();
-      if (!supabase) return;
-      setProfileListsLoading(true);
-      setProfileListsError('');
-      const [likes, bookmarks, comments] = await Promise.all([
-        supabase.from('article_interactions')
+
+  const loadProfileTab = async (tab: 'likes' | 'bookmarks' | 'comments') => {
+    setProfileTab(tab);
+    if (!user?.id || profileLoadedTabs[tab] || profileListsLoading) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) {
+      setProfileListsError('Supabase 尚未配置，暂时无法加载记录。');
+      return;
+    }
+
+    setProfileListsLoading(true);
+    setProfileListsError('');
+    try {
+      if (tab === 'likes' || tab === 'bookmarks') {
+        const { data, error } = await supabase.from('article_interactions')
           .select('id,created_at,article:articles(id,title,slug)')
-          .eq('user_id', user.id).eq('interaction_type', 'like')
-          .order('created_at', { ascending: false }).limit(50),
-        supabase.from('article_interactions')
-          .select('id,created_at,article:articles(id,title,slug)')
-          .eq('user_id', user.id).eq('interaction_type', 'bookmark')
-          .order('created_at', { ascending: false }).limit(50),
-        supabase.from('comments')
+          .eq('user_id', user.id)
+          .eq('interaction_type', tab === 'likes' ? 'like' : 'bookmark')
+          .order('created_at', { ascending: false }).limit(50);
+        if (error) throw error;
+        if (tab === 'likes') setProfileLikes((data || []) as unknown as ProfileInteraction[]);
+        else setProfileBookmarks((data || []) as unknown as ProfileInteraction[]);
+      } else {
+        const { data, error } = await supabase.from('comments')
           .select('id,body,status,created_at,article:articles(id,title,slug)')
           .eq('author_id', user.id)
-          .order('created_at', { ascending: false }).limit(50),
-      ]);
-      if (!active) return;
-      if (likes.error || bookmarks.error || comments.error) {
-        setProfileListsError('部分记录暂时无法加载，请稍后重试。');
+          .order('created_at', { ascending: false }).limit(50);
+        if (error) throw error;
+        setProfileComments((data || []) as unknown as ProfileComment[]);
       }
-      if (!likes.error) setProfileLikes((likes.data || []) as unknown as ProfileInteraction[]);
-      if (!bookmarks.error) setProfileBookmarks((bookmarks.data || []) as unknown as ProfileInteraction[]);
-      if (!comments.error) setProfileComments((comments.data || []) as unknown as ProfileComment[]);
+      setProfileLoadedTabs(current => ({ ...current, [tab]: true }));
+    } catch {
+      setProfileListsError('记录暂时无法加载，请点击选项重试。');
+    } finally {
       setProfileListsLoading(false);
-    };
-    void loadActivity();
-    return () => { active = false; };
-  }, [drawerOpen, user?.id]);
+    }
+  };
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -353,18 +357,18 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                     </div>
                   </section>
                   <nav className="profile-activity-tabs" aria-label="个人活动">
-                    <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('likes')}>
-                      <ArticleActionIcon type="like" /><span>喜欢</span><b>{profileLikes.length}</b>
+                    <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('likes')}>
+                      <ArticleActionIcon type="like" /><span>喜欢</span><b>{profileLoadedTabs.likes ? profileLikes.length : '—'}</b>
                     </button>
-                    <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('bookmarks')}>
-                      <ArticleActionIcon type="bookmark" /><span>收藏</span><b>{profileBookmarks.length}</b>
+                    <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('bookmarks')}>
+                      <ArticleActionIcon type="bookmark" /><span>收藏</span><b>{profileLoadedTabs.bookmarks ? profileBookmarks.length : '—'}</b>
                     </button>
-                    <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => setProfileTab('comments')}>
-                      <ArticleActionIcon type="comment" /><span>评论</span><b>{profileComments.length}</b>
+                    <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('comments')}>
+                      <ArticleActionIcon type="comment" /><span>评论</span><b>{profileLoadedTabs.comments ? profileComments.length : '—'}</b>
                     </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
-                  <section className="profile-activity-list" aria-live="polite">
+                  {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite">
                     {profileListsLoading ? (
                       <div className="profile-list-empty">正在加载记录…</div>
                     ) : profileTab === 'likes' || profileTab === 'bookmarks' ? (
@@ -386,7 +390,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                         {item.article?.slug && <Link href={'/articles/' + item.article.slug} onClick={() => setDrawerOpen(false)}>查看文章 ›</Link>}
                       </article>
                     ))}
-                  </section>
+                  </section>}
                 </>
               )}
               {notice && <p role="status" className="profile-list-notice">{notice}</p>}
