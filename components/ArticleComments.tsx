@@ -237,23 +237,12 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
-        <div className="flex w-full justify-end">
+        <div className="w-full">
           {user ? (
-            <>
-              <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
-                aria-label={submitting ? '评论提交中' : '发表评论'}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-[var(--text-secondary)] transition hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40 sm:hidden">
-                <svg aria-hidden="true" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
-                  <path d="M26 2.5 3 11.4l8.4 3.1 3.1 10.1L26 2.5Z" />
-                  <path d="m11.4 14.5 14.6-12M14.5 24.6l3.5-8.1" />
-                  <path d="M2.5 25.5c2.8-1.8 4.4-3.6 6.4-5.7" strokeDasharray="2.5 3.5" />
-                </svg>
-              </button>
-              <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
-                className="uiverse-btn uiverse-btn-primary hidden w-full rounded-xl !px-5 !py-2.5 text-sm sm:block">
-                {submitting ? '提交中…' : '发表评论'}
-              </button>
-            </>
+            <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
+              className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">
+              {submitting ? '提交中…' : '发表评论'}
+            </button>
           ) : (
             <button type="button" onClick={login}
               className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">登录后评论</button>
