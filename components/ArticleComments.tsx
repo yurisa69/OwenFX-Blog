@@ -42,6 +42,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [likeStats, setLikeStats] = useState<Record<string, { count: number; liked: boolean }>>({});
   const [likeBusyId, setLikeBusyId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let active = true;
@@ -280,9 +281,26 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                             <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5h-8l-6 3v-3.5A2.5 2.5 0 0 1 2.5 16V7A2.5 2.5 0 0 1 5 4.5Z" />
                           </svg><span>回复</span>
                         </button>
+                        {replies.length > 0 && (
+                          <>
+                            <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>+{replies.length}</span>
+                            <button type="button"
+                              onClick={() => setExpandedReplies(current => ({ ...current, [comment.id]: !current[comment.id] }))}
+                              aria-expanded={Boolean(expandedReplies[comment.id])}
+                              aria-controls={`article-replies-${comment.id}`}
+                              className="inline-flex min-h-8 items-center gap-1 rounded-md transition hover:text-[var(--accent)]">
+                              <span>{expandedReplies[comment.id] ? '收起回复' : '展开回复'}</span>
+                              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+                                className={`h-3.5 w-3.5 transition-transform ${expandedReplies[comment.id] ? 'rotate-180' : ''}`}>
+                                <path d="m6 9 6 6 6-6" />
+                              </svg>
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
-                    {replies.length > 0 && (
+                    {replies.length > 0 && expandedReplies[comment.id] && (
+                      <div id={`article-replies-${comment.id}`} className="mt-3 space-y-3 border-l-2 pl-3" style={{ borderColor: 'var(--border-color)' }}>
                       <div className="mt-3 space-y-3 border-l-2 pl-3" style={{ borderColor: 'var(--border-color)' }}>
                         {replies.map(reply => {
                           const replyAuthor = getAuthor(reply.author);
