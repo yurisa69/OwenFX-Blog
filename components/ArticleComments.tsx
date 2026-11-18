@@ -46,6 +46,14 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (notice !== '回复已发布！') return;
+    const timer = window.setTimeout(() => {
+      setNotice(current => current === '回复已发布！' ? '' : current);
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
+  useEffect(() => {
     let active = true;
     const load = async () => {
       const supabase = getSupabaseBrowser();
@@ -156,7 +164,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
       setReplyingTo(null);
       setReplyingToName('');
       setNotice(wasReply
-        ? submitted.status === 'approved' ? '回复已发布。' : '回复已提交，审核通过后会公开显示。'
+        ? submitted.status === 'approved' ? '回复已发布！' : '回复已提交，审核通过后会公开显示。'
         : submitted.status === 'approved' ? '评论已发布并公开显示。' : '评论已提交，审核通过后会公开显示。');
     } catch (cause) {
       setNotice(cause instanceof Error ? cause.message : (replyingTo ? '回复提交失败，请稍后重试。' : '评论提交失败，请稍后重试。'));
