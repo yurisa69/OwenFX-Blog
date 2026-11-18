@@ -696,6 +696,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-variabl
   .article-interactions { margin-top:1.6rem; padding-top:.65rem; padding-bottom:.2rem; border-top:1px solid var(--border-color); }
   .article-interactions-grid { gap:.15rem; }
   .article-interactions-grid button { min-height:48px; flex-direction:row; gap:.45rem; border-radius:10px; padding:.55rem .25rem; font-size:12px; }
+  .article-interactions-grid button[aria-pressed] > span { flex-shrink:0; white-space:nowrap; }
   .article-comments-surface { margin-top:1rem; padding:1.1rem 0 0; border:0; border-top:1px solid var(--border-color); border-radius:0; background:transparent; box-shadow:none; }
   .article-comments-surface:hover { border-color:var(--border-color); }
   .article-comments-identity { display:none; }
