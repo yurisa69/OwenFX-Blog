@@ -237,7 +237,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-drawer-panel{back
 @keyframes profile-drawer-in{from{transform:translateX(28px);opacity:.5}to{transform:translateX(0);opacity:1}}
 .profile-overview{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:22px 0}
 .profile-avatar-ring{width:116px;height:116px;padding:5px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#6366f1,#38bdf8);box-shadow:0 0 38px rgba(129,140,248,.38)}
-.profile-avatar-inner{display:flex;width:100%;height:100%;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(8,13,28,.9);border-radius:50%;background:#172033;color:#dbeafe;font-size:38px;font-weight:700}
+.profile-avatar-inner{display:flex;width:100%;height:100%;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(8,13,28,.9);border-radius:50%;background:#172033;color:#dbeafe;font-size:38px;font-weight:700}
 .profile-account-meta{display:flex;width:100%;align-items:center;justify-content:space-between;margin-top:18px;color:var(--text-tertiary);font-size:11px}
 .profile-account-meta span{display:flex;align-items:center;gap:7px}
 .profile-status-dot{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,.7)}
@@ -404,7 +404,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-drawer-panel{back
 html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-edit-card{background:rgba(255,255,255,.58)}
 .profile-identity-main,.profile-edit-heading{display:flex;align-items:center;gap:14px;min-width:0}
 .profile-avatar-ring-compact{width:66px;height:66px;flex:0 0 66px;padding:3px;box-shadow:0 0 20px rgba(129,140,248,.2)}
-.profile-avatar-ring-compact .profile-avatar-inner{border-width:2px;font-size:24px}
+.profile-avatar-ring-compact .profile-avatar-inner{border-width:1px;font-size:24px}
 .profile-member-state{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--text-tertiary);font-size:10px}
 .profile-identity-bio{margin:0;color:var(--text-secondary);font-size:12px;line-height:1.7;overflow-wrap:anywhere}
 .profile-activity-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
