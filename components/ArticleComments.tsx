@@ -279,11 +279,10 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                         }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5h-8l-6 3v-3.5A2.5 2.5 0 0 1 2.5 16V7A2.5 2.5 0 0 1 5 4.5Z" />
-                          </svg><span>回复</span>
+                          </svg><span>回复</span>{replies.length > 0 && <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>+{replies.length}</span>}
                         </button>
                         {replies.length > 0 && (
                           <>
-                            <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>+{replies.length}</span>
                             <button type="button"
                               onClick={() => setExpandedReplies(current => ({ ...current, [comment.id]: !current[comment.id] }))}
                               aria-expanded={Boolean(expandedReplies[comment.id])}
