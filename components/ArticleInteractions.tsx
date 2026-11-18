@@ -14,7 +14,6 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(false);
   const [busy, setBusy] = useState<InteractionType | null>(null);
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareNotice, setShareNotice] = useState('');
 
   useEffect(() => {
@@ -66,6 +65,10 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
     }
   };
 
+  const scrollToComments = () => {
+    document.getElementById('article-comments-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const actionClass = 'flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-3 text-xs font-medium transition';
   const idleStyle = { color: 'var(--text-secondary)', background: 'transparent' };
   const activeStyle = { color: 'var(--accent)', background: 'var(--accent-bg)' };
@@ -83,9 +86,9 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
           <ArticleActionIcon type="bookmark" active={saved} />
           <span>{saved ? '已收藏' : '收藏'}</span>
         </button>
-        <button type="button" onClick={() => setCommentsOpen(open => !open)}
-          aria-expanded={commentsOpen} aria-controls="article-comments-card"
-          className={actionClass} style={commentsOpen ? activeStyle : idleStyle}>
+        <button type="button" onClick={scrollToComments}
+          aria-controls="article-comments-card"
+          className={actionClass} style={idleStyle}>
           <ArticleActionIcon type="comment" />
           <span>评论</span>
         </button>
@@ -95,7 +98,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         </button>
       </div>
       {shareNotice && <p role="status" className="mt-2 text-center text-xs" style={{ color: 'var(--text-secondary)' }}>{shareNotice}</p>}
-      {commentsOpen && <ArticleComments articleId={articleId} />}
+      <ArticleComments articleId={articleId} />
     </div>
   );
 }
