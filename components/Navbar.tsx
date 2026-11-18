@@ -341,7 +341,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                   <div className="profile-edit-heading !justify-center !gap-0">
                     <button
                       type="button"
-                      className="mx-auto flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 disabled:cursor-wait"
+                      className="relative top-1 mx-auto flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 disabled:cursor-wait"
                       onClick={() => fileRef.current?.click()}
                       disabled={uploading}
                       aria-label={uploading ? '头像上传中' : '点击头像更换头像'}
