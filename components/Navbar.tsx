@@ -391,9 +391,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                     </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
-                  {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite" onClick={event => {
-                    if (event.target === event.currentTarget) setProfileTab('profile');
-                  }}>
+                  {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite">
                     {profileListsLoading ? (
                       <div className="profile-list-empty">正在加载记录…</div>
                     ) : profileTab === 'notifications' ? (
