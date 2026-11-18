@@ -193,8 +193,8 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
   return (
     <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
-      <div className="mb-5 md:grid md:grid-cols-[120px_minmax(0,1fr)] md:items-start md:gap-5">
-        <div className="article-comments-identity mb-5 flex flex-col items-center text-center md:mb-0 md:pt-1">
+      <div className="mb-5 md:grid md:grid-cols-[120px_minmax(0,1fr)] md:items-center md:gap-5">
+        <div className="article-comments-identity mb-5 flex flex-col items-center justify-center text-center md:mb-0">
           <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
             style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
             {user?.avatar ? <img src={user.avatar} alt="头像" className="h-full w-full object-cover" /> : initial}
