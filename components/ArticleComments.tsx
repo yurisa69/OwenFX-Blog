@@ -298,7 +298,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                           setReplyText(''); setReplyNotice('');
                         }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                            <path d="m17 2 4 4-4 4" /><path d="M3 11V9a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v2" /><path d="m7 22-4-4 4-4" /><path d="M21 13v2a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-2" />
+                            <path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5Z" />
                           </svg><span>回复</span>
                         </button>
                       </div>
