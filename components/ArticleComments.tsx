@@ -237,15 +237,11 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           placeholder={user ? '写下评论...' : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
-        <div className={user ? "flex w-full justify-end" : "w-full"}>
+        <div className="w-full">
           {user ? (
-            <button type="button" onClick={() => void submitComment()}
-              disabled={!commentText.trim() || submitting}
-              aria-label={submitting ? "提交中" : "发表评论"}
-              title={submitting ? "提交中" : "发表评论"}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--input-bg)] transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40">
-              <img src="/images/comment-submit-plane.webp" alt="" aria-hidden="true" className="h-7 w-7 object-contain" />
-              <span className="sr-only">{submitting ? "提交中…" : "发表评论"}</span>
+            <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
+              className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">
+              {submitting ? '提交中…' : '发表评论'}
             </button>
           ) : (
             <button type="button" onClick={login}
