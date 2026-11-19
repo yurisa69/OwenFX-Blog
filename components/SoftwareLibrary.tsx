@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 type SoftwareTag = {
@@ -22,6 +22,10 @@ type SoftwareItem = {
   tags: { tag: SoftwareTag | SoftwareTag[] | null }[] | null;
 };
 
+function getTagDisplayName(name: string) {
+  return name === '开源免费' || name === '免费开源' ? '免费' : name;
+}
+
 function getSoftwareTagNames(item: SoftwareItem) {
   return (item.tags || [])
     .map((entry) => Array.isArray(entry.tag) ? entry.tag[0]?.name : entry.tag?.name)
@@ -38,6 +42,16 @@ export default function SoftwareLibrary({
   initialCategory?: string;
 }) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [displayTags, setDisplayTags] = useState(tags);
+
+  useEffect(() => {
+    const shuffled = [...tags];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    setDisplayTags(shuffled);
+  }, [tags]);
 
   const filteredItems = useMemo(() => items.filter((item) => {
     const matchesCategory = initialCategory === '全部'
@@ -53,8 +67,8 @@ export default function SoftwareLibrary({
   }), [items, initialCategory, selectedTag]);
 
   const tagRows = [
-    tags.filter((_, index) => index % 2 === 0),
-    tags.filter((_, index) => index % 2 === 1),
+    displayTags.filter((_, index) => index % 2 === 0),
+    displayTags.filter((_, index) => index % 2 === 1),
   ];
 
   const renderTag = (tag: SoftwareTag, row: number, duplicate = false) => {
@@ -66,14 +80,19 @@ export default function SoftwareLibrary({
         tabIndex={duplicate ? -1 : 0}
         aria-hidden={duplicate || undefined}
         aria-pressed={duplicate ? undefined : active}
+        onPointerDown={(event) => {
+          if (!duplicate && !event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }
+        }}
         onClick={() => {
           if (!duplicate) setSelectedTag(active ? null : tag.slug);
         }}
-        className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${active ? 'software-tag-active' : ''}`}
+        className={`shrink-0 whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${duplicate ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer touch-manipulation select-none'} ${active ? 'software-tag-active' : ''}`}
       >
         <span className="software-tag-electric-label">
           <span className="software-tag-breath-opacity">
-            <span className="software-tag-breath-text" data-text={tag.name}>{tag.name}</span>
+            <span className="software-tag-breath-text" data-text={getTagDisplayName(tag.name)}>{getTagDisplayName(tag.name)}</span>
           </span>
           {active && !duplicate && (
             <svg className="software-tag-electric-overlay" viewBox="0 0 86 24" preserveAspectRatio="none" aria-hidden="true">
@@ -98,10 +117,10 @@ export default function SoftwareLibrary({
                   key={rowIndex}
                   className={`tag-cloud-track flex w-max items-center ${rowIndex === 0 ? 'tag-cloud-fast' : 'tag-cloud-slow'}`}
                 >
-                  <div className="flex shrink-0 items-center gap-8 pr-8">
+                  <div className="tag-cloud-segment flex shrink-0 items-center gap-8 pr-8">
                     {rowTags.map((tag) => renderTag(tag, rowIndex))}
                   </div>
-                  <div className="flex shrink-0 items-center gap-8 pr-8" aria-hidden="true">
+                  <div className="tag-cloud-segment flex shrink-0 items-center gap-8 pr-8 pointer-events-none" aria-hidden="true">
                     {rowTags.map((tag) => renderTag(tag, rowIndex, true))}
                   </div>
                 </div>
@@ -131,6 +150,8 @@ export default function SoftwareLibrary({
                 const tagLabels: Record<string, string> = {
                   '直播推流': '直播',
                   '屏幕录制': '录屏',
+                  '开源免费': '免费',
+                  '免费开源': '免费',
                 };
                 const cardTags = getSoftwareTagNames(item)
                   .map((tag) => tagLabels[tag] || tag)
@@ -159,14 +180,21 @@ export default function SoftwareLibrary({
 
       <style jsx>{`
         @keyframes tag-cloud-danmaku {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
+          from { transform: translate3d(0, 0, 0); }
+          to { transform: translate3d(-50%, 0, 0); }
         }
         .tag-cloud-track {
+          display: flex;
+          width: max-content;
           animation-name: tag-cloud-danmaku;
           animation-timing-function: linear;
           animation-iteration-count: infinite;
           will-change: transform;
+          backface-visibility: hidden;
+        }
+        .tag-cloud-segment {
+          flex: 0 0 auto;
+          min-width: max-content;
         }
         .tag-cloud-fast { animation-duration: 28s; }
         .tag-cloud-slow { animation-duration: 36s; }
