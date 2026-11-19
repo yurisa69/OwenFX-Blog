@@ -757,7 +757,7 @@ html[data-theme="light"] .code-copy-button {
   animation: software-tag-text-breath 2.4s ease-in-out infinite;
 }
 @keyframes software-tag-text-breath {
-  0%, 100% { opacity: .88; }
+  0%, 100% { opacity: .58; }
   50% { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
