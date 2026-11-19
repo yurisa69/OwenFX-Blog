@@ -85,24 +85,8 @@ export default function SoftwareLibrary({
             event.currentTarget.setPointerCapture(event.pointerId);
           }
         }}
-        onPointerUp={(event) => {
-          if (duplicate) return;
-          const bounds = event.currentTarget.getBoundingClientRect();
-          const releasedInside =
-            event.clientX >= bounds.left &&
-            event.clientX <= bounds.right &&
-            event.clientY >= bounds.top &&
-            event.clientY <= bounds.bottom;
-          if (releasedInside) {
-            setSelectedTag((current) => current === tag.slug ? null : tag.slug);
-          }
-        }}
-        onClick={(event) => {
-          // Keep keyboard activation; pointer activation is handled by pointer-up
-          // so the moving marquee cannot invalidate the click target.
-          if (!duplicate && event.detail === 0) {
-            setSelectedTag((current) => current === tag.slug ? null : tag.slug);
-          }
+        onClick={() => {
+          if (!duplicate) setSelectedTag(active ? null : tag.slug);
         }}
         className={`shrink-0 whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${duplicate ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer touch-manipulation select-none'} ${active ? 'software-tag-active' : ''}`}
       >
@@ -207,9 +191,6 @@ export default function SoftwareLibrary({
           animation-iteration-count: infinite;
           will-change: transform;
           backface-visibility: hidden;
-        }
-        .tag-cloud-track:active {
-          animation-play-state: paused;
         }
         .tag-cloud-segment {
           flex: 0 0 auto;
