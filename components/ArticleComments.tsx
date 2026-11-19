@@ -236,7 +236,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           className="absolute -left-[10000px] h-px w-px opacity-0" />
         <textarea ref={commentInputRef} value={commentText} onChange={event => setCommentText(Array.from(event.target.value).slice(0, 600).join(''))}
           placeholder={user ? (replyingTo ? `回复 ${replyTargetName}...` : '写下评论...') : '登录后即可发表评论'} rows={3} maxLength={1200}
-          disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
+          disabled={!user} className="block h-10 min-h-10 w-full resize-none rounded-xl border p-2 text-sm outline-none transition md:h-auto md:min-h-0 md:p-3"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
         <div className="article-comments-compose-actions flex w-full items-center justify-end">
           <button type="button" onClick={() => user ? void submitComment() : login()}
