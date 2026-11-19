@@ -262,7 +262,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
               </div>
             )}
             <details className="group min-w-0">
-              <summary className="uiverse-btn uiverse-btn-ghost flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
+              <summary className="uiverse-btn uiverse-btn-primary flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
                 网盘下载
               </summary>
               <div className="relative left-[calc(-100%-0.75rem)] mt-3 grid w-[calc(200%+0.75rem)] grid-cols-4 items-start gap-x-3 gap-y-3 pt-1">
