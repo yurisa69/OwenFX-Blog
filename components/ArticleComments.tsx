@@ -252,9 +252,9 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
             title={!user ? '登录后评论' : submitting ? '正在发送' : replyingTo ? '发送回复' : '发表评论'}
             className="article-comment-send-mobile inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-45 md:hidden"
             style={{ borderColor: 'var(--border-color)', background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
-              <path d="M21 3 9.5 14.5" />
-              <path d="m21 3-7.2 18-4.3-6.5L3 10.2 21 3Z" />
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-[19px] w-[19px]">
+              <path d="M22.05 2.25 2.8 9.7c-1.3.5-1.2 2.3.1 2.7l5.1 1.7 1.8 5.5c.4 1.2 2 1.4 2.7.3l3-4.6 5.1 3.7c1 .7 2.3.1 2.5-1.1l2.1-13.8c.2-1.3-1-2.3-2.2-1.8Z" />
+              <path d="m8 14.1 10.9-8.2-8.2 9.3-.5 4.1-2.2-5.2Z" fill="var(--accent-bg)" />
             </svg>
           </button>
         </div>
