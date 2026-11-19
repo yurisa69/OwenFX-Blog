@@ -224,12 +224,16 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           </div>
         )}
 
-        <div className="mb-6 flex flex-wrap gap-x-4 gap-y-2 text-xs sm:text-sm" style={{ color: 'var(--text-tertiary)' }}>
-          {software.developer && <span>开发者：{software.developer}</span>}
-          {software.version && <span>版本：{software.version}</span>}
-          {software.file_size && <span>大小：{software.file_size}</span>}
-          {platforms.length > 0 && <span>平台：{platforms.join('、')}</span>}
-          {software.updated_at && <span>更新：{formatChineseDate(software.updated_at, 'Asia/Shanghai')}</span>}
+        <div className="article-content mb-6">
+          <blockquote>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs sm:text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              {software.developer && <span>开发者：{software.developer}</span>}
+              {software.version && <span>版本：{software.version}</span>}
+              {software.file_size && <span>大小：{software.file_size}</span>}
+              {platforms.length > 0 && <span>平台：{platforms.join('、')}</span>}
+              {software.updated_at && <span>更新：{formatChineseDate(software.updated_at, 'Asia/Shanghai')}</span>}
+            </div>
+          </blockquote>
         </div>
 
         {(software.description || software.introduction_markdown) && (
