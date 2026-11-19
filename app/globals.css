@@ -745,7 +745,7 @@ html[data-theme="light"] .code-copy-button {
   .article-comment-item > div:last-child { min-width:0; }
 }
 
-/* Selected software-library tags: keep the glow animation independent from the danmaku track. */
+/* Selected software-library tags: keep text breathing and pixel glitch independent from the danmaku track. */
 .software-tag-active {
   color: #fff !important;
   -webkit-text-fill-color: #fff;
@@ -753,6 +753,19 @@ html[data-theme="light"] .code-copy-button {
 .software-tag-breath-text {
   position: relative;
   display: inline-block;
+}
+.software-tag-active .software-tag-breath-text {
+  animation: software-tag-text-breath 2.4s ease-in-out infinite;
+}
+@keyframes software-tag-text-breath {
+  0%, 100% {
+    opacity: .76;
+    text-shadow: 0 0 2px rgba(255, 255, 255, .28), 0 0 5px rgba(255, 255, 255, .12);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 3px rgba(255, 255, 255, .72), 0 0 6px rgba(255, 255, 255, .38), 0 0 9px rgba(255, 255, 255, .16);
+  }
 }
 .software-tag-active .software-tag-breath-text::before,
 .software-tag-active .software-tag-breath-text::after {
@@ -762,65 +775,57 @@ html[data-theme="light"] .code-copy-button {
   pointer-events: none;
   white-space: nowrap;
   opacity: 0;
+  -webkit-text-fill-color: currentColor;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
 }
 .software-tag-active .software-tag-breath-text::before {
   color: #67e8f9;
   -webkit-text-fill-color: #67e8f9;
+  mask-image:
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-size: 8px 3px, 5px 5px, 11px 3px, 4px 4px, 7px 3px, 5px 6px, 10px 3px, 4px 3px, 6px 4px;
+  mask-position: 7% 23%, 21% 67%, 38% 42%, 53% 17%, 66% 74%, 79% 34%, 91% 58%, 31% 12%, 72% 9%;
+  -webkit-mask-image:
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-size: 8px 3px, 5px 5px, 11px 3px, 4px 4px, 7px 3px, 5px 6px, 10px 3px, 4px 3px, 6px 4px;
+  -webkit-mask-position: 7% 23%, 21% 67%, 38% 42%, 53% 17%, 66% 74%, 79% 34%, 91% 58%, 31% 12%, 72% 9%;
   animation: software-tag-glitch-cyan 2.8s steps(1, end) infinite;
 }
 .software-tag-active .software-tag-breath-text::after {
   color: #fb7185;
   -webkit-text-fill-color: #fb7185;
+  mask-image:
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-size: 5px 4px, 9px 3px, 4px 5px, 7px 3px, 5px 4px, 10px 3px, 4px 4px, 6px 3px;
+  mask-position: 14% 56%, 29% 18%, 46% 77%, 61% 38%, 75% 13%, 87% 69%, 96% 28%, 40% 9%;
+  -webkit-mask-image:
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-size: 5px 4px, 9px 3px, 4px 5px, 7px 3px, 5px 4px, 10px 3px, 4px 4px, 6px 3px;
+  -webkit-mask-position: 14% 56%, 29% 18%, 46% 77%, 61% 38%, 75% 13%, 87% 69%, 96% 28%, 40% 9%;
   animation: software-tag-glitch-pink 2.8s steps(1, end) infinite;
 }
 @keyframes software-tag-glitch-cyan {
-  0%, 68%, 77%, 100% {
-    opacity: 0;
-    transform: translateX(0);
-    clip-path: inset(0 0 100% 0);
-  }
-  69% {
-    opacity: .95;
-    transform: translateX(-3px);
-    clip-path: inset(12% 0 68% 0);
-  }
-  70% {
-    opacity: .9;
-    transform: translateX(2px);
-    clip-path: inset(58% 0 22% 0);
-  }
-  72% {
-    opacity: .85;
-    transform: translateX(-2px);
-    clip-path: inset(34% 0 48% 0);
-  }
-  74% {
-    opacity: 0;
-    transform: translateX(0);
-    clip-path: inset(0 0 100% 0);
-  }
+  0%, 66%, 78%, 100% { opacity: 0; transform: translateX(0) skewX(0); }
+  67% { opacity: .98; transform: translateX(-3px) skewX(-8deg); }
+  68.5% { opacity: .78; transform: translateX(2px) skewX(5deg) scaleX(1.025); }
+  70% { opacity: .94; transform: translateX(-1px) skewX(-4deg); }
+  72% { opacity: 0; transform: translateX(0) skewX(0); }
 }
 @keyframes software-tag-glitch-pink {
-  0%, 69%, 78%, 100% {
-    opacity: 0;
-    transform: translateX(0);
-    clip-path: inset(0 0 100% 0);
-  }
-  70% {
-    opacity: .95;
-    transform: translateX(3px);
-    clip-path: inset(66% 0 12% 0);
-  }
-  71% {
-    opacity: .85;
-    transform: translateX(-2px);
-    clip-path: inset(20% 0 62% 0);
-  }
-  73% {
-    opacity: 0;
-    transform: translateX(0);
-    clip-path: inset(0 0 100% 0);
-  }
+  0%, 67%, 79%, 100% { opacity: 0; transform: translateX(0) skewX(0); }
+  68% { opacity: .88; transform: translateX(3px) skewX(7deg); }
+  69.5% { opacity: .96; transform: translateX(-2px) skewX(-5deg) scaleX(.98); }
+  71% { opacity: .72; transform: translateX(1px) skewX(3deg); }
+  73% { opacity: 0; transform: translateX(0) skewX(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .software-tag-active .software-tag-breath-text,
@@ -833,7 +838,6 @@ html[data-theme="light"] .code-copy-button {
     text-shadow: 0 0 4px rgba(255, 255, 255, .55);
   }
 }
-
 
 /* Electric current appears only on the currently selected software tag. */
 .software-tag-electric-label {
