@@ -159,21 +159,7 @@ export default function SoftwareLibrary({
         }
         .tag-cloud-fast { animation-duration: 28s; }
         .tag-cloud-slow { animation-duration: 36s; }
-        @keyframes tag-cloud-glow {
-          0%, 100% {
-            text-shadow: 0 0 3px rgba(255, 255, 255, 0.45), 0 0 8px rgba(255, 255, 255, 0.25);
-          }
-          50% {
-            text-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 0 0 14px rgba(255, 255, 255, 0.65), 0 0 22px rgba(255, 255, 255, 0.3);
-          }
-        }
-        .tag-cloud-tag-active {
-          color: #fff !important;
-          animation: tag-cloud-glow 2.4s ease-in-out infinite;
-        }
         @media (prefers-reduced-motion: reduce) {
-          .tag-cloud-tag-active { animation: none; text-shadow: 0 0 8px rgba(255, 255, 255, 0.65); }
-
           .tag-cloud-track { animation: none; }
           .tag-cloud { overflow-x: auto; }
         }
