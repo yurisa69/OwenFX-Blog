@@ -793,16 +793,6 @@ html[data-theme="light"] .code-copy-button {
     drop-shadow(0 0 7px rgba(190, 220, 255, .95))
     drop-shadow(0 0 13px rgba(129, 190, 255, .72));
 }
-.software-tag-electric-halo {
-  fill: #fff;
-  opacity: .98;
-  filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px rgba(190, 220, 255, .98))
-    drop-shadow(0 0 19px rgba(129, 190, 255, .85));
-}
-.software-tag-electric-core {
-  fill: #fff;
-  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 7px #fff);
-}
 @keyframes software-tag-electric-travel {
   from { stroke-dashoffset: 0; }
   to { stroke-dashoffset: -1000; }
