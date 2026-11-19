@@ -745,7 +745,7 @@ html[data-theme="light"] .code-copy-button {
   .article-comment-item > div:last-child { min-width:0; }
 }
 
-/* Selected software-library tags: keep text breathing and pixel glitch independent from the danmaku track. */
+/* Selected software-library tags: monochrome display-signal glitch. */
 .software-tag-active {
   color: #fff !important;
   -webkit-text-fill-color: #fff;
@@ -775,57 +775,68 @@ html[data-theme="light"] .code-copy-button {
   pointer-events: none;
   white-space: nowrap;
   opacity: 0;
-  -webkit-text-fill-color: currentColor;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
 }
 .software-tag-active .software-tag-breath-text::before {
-  color: #67e8f9;
-  -webkit-text-fill-color: #67e8f9;
-  mask-image:
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-size: 8px 3px, 5px 5px, 11px 3px, 4px 4px, 7px 3px, 5px 6px, 10px 3px, 4px 3px, 6px 4px;
-  mask-position: 7% 23%, 21% 67%, 38% 42%, 53% 17%, 66% 74%, 79% 34%, 91% 58%, 31% 12%, 72% 9%;
-  -webkit-mask-image:
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  -webkit-mask-size: 8px 3px, 5px 5px, 11px 3px, 4px 4px, 7px 3px, 5px 6px, 10px 3px, 4px 3px, 6px 4px;
-  -webkit-mask-position: 7% 23%, 21% 67%, 38% 42%, 53% 17%, 66% 74%, 79% 34%, 91% 58%, 31% 12%, 72% 9%;
-  animation: software-tag-glitch-cyan 2.8s steps(1, end) infinite;
+  animation: software-tag-glitch-slice 3.6s steps(1, end) infinite;
 }
 .software-tag-active .software-tag-breath-text::after {
-  color: #fb7185;
-  -webkit-text-fill-color: #fb7185;
-  mask-image:
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-size: 5px 4px, 9px 3px, 4px 5px, 7px 3px, 5px 4px, 10px 3px, 4px 4px, 6px 3px;
-  mask-position: 14% 56%, 29% 18%, 46% 77%, 61% 38%, 75% 13%, 87% 69%, 96% 28%, 40% 9%;
-  -webkit-mask-image:
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
-    linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  -webkit-mask-size: 5px 4px, 9px 3px, 4px 5px, 7px 3px, 5px 4px, 10px 3px, 4px 4px, 6px 3px;
-  -webkit-mask-position: 14% 56%, 29% 18%, 46% 77%, 61% 38%, 75% 13%, 87% 69%, 96% 28%, 40% 9%;
-  animation: software-tag-glitch-pink 2.8s steps(1, end) infinite;
+  animation: software-tag-glitch-blocks 3.6s steps(1, end) infinite;
 }
-@keyframes software-tag-glitch-cyan {
-  0%, 66%, 78%, 100% { opacity: 0; transform: translateX(0) skewX(0); }
-  67% { opacity: .98; transform: translateX(-3px) skewX(-8deg); }
-  68.5% { opacity: .78; transform: translateX(2px) skewX(5deg) scaleX(1.025); }
-  70% { opacity: .94; transform: translateX(-1px) skewX(-4deg); }
-  72% { opacity: 0; transform: translateX(0) skewX(0); }
+@keyframes software-tag-glitch-slice {
+  0%, 71%, 72%, 100% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateX(0) skewX(0);
+  }
+  71.2% {
+    opacity: 1;
+    clip-path: inset(17% 0 68% 0);
+    transform: translateX(-4px) skewX(-13deg) scaleX(1.04);
+  }
+  71.5% {
+    opacity: .88;
+    clip-path: inset(58% 0 25% 0);
+    transform: translateX(3px) skewX(9deg) scaleX(.96);
+  }
+  71.8% {
+    opacity: 1;
+    clip-path: inset(34% 0 52% 0);
+    transform: translateX(-2px) skewX(-7deg);
+  }
 }
-@keyframes software-tag-glitch-pink {
-  0%, 67%, 79%, 100% { opacity: 0; transform: translateX(0) skewX(0); }
-  68% { opacity: .88; transform: translateX(3px) skewX(7deg); }
-  69.5% { opacity: .96; transform: translateX(-2px) skewX(-5deg) scaleX(.98); }
-  71% { opacity: .72; transform: translateX(1px) skewX(3deg); }
-  73% { opacity: 0; transform: translateX(0) skewX(0); }
+@keyframes software-tag-glitch-blocks {
+  0%, 71.1%, 72.2%, 100% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateX(0) scaleX(1);
+  }
+  71.25% {
+    opacity: .95;
+    clip-path: polygon(
+      4% 14%, 19% 14%, 19% 27%, 4% 27%,
+      4% 14%, 31% 45%, 46% 45%, 46% 58%, 31% 58%,
+      31% 45%, 63% 8%, 75% 8%, 75% 21%, 63% 21%,
+      63% 8%, 82% 66%, 97% 66%, 97% 81%, 82% 81%
+    );
+    transform: translateX(3px) scaleX(1.02);
+  }
+  71.55% {
+    opacity: 1;
+    clip-path: polygon(
+      9% 62%, 23% 62%, 23% 78%, 9% 78%,
+      9% 62%, 42% 18%, 55% 18%, 55% 31%, 42% 31%,
+      42% 18%, 68% 48%, 83% 48%, 83% 61%, 68% 61%,
+      68% 48%, 88% 7%, 100% 7%, 100% 19%, 88% 19%
+    );
+    transform: translateX(-3px) scaleX(.97);
+  }
+  71.9% {
+    opacity: .72;
+    clip-path: inset(42% 8% 39% 61%);
+    transform: translateX(2px) skewX(11deg);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .software-tag-active .software-tag-breath-text,
