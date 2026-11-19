@@ -71,7 +71,38 @@ export default function SoftwareLibrary({
         }}
         className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 ${active ? 'software-tag-active' : ''}`}
       >
-        {tag.name}
+        {row === 0 && !duplicate && tag.id === tags[0]?.id ? (
+          <span className="software-tag-electric-label">
+            {tag.name}
+            <svg className="software-tag-electric-overlay" viewBox="0 0 86 24" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <filter id="software-tag-electric-glow" x="-80%" y="-120%" width="260%" height="340%">
+                  <feGaussianBlur stdDeviation="1.7" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path
+                id="software-tag-electric-path"
+                className="software-tag-electric-trace"
+                pathLength="1000"
+                d="M3 20 L8 3 L13 20 M5 13 H11 M17 20 V8 C17 5 25 4 25 10 V20 M38 3 V20 M38 12 C35 5 29 6 29 13 C29 20 36 21 38 14 M43 20 V7 M43 11 C45 6 48 6 50 7 M62 13 C62 5 54 5 54 13 C54 21 62 21 62 13 M68 7 V20 M68 3.5 V3 M83 3 V20 M83 12 C80 5 74 6 74 13 C74 20 81 21 83 14"
+              />
+              <circle className="software-tag-electric-halo" r="3.1" filter="url(#software-tag-electric-glow)">
+                <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto">
+                  <mpath href="#software-tag-electric-path" />
+                </animateMotion>
+              </circle>
+              <circle className="software-tag-electric-core" r="1.25">
+                <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto">
+                  <mpath href="#software-tag-electric-path" />
+                </animateMotion>
+              </circle>
+            </svg>
+          </span>
+        ) : tag.name}
       </button>
     );
   };

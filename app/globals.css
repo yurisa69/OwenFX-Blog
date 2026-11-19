@@ -765,3 +765,49 @@ html[data-theme="light"] .code-copy-button {
     text-shadow: 0 0 8px rgba(255, 255, 255, .65);
   }
 }
+
+
+/* Electric current follows the first software tag's letter strokes. */
+.software-tag-electric-label {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+.software-tag-electric-overlay {
+  position: absolute;
+  inset: -3px -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 6px);
+  overflow: visible;
+  pointer-events: none;
+}
+.software-tag-electric-trace {
+  fill: none;
+  stroke: rgba(255, 255, 255, .96);
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24 976;
+  animation: software-tag-electric-travel 3.4s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, .98))
+    drop-shadow(0 0 7px rgba(190, 220, 255, .95))
+    drop-shadow(0 0 13px rgba(129, 190, 255, .72));
+}
+.software-tag-electric-halo {
+  fill: #fff;
+  opacity: .98;
+  filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px rgba(190, 220, 255, .98))
+    drop-shadow(0 0 19px rgba(129, 190, 255, .85));
+}
+.software-tag-electric-core {
+  fill: #fff;
+  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 7px #fff);
+}
+@keyframes software-tag-electric-travel {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -1000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .software-tag-electric-overlay { display: none; }
+  .software-tag-electric-trace { animation: none; }
+}
