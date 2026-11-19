@@ -71,10 +71,10 @@ export default function SoftwareLibrary({
         }}
         className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 ${active ? 'software-tag-active' : ''}`}
       >
-        {row === 0 && !duplicate && tag.id === tags[0]?.id ? (
-          <span className="software-tag-electric-label">
-            {tag.name}
-            <svg className="software-tag-electric-overlay" viewBox="0 0 86 24" preserveAspectRatio="none" aria-hidden="true">
+        <span className="software-tag-electric-label">
+          {tag.name}
+          {active && !duplicate && (
+            <svg className="software-tag-electric-overlay" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
               <defs>
                 <filter id="software-tag-electric-glow" x="-80%" y="-120%" width="260%" height="340%">
                   <feGaussianBlur stdDeviation="1.7" result="blur" />
@@ -88,7 +88,7 @@ export default function SoftwareLibrary({
                 id="software-tag-electric-path"
                 className="software-tag-electric-trace"
                 pathLength="1000"
-                d="M3 20 L8 3 L13 20 M5 13 H11 M17 20 V8 C17 5 25 4 25 10 V20 M38 3 V20 M38 12 C35 5 29 6 29 13 C29 20 36 21 38 14 M43 20 V7 M43 11 C45 6 48 6 50 7 M62 13 C62 5 54 5 54 13 C54 21 62 21 62 13 M68 7 V20 M68 3.5 V3 M83 3 V20 M83 12 C80 5 74 6 74 13 C74 20 81 21 83 14"
+                d="M0 12 L7 5 L13 18 L20 7 L27 16 L34 4 L41 19 L48 8 L55 16 L62 5 L69 19 L76 7 L83 17 L90 5 L100 12"
               />
               <circle className="software-tag-electric-halo" r="3.1" filter="url(#software-tag-electric-glow)">
                 <animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto">
@@ -101,8 +101,8 @@ export default function SoftwareLibrary({
                 </animateMotion>
               </circle>
             </svg>
-          </span>
-        ) : tag.name}
+          )}
+        </span>
       </button>
     );
   };

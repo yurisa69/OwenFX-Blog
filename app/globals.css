@@ -767,7 +767,7 @@ html[data-theme="light"] .code-copy-button {
 }
 
 
-/* Electric current follows the first software tag's letter strokes. */
+/* Electric current appears only on the currently selected software tag. */
 .software-tag-electric-label {
   position: relative;
   display: inline-block;
