@@ -246,7 +246,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
           autoComplete="off" aria-hidden="true"
           className="absolute -left-[10000px] h-px w-px opacity-0" />
         <textarea ref={commentInputRef} value={commentText} onChange={event => setCommentText(Array.from(event.target.value).slice(0, 600).join(''))}
-          placeholder={user ? (replyingTo ? `回复 ${replyTargetName}...` : '写下评论...') : '登录后即可发表评论'} rows={3} maxLength={1200}
+          placeholder={notice === '评论已发布！' || notice === '回复已发布！' ? notice : user ? (replyingTo ? `回复 ${replyTargetName}...` : '写下评论...') : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block h-10 min-h-10 w-full resize-none rounded-xl border p-2 text-sm outline-none transition md:h-auto md:min-h-0 md:p-3"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
         <div className="article-comments-compose-actions flex w-full items-center justify-end">
@@ -268,7 +268,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
             </svg>
           </button>
         </div>
-        {notice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}
+        {notice && notice !== '评论已发布！' && notice !== '回复已发布！' && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}
         </div>
       </div>
       )}
