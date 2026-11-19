@@ -758,14 +758,14 @@ html[data-theme="light"] .code-copy-button {
 }
 @keyframes software-tag-text-breath {
   0%, 100% {
-    opacity: .76;
-    filter: brightness(.88);
-    text-shadow: 0 0 1px rgba(255, 255, 255, .22);
+    opacity: .68;
+    filter: brightness(.82);
+    text-shadow: 0 0 3px rgba(255, 255, 255, .42), 0 0 8px rgba(255, 255, 255, .22);
   }
   50% {
     opacity: 1;
-    filter: brightness(1.22);
-    text-shadow: 0 0 2px rgba(255, 255, 255, .62), 0 0 5px rgba(255, 255, 255, .24);
+    filter: brightness(1.45);
+    text-shadow: 0 0 6px rgba(255, 255, 255, .95), 0 0 14px rgba(255, 255, 255, .68), 0 0 22px rgba(255, 255, 255, .32);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -809,13 +809,16 @@ html[data-theme="light"] .code-copy-button {
 }
 @keyframes software-tag-electric-breath {
   0%, 100% {
-    opacity: .76;
-    filter: drop-shadow(0 0 1px rgba(255, 255, 255, .34));
+    opacity: .62;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, .48))
+      drop-shadow(0 0 4px rgba(190, 220, 255, .42))
+      drop-shadow(0 0 8px rgba(129, 190, 255, .32));
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, .72))
-      drop-shadow(0 0 4px rgba(190, 220, 255, .3));
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, .98))
+      drop-shadow(0 0 7px rgba(190, 220, 255, .95))
+      drop-shadow(0 0 13px rgba(129, 190, 255, .72));
   }
 }
 @media (prefers-reduced-motion: reduce) {
