@@ -253,8 +253,16 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
             className="article-comment-send-mobile inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-45 md:hidden"
             style={{ borderColor: 'var(--border-color)', background: 'var(--accent-bg)', color: 'var(--accent)' }}>
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-[19px] w-[19px]">
-              <path d="M22.05 2.25 2.8 9.7c-1.3.5-1.2 2.3.1 2.7l5.1 1.7 1.8 5.5c.4 1.2 2 1.4 2.7.3l3-4.6 5.1 3.7c1 .7 2.3.1 2.5-1.1l2.1-13.8c.2-1.3-1-2.3-2.2-1.8Z" />
-              <path d="m8 14.1 10.9-8.2-8.2 9.3-.5 4.1-2.2-5.2Z" fill="var(--accent-bg)" />
+              <defs>
+                <clipPath id="telegram-plane-clip">
+                  <circle cx="12" cy="12" r="12" />
+                </clipPath>
+                <mask id="telegram-plane-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+                  <rect width="24" height="24" fill="white" />
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" fill="black" fillRule="evenodd" />
+                </mask>
+              </defs>
+              <rect width="24" height="24" fill="currentColor" clipPath="url(#telegram-plane-clip)" mask="url(#telegram-plane-mask)" />
             </svg>
           </button>
         </div>
