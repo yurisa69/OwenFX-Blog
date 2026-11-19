@@ -727,7 +727,7 @@ html[data-theme="light"] .code-copy-button {
   .article-comments-surface:hover { border-color:var(--border-color); }
   .article-comments-identity { display:none; }
   .article-comments-compose { margin-bottom:1.2rem; padding:.85rem; border:1px solid var(--border-color); border-radius:14px; background:var(--bg-glass); }
-  .article-comments-compose textarea { min-height:88px; border:0 !important; background:transparent !important; padding:.2rem 0; line-height:1.7; }
+  .article-comments-compose textarea { height:40px !important; min-height:40px !important; max-height:40px; box-sizing:border-box; border:0 !important; background:transparent !important; padding:0 !important; line-height:40px; }
   .article-comments-compose textarea:focus { outline:none; }
   .article-comments-compose-actions { display:flex; align-items:center; justify-content:flex-end; }
   .article-comment-send-mobile { width:40px; min-width:40px; height:40px; padding:0; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
