@@ -23,7 +23,7 @@ type SoftwareItem = {
 };
 
 function getTagDisplayName(name: string) {
-  return name === '开源免费' || name === '免费开源' ? '免费' : name;
+  return name === '免费开源' ? '开源免费' : name;
 }
 
 function getSoftwareTagNames(item: SoftwareItem) {
@@ -150,13 +150,13 @@ export default function SoftwareLibrary({
                 const tagLabels: Record<string, string> = {
                   '直播推流': '直播',
                   '屏幕录制': '录屏',
-                  '开源免费': '免费',
-                  '免费开源': '免费',
+                  '开源免费': '开源免费',
+                  '免费开源': '开源免费',
                 };
                 const cardTags = getSoftwareTagNames(item)
                   .map((tag) => tagLabels[tag] || tag)
                   .sort((a, b) => {
-                    const order = ['直播', '录屏', '免费开源'];
+                    const order = ['直播', '录屏', '开源免费'];
                     const ai = order.indexOf(a);
                     const bi = order.indexOf(b);
                     return (ai === -1 ? order.length : ai) - (bi === -1 ? order.length : bi);
