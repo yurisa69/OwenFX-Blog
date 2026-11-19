@@ -72,7 +72,7 @@ export default function SoftwareLibrary({
         className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${active ? 'software-tag-active' : ''}`}
       >
         <span className="software-tag-electric-label">
-          <span className="software-tag-breath-text">{tag.name}</span>
+          <span className="software-tag-breath-text" data-text={tag.name}>{tag.name}</span>
           {active && !duplicate && (
             <svg className="software-tag-electric-overlay" viewBox="0 0 86 24" preserveAspectRatio="none" aria-hidden="true">
               <path className="software-tag-electric-trace software-tag-electric-glow-outer" pathLength="1000" d="M3 20 L8 3 L13 20 M5 13 H11 M17 20 V8 C17 5 25 4 25 10 V20 M38 3 V20 M38 12 C35 5 29 6 29 13 C29 20 36 21 38 14 M43 20 V7 M43 11 C45 6 48 6 50 7 M62 13 C62 5 54 5 54 13 C54 21 62 21 62 13 M68 7 V20 M68 3.5 V3 M83 3 V20 M83 12 C80 5 74 6 74 13 C74 20 81 21 83 14" />

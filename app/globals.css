@@ -751,7 +751,37 @@ html[data-theme="light"] .code-copy-button {
   -webkit-text-fill-color: #fff;
 }
 .software-tag-breath-text {
+  position: relative;
   display: inline-block;
+}
+.software-tag-active .software-tag-breath-text::before,
+.software-tag-active .software-tag-breath-text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  white-space: inherit;
+  opacity: 0;
+}
+.software-tag-active .software-tag-breath-text::before {
+  color: #67e8f9;
+  -webkit-text-fill-color: #67e8f9;
+  animation: software-tag-glitch-cyan 3.8s steps(1, end) infinite;
+}
+.software-tag-active .software-tag-breath-text::after {
+  color: #fb7185;
+  -webkit-text-fill-color: #fb7185;
+  animation: software-tag-glitch-pink 3.8s steps(1, end) infinite;
+}
+@keyframes software-tag-glitch-cyan {
+  0%, 87%, 89%, 100% { opacity: 0; transform: translateX(0); clip-path: inset(0 0 100% 0); }
+  87.5% { opacity: .9; transform: translateX(-2px); clip-path: polygon(0 8%, 34% 8%, 34% 22%, 0 22%, 0 8%, 58% 42%, 100% 42%, 100% 54%, 58% 54%, 58% 42%); }
+  88% { opacity: .75; transform: translateX(1px); clip-path: polygon(12% 28%, 47% 28%, 47% 39%, 12% 39%, 12% 28%, 65% 68%, 92% 68%, 92% 82%, 65% 82%, 65% 68%); }
+}
+@keyframes software-tag-glitch-pink {
+  0%, 87.5%, 88.5%, 100% { opacity: 0; transform: translateX(0); clip-path: inset(0 0 100% 0); }
+  88% { opacity: .85; transform: translateX(2px); clip-path: polygon(4% 48%, 38% 48%, 38% 60%, 4% 60%, 4% 48%, 56% 12%, 84% 12%, 84% 24%, 56% 24%, 56% 12%); }
+  88.25% { opacity: .7; transform: translateX(-1px); clip-path: polygon(22% 72%, 53% 72%, 53% 84%, 22% 84%, 22% 72%, 72% 34%, 100% 34%, 100% 46%, 72% 46%, 72% 34%); }
 }
 .software-tag-active .software-tag-breath-text {
   animation: software-tag-text-breath 2.4s ease-in-out infinite;
@@ -767,8 +797,12 @@ html[data-theme="light"] .code-copy-button {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .software-tag-active .software-tag-breath-text {
+  .software-tag-active .software-tag-breath-text,
+  .software-tag-active .software-tag-breath-text::before,
+  .software-tag-active .software-tag-breath-text::after {
     animation: none;
+  }
+  .software-tag-active .software-tag-breath-text {
     opacity: 1;
     text-shadow: 0 0 4px rgba(255, 255, 255, .55);
   }
