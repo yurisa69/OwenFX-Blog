@@ -147,24 +147,34 @@ export default function SoftwareLibrary({
               </div>
               <h2 className="line-clamp-1 text-sm font-semibold">{item.title}</h2>
               {(() => {
+                const rawTags = getSoftwareTagNames(item);
+                const hasLiveTag = rawTags.some((tag) => tag === '直播推流' || tag === '直播');
+                const hasRecordingTag = rawTags.some((tag) => tag === '屏幕录制' || tag === '录屏');
                 const tagLabels: Record<string, string> = {
                   '直播推流': '直播',
                   '屏幕录制': '录屏',
                   '开源免费': '开源免费',
                   '免费开源': '开源免费',
                 };
-                const cardTags = getSoftwareTagNames(item)
-                  .map((tag) => tagLabels[tag] || tag)
-                  .sort((a, b) => {
-                    const order = ['直播', '录屏', '开源免费'];
-                    const ai = order.indexOf(a);
-                    const bi = order.indexOf(b);
-                    return (ai === -1 ? order.length : ai) - (bi === -1 ? order.length : bi);
-                  })
-                  .slice(0, 3);
+                const cardTags = rawTags
+                  .filter((tag) => !(hasLiveTag && hasRecordingTag && (
+                    tag === '直播推流' || tag === '直播' || tag === '屏幕录制' || tag === '录屏'
+                  )))
+                  .map((tag) => tagLabels[tag] || tag);
+                if (hasLiveTag && hasRecordingTag) {
+                  cardTags.push('直播录屏');
+                }
+                cardTags.sort((a, b) => {
+                  const order = ['直播录屏', '开源免费', '直播', '录屏'];
+                  const ai = order.indexOf(a);
+                  const bi = order.indexOf(b);
+                  return (ai === -1 ? order.length : ai) - (bi === -1 ? order.length : bi);
+                });
+                const maxCardTags = cardTags.some((tag) => Array.from(tag).length >= 4) ? 2 : 3;
+                const visibleCardTags = cardTags.slice(0, maxCardTags);
                 return cardTags.length > 0 ? (
                   <div className="mt-2 flex w-full flex-nowrap items-center justify-center gap-1">
-                    {cardTags.map((tag) => (
+                    {visibleCardTags.map((tag) => (
                       <span key={tag} className="whitespace-nowrap rounded-full px-1.5 py-1 text-[9px] leading-none"
                         style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
                         {tag}
