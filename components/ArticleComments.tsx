@@ -47,7 +47,18 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
     const frame = window.requestAnimationFrame(() => {
       const input = commentInputRef.current;
       if (!input) return;
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const articleSurface = document.querySelector('.article-detail-surface');
+      const supportButton = articleSurface?.querySelector('.support-trigger');
+      const interactions = articleSurface?.querySelector('.article-interactions');
+      const anchor = supportButton || interactions;
+      if (anchor) {
+        const header = document.querySelector('header');
+        const headerBottom = header?.getBoundingClientRect().bottom || 0;
+        const targetTop = anchor.getBoundingClientRect().top + window.scrollY - headerBottom - 32;
+        window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      }
+
       input.focus({ preventScroll: true });
     });
     return () => window.cancelAnimationFrame(frame);
