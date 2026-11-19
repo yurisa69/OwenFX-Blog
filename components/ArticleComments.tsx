@@ -29,7 +29,7 @@ function formatDate(value: string) {
   return `${formatChineseDateLocal(date)} • ${hours}:${minutes}`;
 }
 
-export default function ArticleComments({ articleId, composerOpen, onComposerOpenChange }: { articleId: string; composerOpen: boolean; onComposerOpenChange: (open: boolean) => void }) {
+export default function ArticleComments({ articleId, composerOpen, commentModeRequest, onComposerOpenChange }: { articleId: string; composerOpen: boolean; commentModeRequest: number; onComposerOpenChange: (open: boolean) => void }) {
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [comments, setComments] = useState<CommentRow[]>([]);
@@ -49,6 +49,12 @@ export default function ArticleComments({ articleId, composerOpen, onComposerOpe
   const [replyingToName, setReplyingToName] = useState('');
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
   const [commentSort, setCommentSort] = useState<'newest' | 'oldest' | 'popular'>('oldest');
+
+  useEffect(() => {
+    setReplyingTo(null);
+    setReplyingToName('');
+    setNotice('');
+  }, [commentModeRequest]);
 
   useEffect(() => {
     if (notice !== '回复已发布！') return;

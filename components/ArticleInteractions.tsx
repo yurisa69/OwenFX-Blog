@@ -16,6 +16,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   const [busy, setBusy] = useState<InteractionType | null>(null);
   const [shareNotice, setShareNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
+  const [commentModeRequest, setCommentModeRequest] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -67,6 +68,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   };
 
   const scrollToComments = () => {
+    setCommentModeRequest(current => current + 1);
     setComposerOpen(true);
     document.getElementById('article-comments-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -100,7 +102,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         </button>
       </div>
       {shareNotice && <p role="status" className="mt-2 text-center text-xs" style={{ color: 'var(--text-secondary)' }}>{shareNotice}</p>}
-      <ArticleComments articleId={articleId} composerOpen={composerOpen} onComposerOpenChange={setComposerOpen} />
+      <ArticleComments articleId={articleId} composerOpen={composerOpen} commentModeRequest={commentModeRequest} onComposerOpenChange={setComposerOpen} />
     </div>
   );
 }
