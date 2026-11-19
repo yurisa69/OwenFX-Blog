@@ -14,8 +14,9 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(false);
   const [busy, setBusy] = useState<InteractionType | null>(null);
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareNotice, setShareNotice] = useState('');
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [commentModeRequest, setCommentModeRequest] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -66,13 +67,19 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
     }
   };
 
+  const scrollToComments = () => {
+    setCommentModeRequest(current => current + 1);
+    setComposerOpen(true);
+    document.getElementById('article-comments-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const actionClass = 'flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-3 text-xs font-medium transition';
   const idleStyle = { color: 'var(--text-secondary)', background: 'transparent' };
   const activeStyle = { color: 'var(--accent)', background: 'var(--accent-bg)' };
 
   return (
-    <div className="mt-7 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
-      <div className="grid grid-cols-4 gap-1 sm:gap-3">
+    <div className="article-interactions mt-7 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
+      <div className="article-interactions-grid grid grid-cols-4 gap-1 sm:gap-3">
         <button type="button" onClick={() => void toggle('like')} disabled={busy !== null}
           aria-pressed={liked} className={actionClass} style={liked ? activeStyle : idleStyle}>
           <ArticleActionIcon type="like" active={liked} />
@@ -83,9 +90,9 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
           <ArticleActionIcon type="bookmark" active={saved} />
           <span>{saved ? '已收藏' : '收藏'}</span>
         </button>
-        <button type="button" onClick={() => setCommentsOpen(open => !open)}
-          aria-expanded={commentsOpen} aria-controls="article-comments-card"
-          className={actionClass} style={commentsOpen ? activeStyle : idleStyle}>
+        <button type="button" onClick={scrollToComments}
+          aria-expanded={composerOpen} aria-controls="article-comments-card"
+          className={actionClass} style={idleStyle}>
           <ArticleActionIcon type="comment" />
           <span>评论</span>
         </button>
@@ -95,7 +102,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         </button>
       </div>
       {shareNotice && <p role="status" className="mt-2 text-center text-xs" style={{ color: 'var(--text-secondary)' }}>{shareNotice}</p>}
-      {commentsOpen && <ArticleComments articleId={articleId} />}
+      <ArticleComments articleId={articleId} composerOpen={composerOpen} commentModeRequest={commentModeRequest} onComposerOpenChange={setComposerOpen} />
     </div>
   );
 }

@@ -12,10 +12,10 @@ import { formatChineseDateLocal } from '@/lib/date';
 
 type NavUser = { id?: string; name: string; email?: string | null; avatar_url: string | null };
 type Profile = { display_name: string; bio: string; avatar_url: string | null };
-type ProfileTab = 'profile' | 'likes' | 'bookmarks' | 'comments';
+type ProfileTab = 'profile' | 'notifications' | 'likes' | 'bookmarks';
 type ProfileArticle = { id?: string; title?: string; slug?: string } | null;
 type ProfileInteraction = { id: string; created_at: string; article: ProfileArticle };
-type ProfileComment = { id: string; body: string; status: string; created_at: string; article: ProfileArticle };
+type ProfileNotification = { id: string; body: string; author_id: string; created_at: string; author: { display_name?: string | null } | { display_name?: string | null }[] | null; article: ProfileArticle };
 
 const navLinks = [
   { label: '首页', href: '/' },
@@ -52,10 +52,10 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
   const [profileTab, setProfileTab] = useState<ProfileTab>('profile');
   const [profileLikes, setProfileLikes] = useState<ProfileInteraction[]>([]);
   const [profileBookmarks, setProfileBookmarks] = useState<ProfileInteraction[]>([]);
-  const [profileComments, setProfileComments] = useState<ProfileComment[]>([]);
+  const [profileNotifications, setProfileNotifications] = useState<ProfileNotification[]>([]);
   const [profileListsLoading, setProfileListsLoading] = useState(false);
   const [profileListsError, setProfileListsError] = useState('');
-  const [profileLoadedTabs, setProfileLoadedTabs] = useState<Record<'likes' | 'bookmarks' | 'comments', boolean>>({ likes: false, bookmarks: false, comments: false });
+  const [profileLoadedTabs, setProfileLoadedTabs] = useState<Record<'notifications' | 'likes' | 'bookmarks', boolean>>({ notifications: false, likes: false, bookmarks: false });
   const searchRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -162,7 +162,11 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
   }, [user?.id]);
 
 
-  const loadProfileTab = async (tab: 'likes' | 'bookmarks' | 'comments') => {
+  const loadProfileTab = async (tab: 'notifications' | 'likes' | 'bookmarks') => {
+    if (profileTab === tab) {
+      setProfileTab('profile');
+      return;
+    }
     setProfileTab(tab);
     if (!user?.id || profileLoadedTabs[tab] || profileListsLoading) return;
     const supabase = getSupabaseBrowser();
@@ -174,7 +178,31 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
     setProfileListsLoading(true);
     setProfileListsError('');
     try {
-      if (tab === 'likes' || tab === 'bookmarks') {
+      if (tab === 'notifications') {
+        const { data: ownComments, error: ownCommentsError } = await supabase.from('comments')
+          .select('id')
+          .eq('author_id', user.id)
+          .eq('status', 'approved')
+          .is('parent_comment_id', null)
+          .order('created_at', { ascending: false })
+          .limit(500);
+        if (ownCommentsError) throw ownCommentsError;
+
+        const commentIds = (ownComments || []).map(comment => comment.id);
+        if (commentIds.length === 0) {
+          setProfileNotifications([]);
+        } else {
+          const { data, error } = await supabase.from('comments')
+            .select('id,body,author_id,created_at,author:profiles!comments_author_id_profiles_fkey(display_name),article:articles(id,title,slug)')
+            .in('parent_comment_id', commentIds)
+            .eq('status', 'approved')
+            .neq('author_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(100);
+          if (error) throw error;
+          setProfileNotifications((data || []) as unknown as ProfileNotification[]);
+        }
+      } else {
         const { data, error } = await supabase.from('article_interactions')
           .select('id,created_at,article:articles(id,title,slug)')
           .eq('user_id', user.id)
@@ -183,13 +211,6 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
         if (error) throw error;
         if (tab === 'likes') setProfileLikes((data || []) as unknown as ProfileInteraction[]);
         else setProfileBookmarks((data || []) as unknown as ProfileInteraction[]);
-      } else {
-        const { data, error } = await supabase.from('comments')
-          .select('id,body,status,created_at,article:articles(id,title,slug)')
-          .eq('author_id', user.id)
-          .order('created_at', { ascending: false }).limit(50);
-        if (error) throw error;
-        setProfileComments((data || []) as unknown as ProfileComment[]);
       }
       setProfileLoadedTabs(current => ({ ...current, [tab]: true }));
     } catch {
@@ -311,20 +332,27 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
               <span className="text-xs font-semibold tracking-[.18em] uppercase text-[var(--text-tertiary)]">OWENFX ACCOUNT</span>
               <button type="button" className="profile-round-action" aria-label="关闭" onClick={() => setDrawerOpen(false)}><CloseIcon/></button>
             </div>
-            <div className="profile-drawer-content">
+            <div className="profile-drawer-content" onClick={event => {
+              if (event.target === event.currentTarget && profileTab !== 'profile') setProfileTab('profile');
+            }}>
               {editing ? (
-                <section className="profile-edit-card">
-                  <div className="profile-edit-heading">
-                    <div className="profile-avatar-ring profile-avatar-ring-edit">
-                      <div className="profile-avatar-inner">
-                        <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-lg font-semibold">编辑个人资料</h2>
-                      <button type="button" className="profile-secondary-action mt-2" onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? '上传中…' : '更换头像'}</button>
-                      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={handleAvatarUpload}/>
-                    </div>
+                <section className="profile-edit-card relative">
+                  <span className="absolute right-4 top-4 text-xl font-semibold tracking-wide text-[var(--text-tertiary)]">Edit</span>
+                  <div className="profile-edit-heading !justify-center !gap-0">
+                    <button
+                      type="button"
+                      className="relative top-1 mx-auto flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 disabled:cursor-wait"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploading}
+                      aria-label={uploading ? '头像上传中' : '点击头像更换头像'}
+                    >
+                      <span className="profile-avatar-ring profile-avatar-ring-edit">
+                        <span className="profile-avatar-inner">
+                          <Avatar src={avatar} alt="头像" fallback={(displayName || user.name || 'U').slice(0,1).toUpperCase()} priority />
+                        </span>
+                      </span>
+                    </button>
+                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="hidden" onChange={handleAvatarUpload}/>
                   </div>
                   <label className="profile-field-label">昵称</label>
                   <input className="profile-input" maxLength={MAX_DISPLAY_NAME_LENGTH * 2} value={profile.display_name} onChange={event => setProfile(value => ({...value, display_name:limitDisplayName(event.target.value)}))} placeholder="昵称（最多12个字符）"/>
@@ -357,21 +385,38 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                     </div>
                   </section>
                   <nav className="profile-activity-tabs" aria-label="个人活动">
+                    <button type="button" className={profileTab === 'notifications' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('notifications')}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></svg><span>通知</span>{profileLoadedTabs.notifications && profileNotifications.length > 0 && <b>{profileNotifications.length}</b>}
+                    </button>
                     <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('likes')}>
                       <ArticleActionIcon type="like" /><span>喜欢</span>{profileLoadedTabs.likes && profileLikes.length > 0 && <b>{profileLikes.length}</b>}
                     </button>
                     <button type="button" className={profileTab === 'bookmarks' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('bookmarks')}>
                       <ArticleActionIcon type="bookmark" /><span>收藏</span>{profileLoadedTabs.bookmarks && profileBookmarks.length > 0 && <b>{profileBookmarks.length}</b>}
                     </button>
-                    <button type="button" className={profileTab === 'comments' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('comments')}>
-                      <ArticleActionIcon type="comment" /><span>评论</span>{profileLoadedTabs.comments && profileComments.length > 0 && <b>{profileComments.length}</b>}
-                    </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
                   {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite">
                     {profileListsLoading ? (
                       <div className="profile-list-empty">正在加载记录…</div>
-                    ) : profileTab === 'likes' || profileTab === 'bookmarks' ? (
+                    ) : profileTab === 'notifications' ? (
+                      profileNotifications.length === 0 ? (
+                        <div className="profile-list-empty">暂时没有人回复你的评论</div>
+                      ) : profileNotifications.map(item => {
+                        const replyAuthor = Array.isArray(item.author) ? item.author[0] : item.author;
+                        return (
+                          <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
+                            <span className="profile-activity-item-mark"><ArticleActionIcon type="comment" /></span>
+                            <span className="min-w-0 flex-1">
+                              <strong>{replyAuthor?.display_name || '用户'} 回复了你的评论</strong>
+                              <small>{item.article?.title || '文章'} · {formatChineseDateLocal(item.created_at)}</small>
+                              <small className="mt-1 block truncate">{item.body}</small>
+                            </span>
+                            <span className="profile-activity-arrow">›</span>
+                          </Link>
+                        );
+                      })
+                    ) : (
                       (profileTab === 'likes' ? profileLikes : profileBookmarks).length === 0 ? (
                         <div className="profile-list-empty">{profileTab === 'likes' ? '还没有喜欢的文章' : '还没有收藏的文章'}</div>
                       ) : (profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
@@ -381,15 +426,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                           <span className="profile-activity-arrow">›</span>
                         </Link>
                       ))
-                    ) : profileComments.length === 0 ? (
-                      <div className="profile-list-empty">还没有发表过评论</div>
-                    ) : profileComments.map(item => (
-                      <article key={item.id} className="profile-comment-item">
-                        <div className="profile-comment-meta"><span>{formatChineseDateLocal(item.created_at)}</span><span>{item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '未通过' : '审核中'}</span></div>
-                        <p>{item.body}</p>
-                        {item.article?.slug && <Link href={'/articles/' + item.article.slug} onClick={() => setDrawerOpen(false)}>查看文章 ›</Link>}
-                      </article>
-                    ))}
+                    )}
                   </section>}
                 </>
               )}
