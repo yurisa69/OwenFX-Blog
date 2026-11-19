@@ -238,16 +238,25 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
           placeholder={user ? (replyingTo ? `回复 ${replyTargetName}...` : '写下评论...') : '登录后即可发表评论'} rows={3} maxLength={1200}
           disabled={!user} className="block w-full resize-none rounded-xl border p-3 text-sm outline-none transition"
           style={{ background: 'var(--input-bg)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }} />
-        <div className="w-full">
-          {user ? (
-            <button type="button" onClick={() => void submitComment()} disabled={!commentText.trim() || submitting}
-              className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">
-              {submitting ? '提交中…' : replyingTo ? '发送回复' : '发表评论'}
-            </button>
-          ) : (
-            <button type="button" onClick={login}
-              className="uiverse-btn uiverse-btn-primary block w-full rounded-xl !px-5 !py-2.5 text-sm">登录后评论</button>
-          )}
+        <div className="article-comments-compose-actions flex w-full items-center justify-end">
+          <button type="button" onClick={() => user ? void submitComment() : login()}
+            disabled={Boolean(user && (!commentText.trim() || submitting))}
+            aria-label={!user ? '登录后评论' : submitting ? '正在发送评论' : replyingTo ? '发送回复' : '发表评论'}
+            title={!user ? '登录后评论' : submitting ? '正在发送' : replyingTo ? '发送回复' : '发表评论'}
+            className="article-comment-submit-desktop uiverse-btn uiverse-btn-primary hidden w-full rounded-xl !px-5 !py-2.5 text-sm md:block">
+            {!user ? '登录后评论' : submitting ? '提交中…' : replyingTo ? '发送回复' : '发表评论'}
+          </button>
+          <button type="button" onClick={() => user ? void submitComment() : login()}
+            disabled={Boolean(user && (!commentText.trim() || submitting))}
+            aria-label={!user ? '登录后评论' : submitting ? '正在发送评论' : replyingTo ? '发送回复' : '发表评论'}
+            title={!user ? '登录后评论' : submitting ? '正在发送' : replyingTo ? '发送回复' : '发表评论'}
+            className="article-comment-send-mobile inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-45 md:hidden"
+            style={{ borderColor: 'var(--border-color)', background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-[19px] w-[19px]">
+              <path d="M21 3 9.5 14.5" />
+              <path d="m21 3-7.2 18-4.3-6.5L3 10.2 21 3Z" />
+            </svg>
+          </button>
         </div>
         {notice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}
         </div>

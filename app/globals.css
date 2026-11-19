@@ -729,8 +729,12 @@ html[data-theme="light"] .code-copy-button {
   .article-comments-compose { margin-bottom:1.2rem; padding:.85rem; border:1px solid var(--border-color); border-radius:14px; background:var(--bg-glass); }
   .article-comments-compose textarea { min-height:88px; border:0 !important; background:transparent !important; padding:.2rem 0; line-height:1.7; }
   .article-comments-compose textarea:focus { outline:none; }
-  .article-comments-compose > div:last-of-type { display:flex; justify-content:flex-end; }
-  .article-comments-compose button { width:auto; min-width:104px; padding:.55rem 1rem !important; }
+  .article-comments-compose-actions { display:flex; align-items:center; justify-content:flex-end; }
+  .article-comment-send-mobile { width:40px; min-width:40px; height:40px; padding:0; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  .article-comment-send-mobile svg { display:block; }
+  .article-comment-send-mobile:active:not(:disabled) { background:var(--accent); color:#fff; transform:scale(.96); }
+  .article-comment-send-mobile:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .article-comment-submit-desktop { display:none; }
   .article-comments-list { padding-top:1rem; border-top:0; }
   .article-comments-list > div:first-child { margin-bottom:.9rem; }
   .article-comments-list > div:last-child { display:flex; flex-direction:column; gap:0; }
