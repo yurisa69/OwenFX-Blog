@@ -756,14 +756,43 @@ html[data-theme="light"] .code-copy-button {
 .software-tag-active .software-tag-breath-text {
   animation: software-tag-text-breath 2.4s ease-in-out infinite;
 }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .software-tag-active .software-tag-breath-text {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      105deg,
+      rgba(255, 255, 255, .78) 0%,
+      rgba(255, 255, 255, .78) 38%,
+      #fff 48%,
+      #fff 52%,
+      rgba(255, 255, 255, .78) 62%,
+      rgba(255, 255, 255, .78) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 100% 50%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation:
+      software-tag-text-breath 2.4s ease-in-out infinite,
+      software-tag-text-sheen 3.6s ease-in-out infinite;
+  }
+}
 @keyframes software-tag-text-breath {
   0%, 100% { opacity: .69; }
   50% { opacity: 1; }
+}
+@keyframes software-tag-text-sheen {
+  from { background-position: 100% 50%; }
+  to { background-position: 0% 50%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .software-tag-active .software-tag-breath-text {
     animation: none;
     opacity: 1;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    background: none;
   }
 }
 
