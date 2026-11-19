@@ -29,13 +29,17 @@ function formatDate(value: string) {
   return `${formatChineseDateLocal(date)} • ${hours}:${minutes}`;
 }
 
-export default function ArticleComments({ articleId }: { articleId: string }) {
+export default function ArticleComments({ articleId, composerOpen, onComposerOpenChange }: { articleId: string; composerOpen: boolean; onComposerOpenChange: (open: boolean) => void }) {
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentText, setCommentText] = useState('');
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (composerOpen) commentInputRef.current?.focus();
+  }, [composerOpen]);
   const [honeypot, setHoneypot] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState('');
@@ -217,6 +221,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
 
   return (
     <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
+      {composerOpen && (
       <div className="mb-5 md:grid md:grid-cols-[120px_minmax(0,1fr)] md:items-center md:gap-5">
         <div className="article-comments-identity mb-5 flex flex-col items-center justify-center text-center md:mb-0">
           <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-medium"
@@ -260,6 +265,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
         {notice && <p role="status" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{notice}</p>}
         </div>
       </div>
+      )}
 
       <div className="article-comments-list border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -320,7 +326,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                           setReplyingTo(current => current === comment.id ? null : comment.id);
                           setReplyingToName(current => replyingTo === comment.id ? '' : name);
                           setCommentText(''); setNotice('');
-                          commentInputRef.current?.focus();
+                          onComposerOpenChange(true);
                         }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5h-8l-6 3v-3.5A2.5 2.5 0 0 1 2.5 16V7A2.5 2.5 0 0 1 5 4.5Z" />
@@ -377,7 +383,7 @@ export default function ArticleComments({ articleId }: { articleId: string }) {
                                       setReplyingTo(reply.parent_comment_id);
                                       setReplyingToName(replyName);
                                       setCommentText(''); setNotice('');
-                                      commentInputRef.current?.focus();
+                                      onComposerOpenChange(true);
                                     }} className="inline-flex min-h-7 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                                       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                                         <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5h-8l-6 3v-3.5A2.5 2.5 0 0 1 2.5 16V7A2.5 2.5 0 0 1 5 4.5Z" />

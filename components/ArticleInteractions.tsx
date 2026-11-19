@@ -15,6 +15,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   const [liked, setLiked] = useState(false);
   const [busy, setBusy] = useState<InteractionType | null>(null);
   const [shareNotice, setShareNotice] = useState('');
+  const [composerOpen, setComposerOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -66,6 +67,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   };
 
   const scrollToComments = () => {
+    setComposerOpen(true);
     document.getElementById('article-comments-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -87,7 +89,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
           <span>{saved ? '已收藏' : '收藏'}</span>
         </button>
         <button type="button" onClick={scrollToComments}
-          aria-controls="article-comments-card"
+          aria-expanded={composerOpen} aria-controls="article-comments-card"
           className={actionClass} style={idleStyle}>
           <ArticleActionIcon type="comment" />
           <span>评论</span>
@@ -98,7 +100,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         </button>
       </div>
       {shareNotice && <p role="status" className="mt-2 text-center text-xs" style={{ color: 'var(--text-secondary)' }}>{shareNotice}</p>}
-      <ArticleComments articleId={articleId} />
+      <ArticleComments articleId={articleId} composerOpen={composerOpen} onComposerOpenChange={setComposerOpen} />
     </div>
   );
 }
