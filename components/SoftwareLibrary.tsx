@@ -69,7 +69,7 @@ export default function SoftwareLibrary({
         onClick={() => {
           if (!duplicate) setSelectedTag(active ? null : tag.slug);
         }}
-        className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 ${active ? 'software-tag-active' : ''}`}
+        className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${active ? 'software-tag-active' : ''}`}
       >
         <span className="software-tag-electric-label">
           <span className="software-tag-breath-text">{tag.name}</span>

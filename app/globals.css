@@ -758,13 +758,11 @@ html[data-theme="light"] .code-copy-button {
 }
 @keyframes software-tag-text-breath {
   0%, 100% {
-    opacity: .68;
-    filter: brightness(.82);
+    opacity: .72;
     text-shadow: 0 0 3px rgba(255, 255, 255, .42), 0 0 8px rgba(255, 255, 255, .22);
   }
   50% {
     opacity: 1;
-    filter: brightness(1.45);
     text-shadow: 0 0 6px rgba(255, 255, 255, .95), 0 0 14px rgba(255, 255, 255, .68), 0 0 22px rgba(255, 255, 255, .32);
   }
 }
@@ -772,7 +770,6 @@ html[data-theme="light"] .code-copy-button {
   .software-tag-active .software-tag-breath-text {
     animation: none;
     opacity: 1;
-    filter: none;
     text-shadow: 0 0 4px rgba(255, 255, 255, .55);
   }
 }
