@@ -165,7 +165,7 @@ export default function SoftwareLibrary({
                 return cardTags.length > 0 ? (
                   <div className="mt-2 flex w-full flex-nowrap items-center justify-center gap-1">
                     {cardTags.map((tag) => (
-                      <span key={tag} className="software-card-tag-no-dot whitespace-nowrap rounded-full px-1.5 py-1 text-[9px] leading-none"
+                      <span key={tag} className="whitespace-nowrap rounded-full px-1.5 py-1 text-[9px] leading-none"
                         style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
                         {tag}
                       </span>
@@ -179,12 +179,6 @@ export default function SoftwareLibrary({
       )}
 
       <style jsx>{`
-        .software-card-tag-no-dot::before,
-        .software-card-tag-no-dot::after {
-          content: none !important;
-          display: none !important;
-        }
-
         @keyframes tag-cloud-danmaku {
           from { transform: translate3d(0, 0, 0); }
           to { transform: translate3d(-50%, 0, 0); }

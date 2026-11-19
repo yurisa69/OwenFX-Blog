@@ -216,9 +216,8 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         {tags.length > 0 && (
           <div className="mb-5 flex flex-wrap gap-1.5">
             {tags.map(tag => (
-              <span key={tag} className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px]"
+              <span key={tag} className="inline-flex items-center rounded-full px-2 py-1 text-[11px]"
                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: categoryColor }} />
                 {tag}
               </span>
             ))}
