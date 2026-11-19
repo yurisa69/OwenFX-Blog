@@ -72,7 +72,7 @@ export default function SoftwareLibrary({
         className={`shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 ${active ? 'software-tag-active' : ''}`}
       >
         <span className="software-tag-electric-label">
-          {tag.name}
+          <span className="software-tag-breath-text">{tag.name}</span>
           {active && !duplicate && (
             <svg className="software-tag-electric-overlay" viewBox="0 0 86 24" preserveAspectRatio="none" aria-hidden="true">
               <path
