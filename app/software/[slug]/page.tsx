@@ -232,6 +232,14 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           {software.updated_at && <span>更新：{formatChineseDate(software.updated_at, 'Asia/Shanghai')}</span>}
         </div>
 
+        {software.title === 'OBS Studio' && (
+          <div className="article-content mt-5">
+            <blockquote>
+              <p>从 OBS Studio 安装和第一次录屏开始，系统讲解场景来源、画面与音频、编码器、多音轨、直播配置，并进一步掌握回放缓存、虚拟摄像机、浏览器来源、插件和自动化工作流。</p>
+            </blockquote>
+          </div>
+        )}
+
         {(software.description || software.introduction_markdown) && (
           <section className="mt-7 border-t pt-6" style={{ borderColor: 'var(--border-color)' }}>
             <h2 className="mb-4 text-lg font-semibold">软件介绍</h2>
