@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 
 type SoftwareItem = {
   id: string;
@@ -16,15 +15,6 @@ type SoftwareItem = {
   tags: { tag: { name: string } | { name: string }[] | null }[] | null;
 };
 
-const categoryOrder = ['工具', '多媒体', '系统增强', 'Android软件', 'Windows软件'];
-const categoryColors: Record<string, string> = {
-  '工具': '#FF4444',
-  '多媒体': '#FF8C00',
-  '系统增强': '#3FB950',
-  'Android软件': '#3B82F6',
-  'Windows软件': '#A855F7',
-};
-
 export default function SoftwareLibrary({
   items,
   initialCategory = '全部',
@@ -32,36 +22,12 @@ export default function SoftwareLibrary({
   items: SoftwareItem[];
   initialCategory?: string;
 }) {
-  const [activeCategory, setActiveCategory] = useState(initialCategory);
-  const filteredItems = activeCategory === '全部'
+  const filteredItems = initialCategory === '全部'
     ? items
-    : items.filter((item) => item.category?.name === activeCategory);
+    : items.filter((item) => item.category?.name === initialCategory);
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap gap-2" aria-label="软件分类筛选">
-        <button
-          type="button"
-          onClick={() => setActiveCategory('全部')}
-          aria-pressed={activeCategory === '全部'}
-          className={`uiverse-btn !px-4 !py-1.5 text-xs ${activeCategory === '全部' ? 'uiverse-btn-primary' : 'uiverse-btn-ghost'}`}
-        >
-          全部
-        </button>
-        {categoryOrder.map((name) => (
-          <button
-            key={name}
-            type="button"
-            onClick={() => setActiveCategory(name)}
-            aria-pressed={activeCategory === name}
-            className={`uiverse-btn !px-4 !py-1.5 text-xs ${activeCategory === name ? 'uiverse-btn-primary' : 'uiverse-btn-ghost'}`}
-          >
-            <span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ backgroundColor: categoryColors[name] }} />
-            {name}
-          </button>
-        ))}
-      </div>
-
       {filteredItems.length === 0 ? (
         <div className="uiverse-card p-6 text-center text-sm opacity-70">该分类暂时没有上架软件。</div>
       ) : (
