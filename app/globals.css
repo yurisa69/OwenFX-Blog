@@ -745,7 +745,7 @@ html[data-theme="light"] .code-copy-button {
   .article-comment-item > div:last-child { min-width:0; }
 }
 
-/* Selected software-library tags: Vercel-inspired white luminous glow. */
+/* Selected software-library tags: clean white text with a subtle breathing pulse. */
 .software-tag-active {
   color: #fff !important;
   -webkit-text-fill-color: #fff;
@@ -757,33 +757,13 @@ html[data-theme="light"] .code-copy-button {
   animation: software-tag-text-breath 2.4s ease-in-out infinite;
 }
 @keyframes software-tag-text-breath {
-  0%, 100% {
-    opacity: .88;
-    text-shadow:
-      0 0 1px rgba(255, 255, 255, .95),
-      0 0 3px rgba(255, 255, 255, .72),
-      0 0 7px rgba(255, 255, 255, .42),
-      0 0 13px rgba(255, 255, 255, .2);
-  }
-  50% {
-    opacity: 1;
-    text-shadow:
-      0 0 1px rgba(255, 255, 255, 1),
-      0 0 4px rgba(255, 255, 255, 1),
-      0 0 9px rgba(255, 255, 255, .88),
-      0 0 17px rgba(255, 255, 255, .58),
-      0 0 27px rgba(255, 255, 255, .3);
-  }
+  0%, 100% { opacity: .88; }
+  50% { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .software-tag-active .software-tag-breath-text {
     animation: none;
     opacity: 1;
-    text-shadow:
-      0 0 1px rgba(255, 255, 255, 1),
-      0 0 4px rgba(255, 255, 255, .9),
-      0 0 10px rgba(255, 255, 255, .55),
-      0 0 18px rgba(255, 255, 255, .25);
   }
 }
 
