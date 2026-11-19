@@ -81,14 +81,14 @@ export default function SoftwareLibrary({
         aria-hidden={duplicate || undefined}
         aria-pressed={duplicate ? undefined : active}
         onPointerDown={(event) => {
-          if (!duplicate && !event.currentTarget.hasPointerCapture(event.pointerId)) {
+          if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
             event.currentTarget.setPointerCapture(event.pointerId);
           }
         }}
         onClick={() => {
-          if (!duplicate) setSelectedTag(active ? null : tag.slug);
+          setSelectedTag((current) => current === tag.slug ? null : tag.slug);
         }}
-        className={`shrink-0 whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${duplicate ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer touch-manipulation select-none'} ${active ? 'software-tag-active' : ''}`}
+        className={`shrink-0 whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 cursor-pointer touch-manipulation select-none focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 ${active ? 'software-tag-active' : ''}`}
       >
         <span className="software-tag-electric-label">
           <span className="software-tag-breath-opacity">
@@ -120,7 +120,7 @@ export default function SoftwareLibrary({
                   <div className="tag-cloud-segment flex shrink-0 items-center gap-8 pr-8">
                     {rowTags.map((tag) => renderTag(tag, rowIndex))}
                   </div>
-                  <div className="tag-cloud-segment flex shrink-0 items-center gap-8 pr-8 pointer-events-none" aria-hidden="true">
+                  <div className="tag-cloud-segment flex shrink-0 items-center gap-8 pr-8" aria-hidden="true">
                     {rowTags.map((tag) => renderTag(tag, rowIndex, true))}
                   </div>
                 </div>
