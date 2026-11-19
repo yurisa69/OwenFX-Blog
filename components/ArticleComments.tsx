@@ -43,7 +43,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
   }, [composerOpen]);
 
   useEffect(() => {
-    if (!replyScrollRequest || !window.matchMedia('(max-width: 767px)').matches) return;
+    if (!replyScrollRequest) return;
     const frame = window.requestAnimationFrame(() => {
       const input = commentInputRef.current;
       if (!input) return;
