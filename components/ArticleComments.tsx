@@ -35,11 +35,23 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [replyScrollRequest, setReplyScrollRequest] = useState(0);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (composerOpen) commentInputRef.current?.focus();
   }, [composerOpen]);
+
+  useEffect(() => {
+    if (!replyScrollRequest || !window.matchMedia('(max-width: 767px)').matches) return;
+    const frame = window.requestAnimationFrame(() => {
+      const input = commentInputRef.current;
+      if (!input) return;
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      input.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [replyScrollRequest]);
   const [honeypot, setHoneypot] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState('');
@@ -332,6 +344,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
                           setReplyingTo(current => current === comment.id ? null : comment.id);
                           setReplyingToName(current => replyingTo === comment.id ? '' : name);
                           setCommentText(''); setNotice('');
+                          setReplyScrollRequest(current => current + 1);
                           onComposerOpenChange(true);
                         }} className="inline-flex min-h-8 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -389,6 +402,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
                                       setReplyingTo(reply.parent_comment_id);
                                       setReplyingToName(replyName);
                                       setCommentText(''); setNotice('');
+                                      setReplyScrollRequest(current => current + 1);
                                       onComposerOpenChange(true);
                                     }} className="inline-flex min-h-7 items-center gap-1.5 rounded-md transition hover:text-[var(--accent)]">
                                       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
