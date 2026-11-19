@@ -91,7 +91,7 @@ function ProviderIcon({ provider }: { provider: string }) {
   return null;
 }
 function sortSoftwareTags(tags: string[]) {
-  const priority = ['直播推流', '屏幕录制', '免费开源'];
+  const priority = ['直播推流', '屏幕录制', '开源免费'];
   return tags
     .map((tag, index) => ({ tag, index }))
     .sort((a, b) => {
@@ -150,7 +150,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
   const tags = sortSoftwareTags((software.tags || [])
     .map((entry: { tag?: { name?: string } | { name?: string }[] | null }) => {
       const tag = Array.isArray(entry.tag) ? entry.tag[0] : entry.tag;
-      return tag?.name || '';
+      return tag?.name === '免费开源' ? '开源免费' : tag?.name || '';
     })
     .filter(Boolean));
   const platforms = formatPlatforms(software.platform);
