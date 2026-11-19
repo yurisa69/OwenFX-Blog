@@ -57,28 +57,25 @@ export default function SoftwareLibrary({
     tags.filter((_, index) => index % 2 === 1),
   ];
 
-  const renderTag = (tag: SoftwareTag | null, row: number, index: number, duplicate = false) => {
-    const isAll = tag === null;
-    const active = isAll ? selectedTag === null : selectedTag === tag.slug;
+  const renderTag = (tag: SoftwareTag, row: number, duplicate = false) => {
+    const active = selectedTag === tag.slug;
     return (
       <button
-        key={`${row}-${duplicate ? 'copy-' : ''}${tag?.id ?? 'all'}-${index}`}
+        key={`${row}-${duplicate ? 'copy-' : ''}${tag.id}`}
         type="button"
         tabIndex={duplicate ? -1 : 0}
         aria-hidden={duplicate || undefined}
         aria-pressed={duplicate ? undefined : active}
         onClick={() => {
-          if (duplicate) return;
-          setSelectedTag(isAll || active ? null : tag?.slug ?? null);
+          if (!duplicate) setSelectedTag(active ? null : tag.slug);
         }}
-        className="shrink-0 rounded-full border px-4 py-2 text-xs font-medium transition-colors duration-200"
+        className="shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-1 py-0 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4"
         style={{
-          borderColor: active ? 'var(--accent)' : 'var(--border)',
-          background: active ? 'var(--accent-bg)' : 'var(--card-bg)',
           color: active ? 'var(--accent)' : 'var(--text-secondary)',
+          textShadow: active ? '0 0 12px var(--accent)' : 'none',
         }}
       >
-        {tag?.name ?? '全部'}
+        {tag.name}
       </button>
     );
   };
@@ -87,27 +84,22 @@ export default function SoftwareLibrary({
     <>
       {tags.length > 0 && (
         <section className="mb-8" aria-label="软件标签筛选">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold">热门标签</h2>
-            <span className="text-xs opacity-60">选择标签筛选软件</span>
-          </div>
-          <div className="tag-cloud group relative flex flex-col gap-3 overflow-hidden py-1">
-            {tagRows.map((rowTags, rowIndex) => {
-              const rowItems = rowIndex === 0 ? [null, ...rowTags] : rowTags;
-              return (
+          <div className="tag-cloud group flex flex-col gap-4 overflow-hidden py-2">
+            {tagRows.map((rowTags, rowIndex) => (
+              rowTags.length > 0 && (
                 <div
                   key={rowIndex}
-                  className={`tag-cloud-track flex w-max items-center ${rowIndex === 0 ? 'tag-cloud-forward' : 'tag-cloud-reverse'}`}
+                  className={`tag-cloud-track flex w-max items-center ${rowIndex === 0 ? 'tag-cloud-fast' : 'tag-cloud-slow'}`}
                 >
-                  <div className="flex shrink-0 items-center gap-2.5">
-                    {rowItems.map((tag, index) => renderTag(tag, rowIndex, index))}
+                  <div className="flex shrink-0 items-center gap-8 pr-8">
+                    {rowTags.map((tag) => renderTag(tag, rowIndex))}
                   </div>
-                  <div className="-ml-2.5 flex shrink-0 items-center gap-2.5" aria-hidden="true">
-                    {rowItems.map((tag, index) => renderTag(tag, rowIndex, index, true))}
+                  <div className="flex shrink-0 items-center gap-8 pr-8" aria-hidden="true">
+                    {rowTags.map((tag) => renderTag(tag, rowIndex, true))}
                   </div>
                 </div>
-              );
-            })}
+              )
+            ))}
           </div>
         </section>
       )}
@@ -159,22 +151,18 @@ export default function SoftwareLibrary({
       )}
 
       <style jsx>{`
-        @keyframes tag-cloud-left {
+        @keyframes tag-cloud-danmaku {
           from { transform: translateX(0); }
           to { transform: translateX(-50%); }
         }
-        @keyframes tag-cloud-right {
-          from { transform: translateX(-50%); }
-          to { transform: translateX(0); }
-        }
         .tag-cloud-track {
-          animation-duration: 34s;
+          animation-name: tag-cloud-danmaku;
           animation-timing-function: linear;
           animation-iteration-count: infinite;
           will-change: transform;
         }
-        .tag-cloud-forward { animation-name: tag-cloud-left; }
-        .tag-cloud-reverse { animation-name: tag-cloud-right; animation-duration: 39s; }
+        .tag-cloud-fast { animation-duration: 28s; }
+        .tag-cloud-slow { animation-duration: 36s; }
         .tag-cloud:hover .tag-cloud-track { animation-play-state: paused; }
         @media (prefers-reduced-motion: reduce) {
           .tag-cloud-track { animation: none; }
