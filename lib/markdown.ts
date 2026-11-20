@@ -149,42 +149,6 @@ function rehypeWrapTables() {
   };
 }
 
-const CODE_LANGUAGE_ALIASES: Record<string, string> = {
-  sh: 'bash', shell: 'bash', zsh: 'bash', js: 'javascript', node: 'javascript',
-  mjs: 'javascript', cjs: 'javascript', ts: 'typescript', py: 'python',
-  htm: 'html', xhtml: 'html', md: 'markdown', mdx: 'markdown', yml: 'yaml',
-  txt: 'plaintext', text: 'plaintext', plain: 'plaintext',
-};
-function normalizeCodeLanguage(value: string) {
-  const language = value.trim().toLowerCase().replace(/^\./, '');
-  if (!/^[a-z0-9_+#.-]{1,32}$/.test(language)) return '';
-  return CODE_LANGUAGE_ALIASES[language] || language;
-}
-function rehypeNormalizeCodeLanguages() {
-  return (tree: HtmlNode) => {
-    const visit = (node: HtmlNode) => {
-      if (node.type === 'element' && node.tagName === 'pre') {
-        const code = node.children?.find(child => child.type === 'element' && child.tagName === 'code');
-        if (code) {
-          const classes = Array.isArray(code.properties?.className)
-            ? (code.properties.className as unknown[]).filter((value): value is string => typeof value === 'string')
-            : [];
-          const languageClass = classes.find(value => /^(?:language-|lang-|highlight-)/i.test(value));
-          const dataLanguage = String(code.properties?.dataLanguage ?? code.properties?.dataLang
-            ?? node.properties?.dataLanguage ?? node.properties?.dataLang ?? '');
-          const candidate = normalizeCodeLanguage(languageClass?.replace(/^(?:language-|lang-|highlight-)/i, '') || dataLanguage);
-          if (candidate) {
-            code.properties ??= {};
-            code.properties.className = [...classes.filter(value => !/^(?:language-|lang-|highlight-)/i.test(value)), 'language-' + candidate];
-          }
-        }
-      }
-      node.children?.forEach(visit);
-    };
-    visit(tree);
-  };
-}
-
 function rehypeAddCodeLanguageLabels() {
   return (tree: HtmlNode) => {
     const visit = (node: HtmlNode) => {
@@ -237,7 +201,6 @@ const markdownProcessor = remark()
   .use(remarkOwenFxCompatibility)
   .use(remarkRehype)
   .use(rehypeWrapTables)
-  .use(rehypeNormalizeCodeLanguages)
   .use(rehypeHighlight)
   .use(rehypeAddCodeLanguageLabels)
   .use(rehypeSanitize, markdownSanitizeSchema)

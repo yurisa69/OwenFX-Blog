@@ -68,24 +68,6 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     if (richRef.current) setContent(htmlToMarkdown(richRef.current.innerHTML));
   }
 
-  function applyCodeLanguage() {
-    const selection = window.getSelection();
-    const anchor = selection?.anchorNode;
-    const anchorElement = anchor instanceof Element ? anchor : anchor?.parentElement;
-    const codeBlock = anchorElement?.closest('pre');
-    if (!codeBlock || !richRef.current?.contains(codeBlock)) {
-      setMessage('请先将光标放入需要修改语言的代码块中');
-      return;
-    }
-    const code = codeBlock.querySelector('code') || codeBlock;
-    codeBlock.setAttribute('data-language', codeLanguage);
-    code.className = code.className.split(/\s+/)
-      .filter(name => !/^(?:language-|lang-)/i.test(name) && name !== 'hljs')
-      .concat('language-' + codeLanguage).join(' ');
-    setContent(htmlToMarkdown(richRef.current.innerHTML));
-    setMessage('已更新当前代码块语言标识');
-  }
-
   function insertTable() {
     const rows = Math.max(2, Math.min(10, Number(window.prompt('表格行数（2–10，包含表头）', '3')) || 3));
     const columns = Math.max(2, Math.min(8, Number(window.prompt('表格列数（2–8）', '3')) || 3));
@@ -287,8 +269,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
               <option value="rust">Rust</option>
               <option value="plaintext">纯文本</option>
             </select>
-            <button className="admin-tool" type="button" onMouseDown={event => event.preventDefault()} onClick={applyCodeLanguage}>应用到当前代码块</button>
-            <button className="admin-tool" type="button" onMouseDown={event => event.preventDefault()} onClick={insertCodeBlock}>插入代码块</button>
+            <button className="admin-tool" type="button" onClick={insertCodeBlock}>插入代码块</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('insertHorizontalRule')}>分隔线</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'blockquote')}>引用</button>
             <button className="admin-tool" type="button" onClick={() => {

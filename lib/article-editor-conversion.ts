@@ -32,36 +32,6 @@ function textContent(node: RichTextNodeLike): string {
   return childNodes(node).map(textContent).join('');
 }
 
-const LANGUAGE_ALIASES: Record<string, string> = {
-  sh: 'bash', shell: 'bash', zsh: 'bash', js: 'javascript', node: 'javascript',
-  mjs: 'javascript', cjs: 'javascript', ts: 'typescript', py: 'python',
-  htm: 'html', xhtml: 'html', md: 'markdown', mdx: 'markdown',
-  yml: 'yaml', txt: 'plaintext', text: 'plaintext', plain: 'plaintext',
-};
-function normalizeCodeLanguage(value: string) {
-  const language = value.trim().toLowerCase().replace(/^\./, '');
-  if (!/^[a-z0-9_+#.-]{1,32}$/.test(language)) return '';
-  return LANGUAGE_ALIASES[language] || language;
-}
-function languageFromClass(value: string) {
-  return value.match(/(?:^|\s)(?:language-|lang-|highlight-)([a-zA-Z0-9_+#.-]{1,32})(?=\s|$)/i)?.[1] || '';
-}
-function getCodeLanguage(pre: RichTextNodeLike, code?: RichTextNodeLike) {
-  const candidates = [
-    code?.getAttribute?.('data-language'), code?.getAttribute?.('data-lang'),
-    pre.getAttribute?.('data-language'), pre.getAttribute?.('data-lang'),
-    languageFromClass(code?.getAttribute?.('class') || ''),
-    languageFromClass(pre.getAttribute?.('class') || ''),
-    languageFromClass(pre.parentElement?.getAttribute?.('class') || ''),
-  ];
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    const normalized = normalizeCodeLanguage(candidate);
-    if (normalized) return normalized;
-  }
-  return '';
-}
-
 function walk(node: RichTextNodeLike, listDepth = 0): string {
   if (node.nodeType === 3) return node.textContent || '';
   if (node.nodeType !== 1) return '';
@@ -115,7 +85,13 @@ function walk(node: RichTextNodeLike, listDepth = 0): string {
     const codeNode = childNodes(node).find(child =>
       child.nodeType === 1 && child.tagName?.toUpperCase() === 'CODE',
     );
-    const language = getCodeLanguage(node, codeNode);
+    const codeClass = codeNode?.getAttribute?.('class') || '';
+    const languageFromClass = codeClass.match(/(?:^|\s)language-([a-zA-Z0-9_+#.-]{1,32})(?=\s|$)/)?.[1];
+    const languageFromData = node.getAttribute?.('data-language') || '';
+    const candidateLanguage = languageFromClass || languageFromData;
+    const language = /^[a-zA-Z0-9_+#.-]{1,32}$/.test(candidateLanguage)
+      ? candidateLanguage.toLowerCase()
+      : '';
     const code = textContent(codeNode || node).replace(/\r\n?/g, '\n');
     const backtick = String.fromCharCode(96);
     const backtickRunPattern = new RegExp(backtick + '{3,}', 'g');
