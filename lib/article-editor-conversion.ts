@@ -35,16 +35,16 @@ function textContent(node: RichTextNodeLike): string {
 const LANGUAGE_ALIASES: Record<string, string> = {
   sh: 'bash', shell: 'bash', zsh: 'bash', js: 'javascript', node: 'javascript',
   mjs: 'javascript', cjs: 'javascript', ts: 'typescript', py: 'python',
-  htm: 'xml', html: 'xml', xhtml: 'xml', md: 'markdown', mdx: 'markdown',
+  htm: 'html', xhtml: 'html', md: 'markdown', mdx: 'markdown',
   yml: 'yaml', txt: 'plaintext', text: 'plaintext', plain: 'plaintext',
 };
 function normalizeCodeLanguage(value: string) {
-  const language = value.trim().toLowerCase().replace(/^\\./, '');
+  const language = value.trim().toLowerCase().replace(/^\./, '');
   if (!/^[a-z0-9_+#.-]{1,32}$/.test(language)) return '';
   return LANGUAGE_ALIASES[language] || language;
 }
 function languageFromClass(value: string) {
-  return value.match(/(?:^|\\s)(?:language-|lang-|highlight-)([a-zA-Z0-9_+#.-]{1,32})(?=\\s|$)/i)?.[1] || '';
+  return value.match(/(?:^|\s)(?:language-|lang-|highlight-)([a-zA-Z0-9_+#.-]{1,32})(?=\s|$)/i)?.[1] || '';
 }
 function getCodeLanguage(pre: RichTextNodeLike, code?: RichTextNodeLike) {
   const candidates = [

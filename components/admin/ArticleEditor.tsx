@@ -79,7 +79,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     }
     const code = codeBlock.querySelector('code') || codeBlock;
     codeBlock.setAttribute('data-language', codeLanguage);
-    code.className = code.className.split(/\\s+/)
+    code.className = code.className.split(/\s+/)
       .filter(name => !/^(?:language-|lang-)/i.test(name) && name !== 'hljs')
       .concat('language-' + codeLanguage).join(' ');
     setContent(htmlToMarkdown(richRef.current.innerHTML));

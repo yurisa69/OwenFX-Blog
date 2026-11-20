@@ -147,14 +147,14 @@ test('normalizes common fenced-code aliases before syntax highlighting', () => {
     ['js', 'const answer = 42;', 'javascript'],
     ['ts', 'const answer: number = 42;', 'typescript'],
     ['py', 'def answer(): return 42', 'python'],
-    ['html', '<strong>Hello</strong>', 'xml'],
+    ['html', '<strong>Hello</strong>', 'html'],
     ['css', '.card { color: red; }', 'css'],
     ['json', '{"enabled": true}', 'json'],
     ['sql', 'SELECT * FROM users;', 'sql'],
     ['md', '# Heading', 'markdown'],
   ];
   for (const [inputLanguage, source, outputLanguage] of cases) {
-    const html = markdownToHtml(fence + inputLanguage + '\\n' + source + '\\n' + fence);
+    const html = markdownToHtml(fence + inputLanguage + '\n' + source + '\n' + fence);
     assert.match(html, new RegExp('data-language="' + outputLanguage + '"'));
     assert.match(html, new RegExp('language-' + outputLanguage));
     assert.match(html, /class="[^"]*hljs/);
@@ -163,10 +163,10 @@ test('normalizes common fenced-code aliases before syntax highlighting', () => {
 
 test('keeps unlabelled code plain and unknown language labels safe', () => {
   const fence = String.fromCharCode(96).repeat(3);
-  const plain = markdownToHtml(fence + '\\nplain <script>text</script>\\n' + fence);
+  const plain = markdownToHtml(fence + '\nplain <script>text</script>\n' + fence);
   assert.match(plain, /<pre><code>/);
-  assert.match(plain, /plain &lt;script&gt;text&lt;\\/script&gt;/);
-  const unknown = markdownToHtml(fence + 'madeup-language\\nplain text\\n' + fence);
+  assert.match(plain, /plain &lt;script&gt;text&lt;\/script&gt;/);
+  const unknown = markdownToHtml(fence + 'madeup-language\nplain text\n' + fence);
   assert.match(unknown, /data-language="madeup-language"/);
   assert.match(unknown, /plain text/);
   assert.doesNotMatch(unknown, /<script/i);

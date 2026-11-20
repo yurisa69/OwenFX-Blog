@@ -152,11 +152,11 @@ function rehypeWrapTables() {
 const CODE_LANGUAGE_ALIASES: Record<string, string> = {
   sh: 'bash', shell: 'bash', zsh: 'bash', js: 'javascript', node: 'javascript',
   mjs: 'javascript', cjs: 'javascript', ts: 'typescript', py: 'python',
-  htm: 'xml', xhtml: 'xml', md: 'markdown', mdx: 'markdown', yml: 'yaml',
+  htm: 'html', xhtml: 'html', md: 'markdown', mdx: 'markdown', yml: 'yaml',
   txt: 'plaintext', text: 'plaintext', plain: 'plaintext',
 };
 function normalizeCodeLanguage(value: string) {
-  const language = value.trim().toLowerCase().replace(/^\\./, '');
+  const language = value.trim().toLowerCase().replace(/^\./, '');
   if (!/^[a-z0-9_+#.-]{1,32}$/.test(language)) return '';
   return CODE_LANGUAGE_ALIASES[language] || language;
 }
