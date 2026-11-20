@@ -42,16 +42,23 @@ export default function Carousel() {
       }))
     );
 
-    const timer = window.setInterval(() => {
+    const paletteTimer = window.setInterval(() => {
       setGlowRound(current => (current + 1) % glowPalettes.length);
+    }, 6900);
+
+    const positionTimer = window.setInterval(() => {
       setGlowPositions(
         Array.from({ length: 3 }, () => ({
           x: 8 + Math.random() * 84,
           y: 12 + Math.random() * 76,
         }))
       );
-    }, 4600);
-    return () => window.clearInterval(timer);
+    }, 6000);
+
+    return () => {
+      window.clearInterval(paletteTimer);
+      window.clearInterval(positionTimer);
+    };
   }, []);
 
   const slide = slides[idx];
