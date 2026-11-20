@@ -150,3 +150,30 @@ test('converts blockquotes, hard line breaks and horizontal rules', () => {
     '> 引用内容\n\n第一行\n第二行\n\n---',
   );
 });
+
+
+test('recognizes common language metadata locations and aliases', () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const cases = [
+    [element('pre', [element('code', [text('echo ok')], { class: 'lang-sh' })]), 'bash'],
+    [element('pre', [element('code', [text('const x = 1')], { 'data-lang': 'js' })]), 'javascript'],
+    [element('pre', [element('code', [text('print(1)')])], { 'data-lang': 'py' }), 'python'],
+    [element('pre', [element('code', [text('<h1>Hi</h1>')])], { class: 'highlight-html' }), 'xml'],
+    [element('pre', [element('code', [text('body {}')], { class: 'language-css' })]), 'css'],
+    [element('pre', [element('code', [text('{"ok":true}')], { class: 'language-json' })]), 'json'],
+    [element('pre', [element('code', [text('SELECT 1')], { class: 'language-sql' })]), 'sql'],
+    [element('pre', [element('code', [text('# heading')], { class: 'language-md' })]), 'markdown'],
+  ];
+  for (const [nodes, language] of cases) {
+    const code = nodes[0].children[0].textContent;
+    assert.equal(richTextNodesToMarkdown(nodes), fence + language + '\\n' + code + '\\n' + fence);
+  }
+});
+
+test('keeps unknown language names and ignores malformed language metadata', () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const unknown = [element('pre', [element('code', [text('opaque')], { class: 'language-customlang' })])];
+  assert.equal(richTextNodesToMarkdown(unknown), fence + 'customlang\\nopaque\\n' + fence);
+  const malformed = [element('pre', [element('code', [text('plain')])], { 'data-language': 'bad language!' })];
+  assert.equal(richTextNodesToMarkdown(malformed), fence + '\\nplain\\n' + fence);
+});
