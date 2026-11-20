@@ -59,13 +59,18 @@ export default function ParticleBackground() {
           background: '#a855f7',
           ...positions[2],
           transition,
-          animation: 'pulse 3.5s ease-in-out infinite 0.5s',
+          animation: 'purple-pulse 3s ease-in-out infinite 0.5s',
         }}
       />
       <style>{`
         @keyframes pulse {
           0%, 100% { transform: scale(1); opacity: 0.15; }
           50% { transform: scale(1.2); opacity: 0.25; }
+        }
+
+        @keyframes purple-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.12; }
+          50% { transform: scale(1.2); opacity: 0.3; }
         }
 
         
