@@ -101,6 +101,30 @@ test('converts preformatted code blocks without losing their content', () => {
   );
 });
 
+test('preserves the selected language when converting rich-text code blocks', () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const html = [element('pre', [
+    element('code', [text('const answer = 42;')], { class: 'hljs language-javascript' }),
+  ], { 'data-language': 'javascript' })];
+  assert.equal(richTextNodesToMarkdown(html), fence + 'javascript\nconst answer = 42;\n' + fence);
+});
+
+test('preserves pre language metadata and leaves unlabelled blocks plain', () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const labelled = [element('pre', [element('code', [text('SELECT 1;')])], { 'data-language': 'sql' })];
+  assert.equal(richTextNodesToMarkdown(labelled), fence + 'sql\nSELECT 1;\n' + fence);
+
+  const unlabelled = [element('pre', [element('code', [text('plain text')])])];
+  assert.equal(richTextNodesToMarkdown(unlabelled), fence + '\nplain text\n' + fence);
+});
+
+test('uses a longer Markdown fence when code contains triple backticks', () => {
+  const fence = String.fromCharCode(96).repeat(4);
+  const tripleFence = String.fromCharCode(96).repeat(3);
+  const html = [element('pre', [element('code', [text('const sample = ' + tripleFence + ';')])], { 'data-language': 'javascript' })];
+  assert.equal(richTextNodesToMarkdown(html), fence + 'javascript\nconst sample = ' + tripleFence + ';\n' + fence);
+});
+
 test('converts safe images and escapes closing brackets in alt text', () => {
   const html = [element('p', [
     element('img', [], { src: 'https://example.com/image.png', alt: '图]片' }),

@@ -39,6 +39,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [message, setMessage] = useState('');
   const [preview, setPreview] = useState(false);
   const [editorRevision, setEditorRevision] = useState(0);
+  const [codeLanguage, setCodeLanguage] = useState('bash');
   const numberingIssues = useMemo(() => validateArticleNumbering(content), [content]);
 
   // 不将 content 加入依赖：每次输入都会更新它，重新写入 innerHTML 会导致编辑光标跳动。
@@ -55,6 +56,15 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   function runFormat(command: string, value?: string) {
     richRef.current?.focus();
     document.execCommand(command, false, value);
+    if (richRef.current) setContent(htmlToMarkdown(richRef.current.innerHTML));
+  }
+
+  function insertCodeBlock() {
+    const selectedText = window.getSelection()?.toString() || '';
+    const language = codeLanguage;
+    const markup = '<pre data-language="' + language + '"><code class="language-' + language + '">' + escapeHtml(selectedText) + '</code></pre><p><br></p>';
+    richRef.current?.focus();
+    document.execCommand('insertHTML', false, markup);
     if (richRef.current) setContent(htmlToMarkdown(richRef.current.innerHTML));
   }
 
@@ -231,7 +241,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       </div>
     </div>
 
-    {preview ? <article className="admin-preview" dangerouslySetInnerHTML={{ __html: markdownToHtml(content, { articleTitle: title, removeDownloadLinks: true }) }} /> :
+    {preview ? <article className="admin-preview prose-block" dangerouslySetInnerHTML={{ __html: markdownToHtml(content, { articleTitle: title, removeDownloadLinks: true }) }} /> :
       mode === 'markdown' ? <textarea value={content} onChange={event => setContent(event.target.value)} rows={22} className="admin-input font-mono text-sm leading-7" placeholder={'# 文章标题\n\n在这里编写 Markdown 内容…'} /> :
         <div className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex flex-wrap gap-1 border-b p-2" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
@@ -241,7 +251,25 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
             <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'h3')}>H3</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('insertUnorderedList')}>• 列表</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('insertOrderedList')}>1. 编号</button>
-            <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'pre')}>代码块</button>
+            <select className="admin-tool" aria-label="代码语言" value={codeLanguage} onChange={event => setCodeLanguage(event.target.value)}>
+              <option value="bash">Bash</option>
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="jsx">JSX</option>
+              <option value="tsx">TSX</option>
+              <option value="python">Python</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+              <option value="json">JSON</option>
+              <option value="sql">SQL</option>
+              <option value="yaml">YAML</option>
+              <option value="markdown">Markdown</option>
+              <option value="java">Java</option>
+              <option value="go">Go</option>
+              <option value="rust">Rust</option>
+              <option value="plaintext">纯文本</option>
+            </select>
+            <button className="admin-tool" type="button" onClick={insertCodeBlock}>插入代码块</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('insertHorizontalRule')}>分隔线</button>
             <button className="admin-tool" type="button" onClick={() => runFormat('formatBlock', 'blockquote')}>引用</button>
             <button className="admin-tool" type="button" onClick={() => {
@@ -259,7 +287,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
                 setContent(htmlToMarkdown(event.currentTarget.innerHTML));
               }
             }}
-            className="admin-rich min-h-[420px] p-5 outline-none" data-placeholder="开始写作…" />
+            className="admin-rich prose-block min-h-[420px] p-5 outline-none" data-placeholder="开始写作…" />
         </div>
     }
 

@@ -82,7 +82,22 @@ function walk(node: RichTextNodeLike, listDepth = 0): string {
   }
 
   if (tagName === 'PRE') {
-    return '\x60\x60\x60\n' + textContent(node) + '\n\x60\x60\x60\n\n';
+    const codeNode = childNodes(node).find(child =>
+      child.nodeType === 1 && child.tagName?.toUpperCase() === 'CODE',
+    );
+    const codeClass = codeNode?.getAttribute?.('class') || '';
+    const languageFromClass = codeClass.match(/(?:^|\s)language-([a-zA-Z0-9_+#.-]{1,32})(?=\s|$)/)?.[1];
+    const languageFromData = node.getAttribute?.('data-language') || '';
+    const candidateLanguage = languageFromClass || languageFromData;
+    const language = /^[a-zA-Z0-9_+#.-]{1,32}$/.test(candidateLanguage)
+      ? candidateLanguage.toLowerCase()
+      : '';
+    const code = textContent(codeNode || node).replace(/\r\n?/g, '\n');
+    const backtick = String.fromCharCode(96);
+    const backtickRunPattern = new RegExp(backtick + '{3,}', 'g');
+    const longestBacktickRun = Math.max(0, ...Array.from(code.matchAll(backtickRunPattern), match => match[0].length));
+    const fence = backtick.repeat(Math.max(3, longestBacktickRun + 1));
+    return fence + language + '\n' + code + '\n' + fence + '\n\n';
   }
 
   const content = childNodes(node).map(child => walk(child, listDepth)).join('');
