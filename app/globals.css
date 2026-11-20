@@ -405,7 +405,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-drawer-panel{back
   from { background-position: 0 0, 0% 50%; }
   to { background-position: 0 0, 240% 50%; }
 }
-@media (prefers-reduced-motion: reduce) { .uiverse-btn-primary { animation: none; } }
+
 
 
 /* Article official download link */
@@ -417,7 +417,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-drawer-panel{back
 .support-trigger:hover{border-color:rgba(129,140,248,.42);color:var(--text-primary);box-shadow:0 0 24px rgba(129,140,248,.16);transform:translateY(-1px)}
 .support-trigger:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(129,140,248,.18)}
 @keyframes site-owner-flow{from{background-position:0% 50%}to{background-position:240% 50%}}
-@media(prefers-reduced-motion:reduce){.monet-waterlily-flow{animation:none}}
+
 
 
 /* Compact account card and activity tabs inside the six-point profile drawer. */
@@ -477,13 +477,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
   from { background-position: 0 0; }
   to { background-position: 0 300%; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .article-detail-surface .article-excerpt-card::before,
-  .article-content blockquote::before {
-    animation: none;
-    background-position: 0 50%;
-  }
-}
+
 
 
 /* Back-to-top press feedback: keep the glass button unchanged,
@@ -543,11 +537,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
     color: var(--text-primary);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .back-to-top-btn, .back-to-top-icon { transition: none; }
-  .back-to-top-btn:active::before,
-  .back-to-top-btn:active::after { animation: none; }
-}
+
 
 /* Responsive article appreciation control: keep the current mobile dimensions,
    then scale up progressively for tablet and desktop reading layouts. */
@@ -629,7 +619,7 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
 .prose-block .contains-task-list{padding-left:0;list-style:none}
 .prose-block .task-list-item{list-style:none}
 .prose-block .task-list-item input[type="checkbox"]{margin-right:.5rem;accent-color:var(--accent);vertical-align:middle}
-@media(prefers-reduced-motion:reduce){.code-copy-button{transition:none}}
+
 html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-comment,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-quote{color:#6b7280}
 html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-keyword,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-selector-tag,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-literal,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-name{color:#b42318}
 html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-string,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-attr,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-template-variable{color:#075985}
@@ -699,9 +689,7 @@ html[data-theme="light"] .code-copy-button {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-@media (prefers-reduced-motion: reduce) {
-  .code-copy-button { transition: none; }
-}
+
 
 .article-content .prose-block pre[data-language="bash" i] {
   padding-top: 2.25rem;
@@ -828,18 +816,7 @@ html[data-theme="light"] .code-copy-button {
   from { background-position: 0% 50%; }
   to { background-position: 100% 50%; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .software-tag-active .software-tag-breath-opacity {
-    animation: none;
-    opacity: 1;
-  }
-  .software-tag-active .software-tag-breath-text {
-    animation: none;
-    color: #fff;
-    -webkit-text-fill-color: #fff;
-    background: none;
-  }
-}
+
 
 /* Electric current appears only on the currently selected software tag. */
 .software-tag-electric-label {
@@ -899,7 +876,4 @@ html[data-theme="light"] .code-copy-button {
   0%, 100% { opacity: .72; }
   50% { opacity: 1; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .software-tag-electric-overlay { display: none; }
-  .software-tag-electric-trace { animation: none; }
-}
+

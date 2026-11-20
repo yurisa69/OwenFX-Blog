@@ -68,12 +68,7 @@ export default function ParticleBackground() {
           50% { transform: scale(1.2); opacity: 0.25; }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-          .particle-glow {
-            animation: none !important;
-            transition: none !important;
-          }
-        }
+        
       `}</style>
     </div>
   );

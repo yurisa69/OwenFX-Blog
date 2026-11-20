@@ -208,10 +208,7 @@ export default function SoftwareLibrary({
         }
         .tag-cloud-fast { animation-duration: 28s; }
         .tag-cloud-slow { animation-duration: 36s; }
-        @media (prefers-reduced-motion: reduce) {
-          .tag-cloud-track { animation: none; }
-          .tag-cloud { overflow-x: auto; }
-        }
+        
       `}</style>
     </>
   );

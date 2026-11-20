@@ -129,9 +129,7 @@ export default function Carousel() {
           .home-feature { backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
           .home-feature-glow { width:145px; height:115px; filter:blur(32px); opacity:.15; transition:left 6.5s ease-in-out,top 6.5s ease-in-out,background-color 1.8s ease; }
         }
-        @media (prefers-reduced-motion: reduce) {
-          .home-feature,.home-feature-glow,.home-feature-copy { animation:none !important; transition:none !important; }
-        }
+        
       `}</style>
     </section>
   );
