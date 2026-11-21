@@ -36,7 +36,7 @@ description: OwenFX 使用 Vercel Sandbox、Speed Insights 与 Vercel Toolbar �
 5. Sandbox 不得注入生产 Supabase、R2、Vercel 或其他生产密钥；优先使用无密钥构建、隔离测试配置和虚构测试数据。禁止连接生产数据库、执行生产迁移、写入真实用户数据或修改真实 R2 对象。
 6. 创建前检查 Vercel Sandbox 当前配额、计费方式和本次预计用量；若超出可用额度或可能产生未经批准的费用，暂停并说明，不得擅自继续。
 7. 月度台账按每月 1 日 00:00（默认 `Asia/Shanghai`，IANA 时区可配置）切换；只重置内部当月累计并归档上月，不得据此认定 Vercel 平台额度恢复。
-7. 不创建持久化 Drive，不复用其他任务的 Sandbox。使用锁定且经官方文档确认的 `@vercel/sandbox` SDK 版本；不要把 SDK 主版本、REST API 版本和工具接口版本混称为 API 版本。默认设置 `persistent: true`、`snapshotExpiration: 0`（快照不自动过期）及 `keepLastSnapshots: { count: 6, deleteEvicted: true }`；若 SDK 版本不支持相应选项，先核对官方文档，不得猜测参数。原生快照数量限制按单个命名 Sandbox 生效，任务结束后仍须执行项目级快照清点。
+8. 不创建持久化 Drive，不复用其他任务的 Sandbox。使用锁定且经官方文档确认的 `@vercel/sandbox` SDK 版本；不要把 SDK 主版本、REST API 版本和工具接口版本混称为 API 版本。默认设置 `persistent: true`、`snapshotExpiration: 0`（快照不自动过期）及 `keepLastSnapshots: { count: 6, deleteEvicted: true }`；若 SDK 版本不支持相应选项，先核对官方文档，不得猜测参数。原生快照数量限制按单个命名 Sandbox 生效，任务结束后仍须执行项目级快照清点。
 
 ### 2.3 验证步骤
 

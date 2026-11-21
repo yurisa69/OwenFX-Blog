@@ -281,7 +281,7 @@ Vercel 项目：owenfx-blog
 | owenfx-security-lint-audit-1111 | stopped |
 | owenfx-ci-check | stopped |
 
-说明：删除前 Session API 返回 13 条；删除全部命名 Sandbox 后，Session API 复查返回 0 条。当前接口无法确认平台底层是否仍保留不可见归档，因此仅报告 API 可见记录已清空。未来默认保留 Sandbox 命名历史和快照；只按“项目最新 6 个快照且总量不超过 15 GB”的规则淘汰最旧快照。
+说明：删除前 Session API 返回 13 条；删除全部命名 Sandbox 后，Session API 复查返回 0 条。当前接口无法确认平台底层是否仍保留不可见归档，因此仅报告 API 可见记录已清空。未来默认保留 Sandbox 命名历史和快照；每个项目只保留最新 6 个快照，并按团队范围核对快照存储免费包含量；存储预算不得按项目重复分配。
 
 ### 5.6 月度账本模板与后续追加模板
 
