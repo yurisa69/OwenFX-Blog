@@ -52,14 +52,26 @@ Node 主版本由仓库根目录 `.nvmrc` 指定；当前为 Node.js 24。安装
 
 不要把未执行的命令写成通过。测试失败时先定位原因，不通过删除测试或放宽安全约束来获得绿色结果。
 
-## 4. Commit 与 Push
+## 4. GitHub 完整提交与一次更新 main
 
-- 所有修改完成后再统一检查完整 diff。
+OwenFX 在 Sandbox 中完成代码修改和验证后，统一使用 GitHub Git Data API 发布。此流程是唯一标准方式，不得采用其他 Sandbox→GitHub 传输或提交替代方案。
+
+1. 读取并记录 Sandbox 基准的远程 main Commit SHA 与其完整 Tree SHA；发布前重新读取 main，确认 HEAD 未变化。
+2. 对比 Sandbox 基准生成最终完整 diff，列出所有新增、修改、删除文件及文件模式变化。确保每个新增/修改文件的完整内容可读取、编码正确、无截断；无法核验时停止。
+3. 对所有新增/修改文件调用 create_blob 创建 Blob（可并行）；Blob 不是 Commit，不得逐文件创建 Commit。
+4. 以基准 Tree SHA 为 base_tree_sha，一次调用 create_tree 构建完整 Tree，准确处理新增、修改、删除和文件模式，继承全部未修改文件。
+5. 一次调用 create_commit 创建唯一 Commit：Tree 指向步骤 4 的完整 Tree，父提交为步骤 1 的基准 main SHA，提交说明使用简体中文。
+6. 更新前再次读取远程 main；仅当 HEAD 仍等于基准 SHA 时，一次调用非强制 update_ref 更新 main，设置 force: false 和 expected_sha。发生并发变化、冲突或更新失败时立即停止，不强制、不绕过、不重复覆盖。
+7. 更新后重新读取 main，核对新 Commit SHA、父提交、Tree SHA、文件清单和关键 Blob SHA；再核对 GitHub Actions 与 Vercel 自动生产部署。
+
+**禁止：** 使用 Sandbox 文件读取接口全量回传源码；把源码分块后跨多次工具调用拼接；使用 Contents API 逐文件更新造成多个 Commit；分批更新 main；在文件内容不完整时猜测或继续发布。遇到读取、传输或 API 限制时停止并报告，不得切换到这些旧方式。
+
+## 4.1 Commit 与 Push 的验收要求
+
+- 所有修改完成后统一检查完整 diff。
 - 一个逻辑完整的任务只创建一个中文提交说明的 Commit；不逐文件提交。
-- 提交说明准确描述内容，例如「文档：新增 OwenFX 项目 Skill 规范」。
-- 推送前再次核对 `main` 当前 HEAD，使用安全的非强制更新方式。
-- 若远程 HEAD 已变化、发生冲突、权限不足或分支保护阻止更新，立即停止并报告；不得强制覆盖。
-- 推送后重新读取远程 `main`，核对最新 Commit SHA 和变更文件，不能把本地创建提交等同于推送成功。
+- 推送后重新读取远程 main，核对最新 Commit SHA 和变更文件，不能把本地创建提交等同于远程更新成功。
+- 任何远程基准变化、权限不足、保护规则阻止或 API 错误，都必须停止并报告；不得强制覆盖。
 
 ## 5. Vercel 状态核对
 

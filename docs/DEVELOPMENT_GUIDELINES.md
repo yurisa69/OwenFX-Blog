@@ -179,3 +179,19 @@ OwenFX 使用 Vercel Sandbox、Speed Insights 和 Vercel Toolbar 时，必须遵
 7. **Vercel Toolbar：** 需要定位布局偏移、交互耗时或无障碍问题时，使用 Layout Shifts、Interaction Timing 和 Accessibility Audit，重点检查玻璃效果、卡片、图片/字体加载及移动端布局。Toolbar 审查不是完整无障碍认证。
 8. **部署边界：** 默认不创建 Preview Deployment；优先使用已获准的现有部署或本地环境。不得为使用工具擅自改变项目/团队设置、发布评论或产生额外费用。
 9. **真实性：** 分别报告工具是否启用、是否执行、检查结果、数据是否充足及 Sandbox 清理状态；未执行不得声称通过。
+
+### 10.1 唯一标准发布方式：Sandbox + GitHub Git Data API
+
+代码修改任务通过 Sandbox 完成隔离开发与验证后，**唯一允许的正式发布方式**是使用 GitHub Git Data API 创建完整 Git 对象，并一次性更新 main。具体执行规范以 .agents/skills/owenfx-vercel-tooling/SKILL.md 第 2.4 节为准。
+
+1. 以任务开始时核验的远程 main Commit SHA 和 Tree SHA 为基准；发布前重新读取 main，确认基准未变化。
+2. 从 Sandbox 候选工作区取得最终变更文件的完整内容和差异。必须确认每个文件内容完整；无法完整读取或核验时立即停止，不得猜测、截断或拼接不完整内容。
+3. 对所有新增/修改文件调用 GitHub create_blob 创建 Blob；这些 Blob 只是 Git 对象，不是 Commit。可并行创建 Blob，但不得为每个文件分别创建 Commit。
+4. 以基准 Tree SHA 为 base_tree_sha，调用 create_tree 一次性构建完整变更 Tree；保留未修改文件，并准确表达新增、修改、删除及文件模式变化。核验 Tree 结果和变更路径。
+5. 调用 create_commit 创建且仅创建一个完整 Commit，父提交必须是步骤 1 记录的 main 基准 SHA。
+6. 再次读取远程 main；只有 HEAD 仍等于基准 SHA 时，才调用一次非强制 update_ref 更新 main，并设置 expected_sha。禁止强制更新。
+7. 更新后重新读取 main，核对 HEAD 等于新 Commit SHA、父提交和 Tree 正确、变更文件完整；随后核对 Vercel 对应生产构建和部署。
+
+**明确禁止：** 将 Sandbox 文件读取接口作为完整源码传输通道；把源码拆成多个文本块跨多次工具调用拼接后写入 GitHub；使用逐文件 Contents API 更新导致多个 Commit；为规避读取/调用限制而降低文件完整性检查。若 GitHub API、文件内容完整性或单次 main 更新无法可靠完成，停止并报告，不切换到上述禁止方式。
+
+本项目不保留其他 Sandbox→GitHub 发布替代流程。任何旧说明如与本节或对应 Skill 冲突，均应删除或改写为本节规定的唯一方式。

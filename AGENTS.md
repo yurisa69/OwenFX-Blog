@@ -77,6 +77,7 @@
 
 - 默认直接更新 `main`；不得擅自创建分支、Pull Request 或预览部署。
 - 禁止逐文件提交、分批 Commit 和分批 Push。全部修改完成并统一检查后，一个完整 Commit、一次 Push。
+- **Sandbox 修改后的唯一 GitHub 发布方式：** 使用 GitHub Git Data API 的 create_blob 创建文件 Blob、create_tree 基于原 Tree 创建完整 Tree、create_commit 创建一个完整 Commit，再通过一次非强制 update_ref 更新 main。禁止 Sandbox 文件读取 API 全量传输、分块拼接源码、逐文件 Contents API 提交或其他替代发布方式；完整步骤见 docs/DEVELOPMENT_GUIDELINES.md 第 10.1 节及 .agents/skills/owenfx-vercel-tooling/SKILL.md。
 - 提交说明及面向用户的 Git 操作报告使用简体中文；Git 命令、固定分支名、路径、SHA 和配置键保留原文。
 - 不使用强制推送，不重写或覆盖未知远程提交。推送前核对远程 `main`；若出现新提交、冲突或权限阻断，停止并报告。
 - GitHub 推送成功后核对远程提交。Vercel 按现有集成自动部署，不重复触发部署。

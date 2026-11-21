@@ -49,15 +49,36 @@ description: OwenFX 使用 Vercel Sandbox、Speed Insights 与 Vercel Toolbar �
 6. 任何失败都要保留错误摘要并定位原因；不得删除测试、放宽安全策略、跳过类型检查或降低功能质量来制造通过结果。
 7. Sandbox 通过只代表该隔离环境中的指定检查通过，不代表 GitHub 检查、Vercel 生产构建、部署或网站运行已经成功。
 
-### 2.4 验收、提交与清理
+### 2.4 唯一标准 GitHub 发布流程
 
-1. Sandbox 验证通过后，将经审查的最终改动应用到正式开发流程；再次核对完整差异，确保没有把 Sandbox 临时文件、依赖目录、缓存、日志、凭据或构建产物带入提交。
-2. 按仓库统一规则一次性完成检查、一个 Commit、一次 Push 到 `main`；不在 Sandbox 内直接推送或绕过正式审查流程。
-3. 推送后核对 GitHub `main`、对应 GitHub Actions、Vercel 自动构建和生产部署状态。Sandbox 结果不能替代这些验收。
-4. **本次任务验收结束后立即清除本次 Sandbox。** 停止所有运行中的 session，删除本次命名 Sandbox 及其元数据；若意外生成快照，逐个删除并核验已删除。若创建过临时 Drive，也必须删除。
-5. 无论测试通过、失败、中止或用户决定不提交，都必须清理本次创建的 Sandbox 及其临时资源；不得为了保留失败现场而长期留存。
-6. 不创建快照、备份或长期日志存档。只在最终对话报告中保留必要的测试摘要、失败原因和验收状态；不得将完整源码、依赖目录、环境变量或日志长期留在 Vercel。
-7. 清理后再次查询本次 Sandbox、session 和快照，确认不存在仍运行或可恢复的本次资源。无法完成清理时必须明确报告资源 ID 和未完成状态，不得声称已清理。
+Sandbox 中的候选改动通过检查后，必须使用本节规定的 GitHub Git Data API 流程发布到 main。**不得选择其他 Sandbox→GitHub 传输或提交方式。**
+
+1. **固定发布基准。** 记录 Sandbox 克隆时的完整 main Commit SHA；通过 GitHub Git Data API 获取该 Commit 的 Tree SHA。开始发布前重新读取 refs/heads/main，确认 HEAD 仍与基准 SHA 一致。若已变化，停止发布，重新审查新提交和候选差异，不得覆盖。
+2. **准备完整变更。** 在 Sandbox 工作区完成全部修改和验证后，生成最终完整 diff，并准确列出新增、修改、删除文件及文件模式变化。对每个新增/修改文件取得完整 UTF-8 内容；校验内容长度/摘要或 Blob SHA，确认没有截断、缺行、编码损坏或意外文件。任何内容无法完整读取时立即停止。
+3. **创建 Blob。** 对所有新增/修改文件调用 GitHub create_blob，使用 utf-8 编码；Blob 创建可并行执行。Blob 只是 Git 对象，不产生 Commit，因此不会形成逐文件提交。删除文件不创建 Blob。
+4. **创建完整 Tree。** 以基准 Tree SHA 作为 base_tree_sha，一次调用 create_tree 提交全部变更路径：修改/新增文件引用对应 Blob SHA，删除文件按 Git Tree API 的删除语义处理，并保留正确的 mode、type 和路径。未修改文件由基础 Tree 继承。检查新 Tree 返回值及变更清单，确保没有丢失未修改文件或遗漏变更。
+5. **创建唯一 Commit。** 调用一次 create_commit，tree_sha 指向步骤 4 的完整 Tree，parent_sha 必须是步骤 1 的基准 main Commit SHA；提交说明使用简体中文。整个任务只创建这一个 Commit。
+6. **一次更新 main。** 更新前再次读取远程 main HEAD；仅当它仍等于基准 SHA 时，调用一次 update_ref，设置 branch_name: main、新 Commit SHA、force: false 和 expected_sha: 基准 SHA。若 HEAD 不一致、更新被拒绝或无法确认 fast-forward，立即停止，不重试覆盖、不强制更新。
+7. **核验远程结果。** 更新后重新读取 main，确认 HEAD 等于新 Commit SHA；核验新 Commit 的父提交、Tree SHA、变更文件列表和关键文件 Blob SHA。再检查 GitHub Actions、Vercel 对应 Commit 的构建与 Production Deployment 状态。
+
+### 2.5 明确禁止的旧式传输与提交方式
+
+以下方式不再作为 OwenFX 的备选方案，也不得在遇到工具限制时临时切换：
+
+- 不通过 Vercel Sandbox 文件读取接口，将完整源码逐个文件回传给 GitHub 工具。
+- 不把源码拆成多个文本块，跨多次工具调用传输、拼接或重组。
+- 不使用 GitHub Contents API 对每个文件逐一更新，以免产生多个 Commit。
+- 不创建多个 Tree/Commit 来绕过单次完整提交要求，不分批更新 main。
+- 不因 API 输出截断、文件过大或工具调用限制而忽略完整性核验；无法完整取得内容时停止并报告。
+
+**固定方法只有一套：** Sandbox 隔离修改与验证 → GitHub create_blob（可并行）→ create_tree（基于原 Tree）→ create_commit（一个）→ update_ref（一次、非强制）→ 核验远程 main 与 Vercel 生产部署。
+
+### 2.6 Sandbox 清理
+
+1. **本次任务验收结束后立即清除本次 Sandbox。** 停止所有运行中的 session，删除本次命名 Sandbox 及其元数据；若意外生成快照，逐个删除并核验已删除。若创建过临时 Drive，也必须删除。
+2. 无论测试通过、失败、中止或用户决定不提交，都必须清理本次创建的 Sandbox 及其临时资源；不得为了保留失败现场而长期留存。
+3. 不创建快照、备份或长期日志存档。只在最终对话报告中保留必要的测试摘要、失败原因和验收状态；不得将完整源码、依赖目录、环境变量或日志长期留在 Vercel。
+4. 清理后再次查询本次 Sandbox、session 和快照，确认不存在仍运行或可恢复的本次资源。无法完成清理时必须明确报告资源 ID 和未完成状态，不得声称已清理。
 
 Sandbox 清理只针对本次任务创建的资源；不得删除其他任务、其他项目或用户原有的 Sandbox、Drive、快照和部署。
 
