@@ -120,7 +120,7 @@ Next.js App Router（Vercel）
 ```text
 .
 ├── .agents/skills/         # OwenFX 七个项目级 AI 开发 Skill
-├── .github/workflows/      # GitHub Actions（当前包含 Supabase migration guard）
+├── .github/workflows/      # GitHub Actions（质量检查与 Supabase migration guard）
 ├── app/                    # 当前 Next.js App Router 页面与 API
 │   ├── admin/              # 管理后台
 │   ├── api/                # 服务端 API
@@ -323,10 +323,17 @@ npm run dev
 | `npm run build` | 执行 Next.js 生产构建。 |
 | `npm run start` | 启动生产构建后的服务。 |
 | `npm run lint` | 执行 ESLint 检查。 |
+| `npm run typecheck` | 生成 Next.js 路由类型并执行 TypeScript 类型检查。 |
 | `npm test` | 运行 `tests/*.test.mjs` 中的全部自动化测试。 |
 | `npm run test:markdown` | 运行 Markdown 渲染兼容性测试。 |
 | `npm run test:editor` | 运行文章编辑器 Markdown / HTML 转换测试。 |
 | `npm run check:supabase-migrations` | 检查 Supabase 迁移文件与历史账本一致性。 |
+
+### 自动化质量检查
+
+- `.github/workflows/quality-check.yml`：在 `main` 推送及面向 `main` 的合并请求中执行依赖安装、ESLint、TypeScript 类型检查、自动化测试和 Next.js 生产构建。
+- `.github/workflows/supabase-migration-guard.yml`：独立检查迁移文件与生产迁移历史账本，不会连接或执行生产数据库迁移。
+- 质量检查工作流不使用生产密钥、不部署网站；Vercel 仍按现有 Git 集成处理 `main` 的生产部署。
 
 ## Supabase 数据库与迁移管理
 

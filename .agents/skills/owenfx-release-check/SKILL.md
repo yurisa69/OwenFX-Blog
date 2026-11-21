@@ -27,13 +27,14 @@ description: OwenFX 发布前检查、测试、GitHub main 提交推送、Vercel
 
 以当前 `package.json` 和实际变更为准。仓库当前已定义：
 - `npm run lint`
+- `npm run typecheck`
 - `npm test`
 - `npm run test:markdown`
 - `npm run test:editor`
 - `npm run build`
 - `npm run check:supabase-migrations`
 
-Node 主版本由仓库根目录 `.nvmrc` 指定；当前为 Node.js 24。安装依赖使用锁文件对应的方式（当前为 `npm ci`）。
+Node 主版本由仓库根目录 `.nvmrc` 指定；当前为 Node.js 24。安装依赖使用锁文件对应的方式（当前为 `npm ci`）。`npm run typecheck` 会先运行 Next.js `typegen` 生成路由类型，再执行 `tsc --noEmit`。
 
 按变更选择并执行测试：
 - UI/组件/页面：lint、相关测试、build；必要时浏览器检查主要视口。

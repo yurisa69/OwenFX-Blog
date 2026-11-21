@@ -10,7 +10,8 @@
     "check:supabase-migrations": "node scripts/check-supabase-migrations.mjs",
     "test:markdown": "node --experimental-strip-types --test tests/markdown-compat.test.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "test:editor": "node --experimental-strip-types --test tests/article-editor-conversion.test.mjs"
+    "test:editor": "node --experimental-strip-types --test tests/article-editor-conversion.test.mjs",
+    "typecheck": "next typegen && tsc --noEmit --pretty false"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1166.0",
