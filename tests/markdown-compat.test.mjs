@@ -143,24 +143,24 @@ test('preserves Unicode circled Arabic numerals in H3 headings as plain text', (
 test('highlights all editor languages and preserves their semantic token classes', () => {
   const fence = String.fromCharCode(96).repeat(3);
   const samples = [
-    ['bash', '#!/usr/bin/env bash\\nfunction greet() { echo "hello"; }', 'hljs-meta'],
+    ['bash', '#!/usr/bin/env bash\nfunction greet() { echo "hello"; }', 'hljs-meta'],
     ['javascript', 'const greet = (name) => \`Hello \${name}\`;', 'hljs-keyword'],
     ['typescript', 'type User = { name: string }; const user: User = { name: "Owen" };', 'hljs-keyword'],
     ['jsx', 'const view = <div className="card">Hello</div>;', 'hljs-tag'],
     ['tsx', 'type Props = { name: string }; const View = ({ name }: Props) => <div>{name}</div>;', 'hljs-tag'],
-    ['python', 'def greet(name: str):\\n    return f"Hello {name}"', 'hljs-keyword'],
+    ['python', 'def greet(name: str):\n    return f"Hello {name}"', 'hljs-keyword'],
     ['html', '<button class="primary">Hello</button>', 'hljs-tag'],
     ['css', '.card { color: red; margin: 4px; }', 'hljs-selector-class'],
     ['json', '{"enabled": true, "count": 42}', 'hljs-attr'],
     ['sql', 'SELECT id FROM users WHERE active = TRUE;', 'hljs-keyword'],
-    ['yaml', 'server:\\n  port: 3000\\n  enabled: true', 'hljs-attr'],
-    ['markdown', '# Heading\\n**bold** and \`code\`', 'hljs-section'],
+    ['yaml', 'server:\n  port: 3000\n  enabled: true', 'hljs-attr'],
+    ['markdown', '# Heading\n**bold** and \`code\`', 'hljs-section'],
     ['java', 'public class Main { public static void main(String[] args) {} }', 'hljs-keyword'],
-    ['go', 'package main\\nfunc main() { fmt.Println("hi") }', 'hljs-keyword'],
+    ['go', 'package main\nfunc main() { fmt.Println("hi") }', 'hljs-keyword'],
     ['rust', 'fn main() { let value: i32 = 42; }', 'hljs-keyword'],
   ];
   for (const [language, source, expectedToken] of samples) {
-    const html = markdownToHtml(fence + language + '\\n' + source + '\\n' + fence);
+    const html = markdownToHtml(fence + language + '\n' + source + '\n' + fence);
     assert.match(html, new RegExp('data-language="' + language + '"'), language + ' language label');
     assert.match(html, /<code class="[^"]*hljs[^"]*language-/, language + ' highlighter class');
     assert.match(html, new RegExp('<span class="' + expectedToken + '">'), language + ' expected token');
@@ -169,7 +169,7 @@ test('highlights all editor languages and preserves their semantic token classes
 
 test('renders the editor plaintext language without adding syntax token spans', () => {
   const fence = String.fromCharCode(96).repeat(3);
-  const html = markdownToHtml(fence + 'plaintext\\nplain text without syntax\\n' + fence);
+  const html = markdownToHtml(fence + 'plaintext\nplain text without syntax\n' + fence);
   assert.match(html, /data-language="plaintext"/);
   assert.match(html, /<code class="[^"]*hljs[^"]*language-plaintext/);
   assert.match(html, /plain text without syntax/);
@@ -178,7 +178,7 @@ test('renders the editor plaintext language without adding syntax token spans', 
 
 test('sanitizer preserves all generated Highlight.js token class prefixes', () => {
   const fence = String.fromCharCode(96).repeat(3);
-  const html = markdownToHtml(fence + 'json\\n{"enabled": true, "count": 42}\\n' + fence);
+  const html = markdownToHtml(fence + 'json\n{"enabled": true, "count": 42}\n' + fence);
   for (const token of ['hljs-attr', 'hljs-punctuation', 'hljs-literal', 'hljs-number']) {
     assert.ok(html.includes('class="' + token + '"'), 'expected sanitizer to preserve ' + token);
   }
