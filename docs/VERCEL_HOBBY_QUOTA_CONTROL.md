@@ -158,7 +158,7 @@ Vercel 项目：owenfx-blog
 
 ### 5.1 当前核算基线（2026-11-21）
 
-数据来自 Vercel 团队 owen-sove、项目 owenfx-blog 的命名 Sandbox、Session 和快照 API。2026-11-21 清理后，项目当前命名 Sandbox 为 0 个、运行中为 0 个；历史 Session API 仍返回 13 条记录，平台未提供删除 Session 历史的接口。CPU、内存、时长和网络按清理前 API 返回的逐实例累计指标汇总，删除资源元数据不会冲销已发生用量。Dashboard 是最终总账，本表是逐实例核对基线。
+数据来自 Vercel 团队 owen-sove、项目 owenfx-blog 的命名 Sandbox、Session 和快照 API。2026-11-21 清理后，项目当前命名 Sandbox 为 0 个、运行中为 0 个；清理前 Session API 返回 13 条记录；删除全部命名 Sandbox 后再次查询，Session API 返回 0 条。CPU、内存、时长和网络按清理前 API 返回的逐实例累计指标汇总，删除资源元数据不会冲销已发生用量。Dashboard 是最终总账，本表是逐实例核对基线。
 
 | 指标 | Hobby 包含量 | 当前已用 | 保守剩余 |
 | --- | ---: | ---: | ---: |
@@ -186,7 +186,7 @@ Vercel 项目：owenfx-blog
 - 本次删除的 4 个自动快照合计 3,464,810,484 bytes（约 3.4648 GB），项目 API 可见快照占用已归零；团队总额度剩余仍以 Usage Dashboard 为准，未从 API 推断团队余额。
 - 4 个快照分别来自 owenfx-markdown-migration（3 个连续快照链）和 green-unknown-roundworm-b5YDNn（1 个）。随后本次又删除了全部 11 个已停止 Sandbox 命名资源；这两个持久化 Sandbox 的临时文件系统不能再从这些快照恢复。
 - 当前项目 Drive 数量为 0；Drive 存储、读取和写入额度仍以 Usage Dashboard 为准。
-- 删除全部 11 个命名 Sandbox 后，项目命名 Sandbox 列表复查为 0；Session 列表仍有 13 条平台历史记录，Vercel 当前可用接口不能删除这些 Session 历史。
+- 删除全部 11 个命名 Sandbox 后，项目命名 Sandbox 列表复查为 0；Session 列表复查也返回 0 条。清理前的 13 条 session 已不再通过当前项目 Session API 暴露；平台底层是否保留不可见归档数据无法从现有接口确认。
 
 ### 5.2 历史 Sandbox 用量账本（资源元数据已清理，截至 2026-11-21）
 
@@ -212,7 +212,7 @@ Vercel 项目：owenfx-blog
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | 2026-11-21 | 新增 Hobby 免费额度控制规范，纯文档修改 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 2026-11-21 | 清理 4 个无用 Sandbox 自动快照（不启动 Sandbox） | 0 | 0 | 0 | 0 | 0 | 删除 3.4648 GB 快照；Drive 未变化 |
-| 2026-11-21 | 清理全部 11 个已停止 Sandbox 命名资源（不启动 Sandbox） | 0 | 0 | 0 | 0 | 0 | 删除 11 条命名资源；13 条 Session 历史仍保留 |
+| 2026-11-21 | 清理全部 11 个已停止 Sandbox 命名资源（不启动 Sandbox） | 0 | 0 | 0 | 0 | 0 | 删除 11 条命名资源；Session API 复查为 0 条 |
 
 本次未创建、启动或复用 Sandbox；未创建快照或 Drive；Sandbox 扣减为 0。GitHub 文档提交和 Vercel 自动构建属于独立资源，不计入 Sandbox CPU / 内存 / 创建次数。
 
@@ -247,7 +247,7 @@ Vercel 项目：owenfx-blog
 | owenfx-security-lint-audit-1111 | stopped |
 | owenfx-ci-check | stopped |
 
-说明：Vercel 的 13 条历史 Session 仍保留在平台记录中；当前可用接口没有删除 Session 历史的操作，因此不能声称所有历史 Session 都已清除。未来默认保留 Sandbox 命名历史和快照；只按“项目最新 6 个快照且总量不超过 15 GB”的规则淘汰最旧快照。
+说明：删除前 Session API 返回 13 条；删除全部命名 Sandbox 后，Session API 复查返回 0 条。当前接口无法确认平台底层是否仍保留不可见归档，因此仅报告 API 可见记录已清空。未来默认保留 Sandbox 命名历史和快照；只按“项目最新 6 个快照且总量不超过 15 GB”的规则淘汰最旧快照。
 
 ### 5.6 后续任务追加模板
 
