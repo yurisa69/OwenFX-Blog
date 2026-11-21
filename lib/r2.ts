@@ -1,5 +1,8 @@
+import 'server-only';
+
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { randomUUID } from 'node:crypto';
+import { validateFileSignature } from '@/lib/media-file-validation';
 
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES: Record<string, string> = {
@@ -54,7 +57,8 @@ export async function uploadToR2(file: File) {
     throw new Error('图片大小必须大于 0 且不能超过 10 MB');
   }
 
-  const extension = ALLOWED_TYPES[file.type];
+  const contentType = file.type.trim().toLowerCase();
+  const extension = ALLOWED_TYPES[contentType];
   if (!extension) {
     throw new Error('仅支持 JPG、PNG、WebP、GIF 和 AVIF 图片');
   }
@@ -63,13 +67,14 @@ export async function uploadToR2(file: File) {
   const now = new Date();
   const key = `uploads/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, '0')}/${randomUUID()}.${extension}`;
   const body = new Uint8Array(await file.arrayBuffer());
+  await validateFileSignature(body, contentType);
 
   await getClient(config.endpoint, config.accessKeyId, config.secretAccessKey).send(
     new PutObjectCommand({
       Bucket: config.bucket,
       Key: key,
       Body: body,
-      ContentType: file.type,
+      ContentType: contentType,
       CacheControl: 'public, max-age=31536000, immutable',
     }),
   );
@@ -77,7 +82,7 @@ export async function uploadToR2(file: File) {
   return {
     key,
     url: `${config.publicBaseUrl}/${key}`,
-    contentType: file.type,
+    contentType,
     size: file.size,
   };
 }

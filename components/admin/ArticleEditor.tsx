@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { markdownToHtml } from '@/lib/markdown';
+import { sanitizePastedHtml } from '@/lib/pasted-html-sanitizer';
 import { htmlToMarkdown } from '@/lib/article-editor-conversion';
 import { autoFixArticleNumbering, validateArticleNumbering } from '@/lib/article-numbering';
 
@@ -317,7 +318,12 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
               const html = event.clipboardData.getData('text/html');
               if (html) {
                 event.preventDefault();
-                document.execCommand('insertHTML', false, html);
+                const sanitizedHtml = sanitizePastedHtml(html);
+                if (sanitizedHtml) {
+                  document.execCommand('insertHTML', false, sanitizedHtml);
+                } else {
+                  document.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
+                }
                 setContent(htmlToMarkdown(event.currentTarget.innerHTML));
               }
             }}

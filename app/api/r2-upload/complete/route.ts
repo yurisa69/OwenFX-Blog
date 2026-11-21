@@ -1,7 +1,8 @@
-import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getR2ServerConfig, validateMediaInput, R2_MEDIA_CACHE_CONTROL, type MediaKind } from '@/lib/r2-media';
+import { validateFileSignature } from '@/lib/media-file-validation';
 
 export const runtime = 'nodejs';
 
@@ -62,6 +63,22 @@ export async function POST(request: Request) {
     }
     if ((kind === 'video') !== (detected.kind === 'video')) {
       return NextResponse.json({ error: kind === 'video' ? '视频上传必须使用视频文件格式' : '该媒体类型只接受图片文件' }, { status: 400 });
+    }
+
+    const sampleObject = await s3.send(new GetObjectCommand({
+      Bucket: cfg.bucket,
+      Key: key,
+      Range: 'bytes=0-4100',
+    }));
+    if (!sampleObject.ContentRange || Number(sampleObject.ContentLength || 0) > 4101 || !sampleObject.Body) {
+      return NextResponse.json({ error: '无法安全读取文件头，请重新上传文件' }, { status: 400 });
+    }
+    const fileHeader = await sampleObject.Body.transformToByteArray();
+    try {
+      await validateFileSignature(fileHeader, contentType);
+    } catch (signatureError) {
+      const message = signatureError instanceof Error ? signatureError.message : '文件签名校验失败';
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
     const mediaKind = kind === 'video' ? 'video' : kind;

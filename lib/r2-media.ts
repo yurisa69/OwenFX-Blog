@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { createHash, createHmac, randomUUID } from 'node:crypto';
 
 export const R2_MEDIA_CACHE_CONTROL = 'public, max-age=31536000, immutable';
