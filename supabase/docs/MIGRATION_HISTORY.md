@@ -122,3 +122,5 @@ The machine-readable production migration-version snapshot is `supabase/migratio
 - "New visitor" means a visitor UUID first observed by this analytics system, not a verified unique human. Cookie expiry, browser changes, and device changes can create a new anonymous identifier.
 - No IP address, user agent, device fingerprint, or full referrer URL is stored. The new attribution fields are not historically backfilled.
 - The migration is forward-only and additive. Applied to production after isolated SQL validation; the production migration ledger and baseline now include the verified schema.
+
+- `20261121085503` `analytics_geo_ip_statistics`: adds Vercel-derived country, region, city, and privacy-masked IP network prefixes to page-view analytics; adds admin-only country/city/IP aggregate rankings. Raw IP addresses and precise coordinates are not stored. Applied to production.

@@ -29,6 +29,9 @@ type AnalyticsData = {
   sources: RankedSource[];
   source_domains: Array<{ source_type: string; referrer_host: string; views: number; visitors: number }>;
   recent_external_sources: RankedSource[];
+  countries: Array<{ country_code: string; views: number; visitors: number; sessions: number }>;
+  cities: Array<{ country_code: string | null; country_region: string | null; city: string; views: number; visitors: number; sessions: number }>;
+  masked_ips: Array<{ ip_masked: string; country_code: string | null; country_region: string | null; city: string | null; views: number; visitors: number; last_seen: string }>;
 };
 
 const sourceLabels: Record<string, string> = {
@@ -46,6 +49,11 @@ function numberText(value: number | null | undefined) {
 
 function decimalText(value: number | null | undefined) {
   return new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 2 }).format(value || 0);
+}
+function countryLabel(code: string | null) {
+  if (!code) return '未知国家';
+  try { return new Intl.DisplayNames(['zh-CN'], { type: 'region' }).of(code) || code; }
+  catch { return code; }
 }
 
 function SourceTable({ rows, emptyText }: { rows: RankedSource[]; emptyText: string }) {
@@ -96,6 +104,15 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: P
   const sources = analytics?.sources || [];
   const sourceDomains = analytics?.source_domains || [];
   const recentExternalSources = analytics?.recent_external_sources || [];
+  const countries = analytics?.countries || [];
+  const cities = analytics?.cities || [];
+  const maskedIps = analytics?.masked_ips || [];
+  const selectedCountry = typeof params.country === 'string' && /^[A-Z]{2}$/iu.test(params.country) ? params.country.toUpperCase() : '';
+  const cityOptions = cities.filter(item => !selectedCountry || item.country_code === selectedCountry);
+  const selectedCity = typeof params.city === 'string' && params.city.length <= 80 && cityOptions.some(item => item.city === params.city) ? params.city : '';
+  const filteredCountries = selectedCountry ? countries.filter(item => item.country_code === selectedCountry) : countries;
+  const filteredCities = cityOptions.filter(item => !selectedCity || item.city === selectedCity);
+  const filteredIps = maskedIps.filter(item => (!selectedCountry || item.country_code === selectedCountry) && (!selectedCity || item.city === selectedCity));
   const maxTrendValue = Math.max(1, ...trend.flatMap(item => [item.views || 0, item.visitors || 0]));
   const stats = [
     { label: '页面浏览量', value: summary?.total_views, hint: '首页及文章、软件详情页面' },
@@ -265,6 +282,61 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: P
 
           <section className="admin-panel">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div><h2 className="font-semibold">访客国家、城市与 IP</h2><p className="mt-1 text-xs opacity-60">按所选统计周期汇总，IP 仅显示脱敏网络前缀</p></div>
+              <form method="get" action="/admin/analytics" className="flex flex-wrap items-end gap-2 text-sm">
+                <input type="hidden" name="period" value={String(days)} />
+                <label className="grid gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>国家
+                  <select name="country" defaultValue={selectedCountry} className="min-w-28 rounded-lg border px-2 py-2 text-sm" style={{ background: 'var(--bg-glass)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
+                    <option value="">全部国家</option>{countries.map(item => <option key={item.country_code} value={item.country_code}>{countryLabel(item.country_code)}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>城市
+                  <select name="city" defaultValue={selectedCity} className="min-w-28 max-w-44 rounded-lg border px-2 py-2 text-sm" style={{ background: 'var(--bg-glass)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
+                    <option value="">全部城市</option>{cityOptions.map(item => <option key={(item.country_code || 'unknown') + ':' + item.city} value={item.city}>{countryLabel(item.country_code)} · {item.city}</option>)}
+                  </select>
+                </label>
+                <button type="submit" className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>筛选</button>
+                {(selectedCountry || selectedCity) && <Link href={'/admin/analytics?period=' + days} className="px-2 py-2 text-xs opacity-70">重置</Link>}
+              </form>
+            </div>
+            <div className="grid gap-4 xl:grid-cols-3">
+              <div className="min-w-0"><h3 className="mb-2 text-sm font-medium">国家 / 地区排行</h3>
+                {!filteredCountries.length ? <p className="text-sm opacity-60">暂无国家数据。</p> : <div className="space-y-2">{filteredCountries.map(item => (
+                  <div key={item.country_code} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="min-w-0 truncate">{countryLabel(item.country_code)} <span className="text-xs opacity-50">{item.country_code}</span></span>
+                    <span className="shrink-0 text-xs tabular-nums opacity-70">{numberText(item.views)} 次 · {numberText(item.visitors)} 人</span>
+                  </div>
+                ))}</div>}
+              </div>
+              <div className="min-w-0"><h3 className="mb-2 text-sm font-medium">城市排行</h3>
+                {!filteredCities.length ? <p className="text-sm opacity-60">暂无城市数据。</p> : <div className="space-y-2">{filteredCities.map(item => (
+                  <div key={(item.country_code || 'unknown') + ':' + item.city} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="min-w-0 truncate">{item.city} <span className="text-xs opacity-50">{countryLabel(item.country_code)}{item.country_region ? ' · ' + item.country_region : ''}</span></span>
+                    <span className="shrink-0 text-xs tabular-nums opacity-70">{numberText(item.views)} 次 · {numberText(item.visitors)} 人</span>
+                  </div>
+                ))}</div>}
+              </div>
+              <div className="min-w-0"><h3 className="mb-2 text-sm font-medium">脱敏 IP 访问排行</h3>
+                {!filteredIps.length ? <p className="text-sm opacity-60">暂无脱敏 IP 数据。</p> : <div className="overflow-x-auto">
+                  <table className="w-full min-w-[330px] text-left text-xs">
+                    <thead><tr className="border-b" style={{ borderColor: 'var(--border-color)', color: 'var(--text-tertiary)' }}>
+                      <th className="py-2 pr-2 font-medium">IP / 位置</th><th className="py-2 pr-2 text-right font-medium">浏览</th><th className="py-2 text-right font-medium">最近访问</th>
+                    </tr></thead><tbody>{filteredIps.map(item => (
+                      <tr key={item.ip_masked + ':' + (item.city || '')} className="border-b last:border-0" style={{ borderColor: 'var(--border-color)' }}>
+                        <td className="py-2 pr-2"><div className="font-mono">{item.ip_masked}</div><div className="mt-0.5 opacity-60">{countryLabel(item.country_code)}{item.city ? ' · ' + item.city : ''}</div></td>
+                        <td className="py-2 pr-2 text-right tabular-nums">{numberText(item.views)}<div className="opacity-55">{numberText(item.visitors)} 人</div></td>
+                        <td className="py-2 text-right whitespace-nowrap opacity-65">{formatChineseDateTime(item.last_seen)}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>}
+              </div>
+            </div>
+            <p className="mt-3 text-xs opacity-55">地理位置由公网 IP 估算，VPN、代理及移动网络可能导致国家或城市偏差；IPv4 按 /24、IPv6 按 /48 脱敏聚合。</p>
+          </section>
+
+          <section className="admin-panel">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-semibold">最近外部来源</h2><span className="text-xs opacity-60">访客最近一次外部进入渠道</span>
             </div>
             <SourceTable rows={recentExternalSources} emptyText="暂无最近外部来源数据。" />
@@ -298,7 +370,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: P
       </section>
 
       <p className="text-xs leading-6" style={{ color: 'var(--text-tertiary)' }}>
-        统计仅记录页面路径、来源域名、匿名访客标识和匿名会话标识；不采集 IP 地址、设备指纹或完整来源 URL。匿名访客标识有效期为 30 天，会话在连续 30 分钟无活动后重新开始。新访客表示统计系统首次观测到的匿名标识，不代表真实自然人。首次来源和最近外部来源通过 30 天第一方 Cookie 维护，从本次升级后开始累计，不回填历史来源；原有业务点击记录保留。
+        统计记录页面路径、来源域名、匿名访客标识和匿名会话标识；地理统计仅保存 Vercel 提供的国家、地区、城市及脱敏 IP（IPv4 /24、IPv6 /48），不保存完整 IP、精确坐标、设备指纹或完整来源 URL。地理位置可能受 VPN、代理及移动网络影响。匿名访客标识有效期为 30 天，会话在连续 30 分钟无活动后重新开始。新访客表示统计系统首次观测到的匿名标识，不代表真实自然人。首次来源和最近外部来源通过 30 天第一方 Cookie 维护；历史记录不补造地理位置，原有业务点击记录保留。
       </p>
     </div>
   );

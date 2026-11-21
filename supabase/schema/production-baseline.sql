@@ -39,7 +39,11 @@ CREATE TABLE public.analytics_events (
   session_source_name text,
   session_referrer_host text,
   utm_medium text,
-  utm_campaign text
+  utm_campaign text,
+  country_code text,
+  country_region text,
+  city text,
+  ip_masked text
 );
 
 -- TABLE: public.api_devices
@@ -506,6 +510,7 @@ ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_attribution_
   AND (session_referrer_host IS NULL OR char_length(session_referrer_host) <= 180)
 );
 
+ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_geo_country_code_check CHECK (country_code IS NULL OR country_code ~ '^[A-Z]{2}
 -- INDEX: public.analytics_events.analytics_events_article_view_idx
 CREATE INDEX analytics_events_article_view_idx ON public.analytics_events USING btree (article_id, created_at DESC) WHERE (event_type = 'article_view'::text);
 
@@ -523,6 +528,10 @@ CREATE INDEX analytics_events_created_first_source_idx ON public.analytics_event
 
 -- INDEX: public.analytics_events.analytics_events_created_last_external_idx
 CREATE INDEX analytics_events_created_last_external_idx ON public.analytics_events USING btree (created_at, last_external_referrer_host) WHERE (last_external_referrer_host IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
+CREATE INDEX analytics_events_geo_country_created_idx ON public.analytics_events USING btree (created_at, country_code) WHERE (country_code IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
+CREATE INDEX analytics_events_geo_city_created_idx ON public.analytics_events USING btree (created_at, country_code, city) WHERE (city IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
+CREATE INDEX analytics_events_geo_ip_created_idx ON public.analytics_events USING btree (created_at, ip_masked) WHERE (ip_masked IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
+
 
 -- INDEX: public.analytics_events.analytics_events_software_idx
 CREATE INDEX analytics_events_software_idx ON public.analytics_events USING btree (software_id, created_at DESC);
@@ -1286,6 +1295,18 @@ BEGIN
         ORDER BY count(*) DESC, count(DISTINCT visitor_id) DESC
         LIMIT 15
       ) AS ranked
+    ), '[]'::jsonb),
+    'countries', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('country_code', ranked.country_code, 'views', ranked.views, 'visitors', ranked.visitors, 'sessions', ranked.sessions) ORDER BY ranked.views DESC, ranked.visitors DESC, ranked.country_code)
+      FROM (SELECT country_code, count(*)::bigint AS views, count(DISTINCT visitor_id)::bigint AS visitors, count(DISTINCT session_id)::bigint AS sessions FROM period_events WHERE country_code IS NOT NULL GROUP BY country_code ORDER BY count(*) DESC, count(DISTINCT visitor_id) DESC LIMIT 20) AS ranked
+    ), '[]'::jsonb),
+    'cities', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('country_code', ranked.country_code, 'country_region', ranked.country_region, 'city', ranked.city, 'views', ranked.views, 'visitors', ranked.visitors, 'sessions', ranked.sessions) ORDER BY ranked.views DESC, ranked.visitors DESC, ranked.country_code, ranked.city)
+      FROM (SELECT country_code, country_region, city, count(*)::bigint AS views, count(DISTINCT visitor_id)::bigint AS visitors, count(DISTINCT session_id)::bigint AS sessions FROM period_events WHERE city IS NOT NULL GROUP BY country_code, country_region, city ORDER BY count(*) DESC, count(DISTINCT visitor_id) DESC LIMIT 30) AS ranked
+    ), '[]'::jsonb),
+    'masked_ips', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('ip_masked', ranked.ip_masked, 'country_code', ranked.country_code, 'country_region', ranked.country_region, 'city', ranked.city, 'views', ranked.views, 'visitors', ranked.visitors, 'last_seen', ranked.last_seen) ORDER BY ranked.views DESC, ranked.last_seen DESC, ranked.ip_masked)
+      FROM (SELECT ip_masked, country_code, country_region, city, count(*)::bigint AS views, count(DISTINCT visitor_id)::bigint AS visitors, max(created_at) AS last_seen FROM period_events WHERE ip_masked IS NOT NULL GROUP BY ip_masked, country_code, country_region, city ORDER BY count(*) DESC, max(created_at) DESC LIMIT 50) AS ranked
     ), '[]'::jsonb),
     'recent_external_sources', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(

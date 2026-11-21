@@ -8,6 +8,7 @@ import {
   type AnalyticsSourceSnapshot,
 } from '@/lib/analytics';
 import { createServiceClient } from '@/lib/supabase/service';
+import { maskAnalyticsIp, normalizeAnalyticsCity, normalizeAnalyticsCountryCode, normalizeAnalyticsCountryRegion } from '@/lib/analytics-geo';
 
 export const runtime = 'nodejs';
 
@@ -146,6 +147,13 @@ export async function POST(request: Request) {
   }
 
   const requestReferrer = request.headers.get('referer') || '';
+  // Trust Vercel edge headers only; never accept IP or geo values from the browser payload.
+  const geo = isPageView ? {
+    country_code: normalizeAnalyticsCountryCode(request.headers.get('x-vercel-ip-country')),
+    country_region: normalizeAnalyticsCountryRegion(request.headers.get('x-vercel-ip-country-region')),
+    city: normalizeAnalyticsCity(request.headers.get('x-vercel-ip-city')),
+    ip_masked: maskAnalyticsIp(request.headers.get('x-real-ip')),
+  } : { country_code: null, country_region: null, city: null, ip_masked: null };
   const { error } = await service.from('analytics_events').insert({
     event_type: eventType,
     article_id: articleId,
@@ -167,6 +175,7 @@ export async function POST(request: Request) {
     session_source_type: sessionSource?.source_type ?? null,
     session_source_name: sessionSource?.source_name ?? null,
     session_referrer_host: sessionSource?.referrer_host ?? null,
+    ...geo,
   } as never);
   if (error) return NextResponse.json({ error: '统计暂不可用。' }, { status: 503 });
   return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });

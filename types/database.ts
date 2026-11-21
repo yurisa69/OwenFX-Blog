@@ -74,6 +74,10 @@ export type Database = {
         session_referrer_host: string | null;
         utm_medium: string | null;
         utm_campaign: string | null;
+        country_code: string | null;
+        country_region: string | null;
+        city: string | null;
+        ip_masked: string | null;
       }, 'event_type', [
         Relationship<'analytics_events_article_id_fkey', 'article_id', 'articles', 'id'>,
         Relationship<'analytics_events_software_id_fkey', 'software_id', 'software', 'id'>,
