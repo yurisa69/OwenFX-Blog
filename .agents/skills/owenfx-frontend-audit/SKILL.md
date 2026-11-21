@@ -106,3 +106,15 @@ OwenFX 当前基础可从源码定位：
 7. 修复建议（不自动实施）。
 
 审查结束后保持仓库不变：不创建文件、不改源码、不产生 Commit、不推送、不触发 Vercel 部署。
+
+
+## 7. Vercel Toolbar 辅助验收
+
+需要定位布局偏移、交互响应或无障碍问题时，按 `.agents/skills/owenfx-vercel-tooling/SKILL.md` 使用 Vercel Toolbar：
+
+- Layout Shifts：检查字体、图片/视频尺寸、异步内容、卡片高度、标签换行和动画引起的布局偏移。
+- Interaction Timing：检查搜索、导航、筛选、弹层、主题切换等关键交互的耗时。
+- Accessibility Audit：检查语义、表单标签、焦点、键盘操作、颜色对比和控件名称；Toolbar 结果不等于完整 WCAG 合规认证。
+- 重点覆盖玻璃效果、首页软件卡片、软件详情、文章详情及移动端布局；记录页面、视口、设备、主题、Commit 和复现步骤。
+- 默认不创建 Preview Deployment。优先使用已获准的现有部署或本地环境；启用 Toolbar、安装依赖或修改项目设置前先取得用户明确授权。
+- Toolbar 不可用时标注「未执行/无法验证」，不得以目测冒充 Toolbar 检查。

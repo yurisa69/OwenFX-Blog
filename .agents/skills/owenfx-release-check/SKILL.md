@@ -113,3 +113,17 @@ Node 主版本由仓库根目录 `.nvmrc` 指定；当前为 Node.js 24。安装
 7. Git 回退不影响 Supabase 数据、数据库迁移历史、R2 对象、环境变量或 Vercel 项目设置；先评估兼容性，不擅自修改外部数据。
 8. 更新后核对远程 HEAD、父提交和 Tree SHA，再运行适用检查并跟踪自动部署。保护规则阻止普通更新时立即停止，不绕过限制。
 9. 发布报告必须列出目标 SHA、回退 Commit SHA、原 main HEAD、Tree SHA、旧历史保留状态、测试及部署结果；未完成的检查不得写成通过。
+
+
+## 9. Vercel Sandbox、Speed Insights 与 Toolbar 验收
+
+发布前涉及 AI 生成代码、依赖或复杂源码改动时，遵循 `.agents/skills/owenfx-vercel-tooling/SKILL.md`：
+
+- 先从 GitHub 最新 `main` 的准确 SHA 创建一次性非持久化 Sandbox，导入候选改动，使用锁文件安装依赖，运行适用 lint、typecheck、测试和 build。
+- Sandbox 不得访问生产密钥、生产数据库、真实用户数据或真实 R2 对象；不得创建快照/Drive。
+- Sandbox 通过后再纳入正式源码流程；统一检查、一个 Commit、一次 Push。Sandbox 检查不代替 GitHub Actions、Vercel 自动构建、生产部署和网站运行核验。
+- 任务结束（包括失败或中止）必须停止 session、删除本次 Sandbox 及其元数据，并删除意外产生的快照/Drive；核验无本次遗留资源。
+- 需要真实用户性能数据时使用 Speed Insights，按设备、环境、路由/路径、时间范围和样本量分析首页、软件详情、文章详情的 Web Vitals。
+- 需要定位视觉/交互/无障碍问题时使用 Vercel Toolbar 的 Layout Shifts、Interaction Timing、Accessibility Audit；不得将其当作完整无障碍认证。
+- 不擅自创建 Preview Deployment、启用新功能、安装依赖、改变项目设置或产生未经批准的费用。
+- 报告 Sandbox、Speed Insights、Toolbar 各自的执行与结果状态；未执行、数据不足和无法验证必须明确标记。

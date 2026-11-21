@@ -163,3 +163,18 @@
 因此，**源码文件状态与目标版本完全一致，但 Git 历史不会与目标版本相同**。这是“main 历史回溯”的预期结果。
 
 历史回溯只影响 Git 仓库中的源码文件状态。数据库记录、用户数据、Supabase migration 执行历史、R2 文件、环境变量、Vercel 项目配置和其他外部服务状态均独立存在；任何需要改变这些内容的操作都必须单独评估、单独授权并单独执行。
+
+
+## 10. Vercel 工具使用与清理规范
+
+OwenFX 使用 Vercel Sandbox、Speed Insights 和 Vercel Toolbar 时，必须遵守 `.agents/skills/owenfx-vercel-tooling/SKILL.md`。
+
+1. **Vercel Sandbox 隔离验证：** AI 生成或修改运行时代码、依赖、配置及复杂修复，默认先在一次性 Sandbox 中验证。Sandbox 必须从 GitHub 最新 `main` 的准确 Commit SHA 克隆；候选改动在隔离环境内导入、审查、安装依赖、运行适用测试并构建，不直接污染正式工作区或 `main`。
+2. **生产隔离：** Sandbox 不注入生产密钥，不连接生产数据库，不执行生产迁移，不写入真实用户数据或 R2 对象。无法安全克隆或可能产生未经批准的费用时停止。
+3. **禁止持久化：** Sandbox 使用非持久化配置，不创建快照或 Drive，不长期保留环境、源码副本、依赖、日志或构建产物。
+4. **清理要求：** 本次任务无论成功、失败或中止，结束时都必须停止本次 session、删除本次 Sandbox 及其元数据，并清除意外创建的快照/Drive；再次核验不存在本次遗留资源。不得删除其他任务或项目的资源。
+5. **验收顺序：** Sandbox 检查通过后，仍须将审查后的改动纳入正式流程，统一检查、一个 Commit、一次 Push；再核对 GitHub Actions、Vercel 自动构建、生产部署和实际运行。Sandbox 通过不能替代正式验收。
+6. **Speed Insights：** 需要真实访客性能证据时，按 Mobile/Desktop、Production 环境、时间范围及 Route/Path 分析首页、软件详情和文章详情的 LCP、INP、CLS、FCP 等指标。记录样本量；数据不足时不得推断。启用功能、安装依赖或改变项目设置前须先检查影响并获得用户明确授权。
+7. **Vercel Toolbar：** 需要定位布局偏移、交互耗时或无障碍问题时，使用 Layout Shifts、Interaction Timing 和 Accessibility Audit，重点检查玻璃效果、卡片、图片/字体加载及移动端布局。Toolbar 审查不是完整无障碍认证。
+8. **部署边界：** 默认不创建 Preview Deployment；优先使用已获准的现有部署或本地环境。不得为使用工具擅自改变项目/团队设置、发布评论或产生额外费用。
+9. **真实性：** 分别报告工具是否启用、是否执行、检查结果、数据是否充足及 Sandbox 清理状态；未执行不得声称通过。

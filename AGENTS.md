@@ -37,6 +37,8 @@
 | `.agents/skills/owenfx-database-security/SKILL.md` | Supabase、PostgreSQL、RLS、身份权限、API 安全、R2 和数据库迁移 |
 | `.agents/skills/owenfx-performance/SKILL.md` | 性能测量、渲染、媒体加载、动画实现和性能回归 |
 | `.agents/skills/owenfx-release-check/SKILL.md` | 修改完成后的测试、提交、推送、构建和生产部署核对 |
+
+| `.agents/skills/owenfx-vercel-tooling/SKILL.md` | `Vercel Sandbox` 隔离验证、Speed Insights 真实用户性能分析、Vercel Toolbar 布局/交互/无障碍验收及 Sandbox 清理 |
 | `.agents/skills/owenfx-unified-language/SKILL.md` | 面向用户/协作者的语言、Git 术语、提交说明和发布报告表达 |
 
 用户只要求审查时，保持只读：不修改文件、不提交、不推送、不部署。只有用户明确要求实施时，才进入修改流程。
@@ -99,3 +101,7 @@
 - 回退后的源码文件状态应与目标版本完全一致，但新 Commit 和历史链不同；目标版本之后的旧 Commit 仍保留在 Git 历史中。
 - 执行前检查数据库、迁移、R2、外部服务和环境变量兼容性；Git Tree 回退不会恢复或删除这些外部数据。
 - 若无法安全普通更新 `main`，立即停止并报告，不得绕过保护规则。
+
+## 10. Vercel 工具使用
+
+涉及 Vercel Sandbox、Speed Insights 或 Vercel Toolbar 时，必须先阅读 `.agents/skills/owenfx-vercel-tooling/SKILL.md`，遵守隔离验证、真实用户性能分析、视觉/无障碍验收和一次性资源清理要求。

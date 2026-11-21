@@ -79,3 +79,14 @@ description: OwenFX 前端性能、Next.js 渲染、图片与媒体加载、动�
 6. 报告基准、改动、验证证据和未测范围。
 
 不得仅为减少动画而删除用户明确保留的动效；不得以性能为由改变页面内容、导航结构或业务功能。
+
+
+## 9. Vercel Speed Insights 性能观测
+
+当需要真实用户的加载、交互响应和视觉稳定性证据时，使用 Vercel Speed Insights；具体流程遵循 `.agents/skills/owenfx-vercel-tooling/SKILL.md`。
+
+- 重点分析首页、软件详情页和文章详情页，按 Mobile/Desktop、Production 环境、时间范围及 Route/Path 过滤。
+- 重点关注 LCP、INP、CLS、FCP 等 Web Vitals，并记录样本量、时间窗口、部署版本和设备维度。
+- Speed Insights 是真实访客遥测，不等于指定型号设备的实验室测试。样本不足或数据缺失时明确标注，不编造数值或优化幅度。
+- 若尚未启用，安装 `@vercel/speed-insights`、修改应用入口或启用项目功能前，必须先核对现有配置、用量和影响，并取得用户明确授权。
+- 性能优化不得通过减少或静态化用户已确认的动画、粒子、光效和玻璃效果实现；结合指标定位真实瓶颈后再优化。
