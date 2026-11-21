@@ -175,7 +175,7 @@ export default function BookmarksList({
                     收藏于 {formatChineseDateLocal(item.created_at)}
                   </span>
                 </div>
-                <Link href={'/articles/' + article.slug} className="group min-w-0 flex-1">
+                <Link href={'/articles/' + article.id} className="group min-w-0 flex-1">
                   <h2 className="line-clamp-2 text-base font-semibold leading-7 text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)]">
                     {article.title}
                   </h2>

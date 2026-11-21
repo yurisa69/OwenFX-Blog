@@ -484,7 +484,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                         <article key={item.id} className={'profile-activity-item profile-notification-item ' + (item.read_at ? '' : 'is-unread')}>
                           <span className="profile-activity-item-mark"><ArticleActionIcon type="comment" /></span>
                           <Link
-                            href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'}
+                            href={item.article?.id ? '/articles/' + item.article.id : '/articles'}
                             className="profile-notification-link min-w-0 flex-1"
                             onClick={() => {
                               if (!item.read_at) void updateNotificationReadState(item, true);
@@ -513,7 +513,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                       ) : (
                         <>
                           {(profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
-                            <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
+                            <Link key={item.id} href={item.article?.id ? '/articles/' + item.article.id : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
                               <span className="profile-activity-item-mark">{profileTab === 'likes' ? <ArticleActionIcon type="like" /> : <ArticleActionIcon type="bookmark" />}</span>
                               <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{formatChineseDateLocal(item.created_at)}</small></span>
                               <span className="profile-activity-arrow">›</span>
