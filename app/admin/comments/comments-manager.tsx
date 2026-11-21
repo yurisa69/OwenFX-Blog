@@ -38,7 +38,7 @@ const statusLabels: Record<CommentStatus, string> = {
 
 export default function CommentsManager() {
   const [rows, setRows] = useState<CommentRow[]>([]);
-  const [filter, setFilter] = useState<(typeof tabs)[number]['value']>('pending');
+  const [filter, setFilter] = useState<(typeof tabs)[number]['value']>('all');
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState('');
   const [error, setError] = useState('');
