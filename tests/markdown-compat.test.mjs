@@ -52,19 +52,71 @@ test('highlights known code languages and safely handles unknown languages', asy
   assert.match(unknown, /plain text/);
 });
 
-test('highlights the supported language set with GitHub Dark and GitHub Light themes', async () => {
+test('highlights common GitHub languages on demand with both GitHub themes', async () => {
   const fence = String.fromCharCode(96).repeat(3);
-  const languages = [
-    'bash', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 'html', 'css',
-    'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust', 'nginx',
+  const samples = [
+    ['bash', 'echo "hello"', 'echo'],
+    ['javascript', 'const answer = 42;', 'const'],
+    ['typescript', 'const answer: number = 42;', 'number'],
+    ['jsx', 'const App = () => <div>Hello</div>;', 'div'],
+    ['tsx', 'const App = () => <div>Hello</div>;', 'div'],
+    ['python', 'def greet():\n    return "hello"', 'return'],
+    ['html', '<main><h1>Hello</h1></main>', 'main'],
+    ['css', '.card { color: red; }', 'color'],
+    ['json', '{ "enabled": true }', 'enabled'],
+    ['sql', 'SELECT id FROM users;', 'SELECT'],
+    ['yaml', 'services:\n  web:\n    image: nginx', 'services'],
+    ['markdown', '# Heading\n**bold**', 'Heading'],
+    ['java', 'public class Main { public static void main(String[] args) {} }', 'class'],
+    ['go', 'package main\nfunc main() {}', 'func'],
+    ['rust', 'fn main() { println!("hello"); }', 'fn'],
+    ['c', 'int main(void) { return 0; }', 'return'],
+    ['cpp', '#include <iostream>\nint main() { std::cout << "hi"; }', 'std'],
+    ['csharp', 'public class Program { static void Main() { Console.WriteLine("hi"); } }', 'class'],
+    ['php', '<?php echo "hello"; ?>', 'echo'],
+    ['ruby', 'puts "hello"', 'puts'],
+    ['kotlin', 'fun main() { println("hello") }', 'fun'],
+    ['swift', 'let message = "hello"\nprint(message)', 'let'],
+    ['dart', 'void main() { print("hello"); }', 'void'],
+    ['vue', '<template><button>hello</button></template>', 'template'],
+    ['svelte', '<script>let count = 0;</script><button>{count}</button>', 'script'],
+    ['scss', '$primary: #333; .button { color: $primary; }', 'primary'],
+    ['docker', 'FROM node:22\nWORKDIR /app', 'FROM'],
+    ['toml', '[server]\nport = 3000', 'server'],
+    ['ini', '[server]\nport=3000', 'server'],
+    ['xml', '<root><item>value</item></root>', 'root'],
+    ['powershell', 'Get-ChildItem -Path .', 'Get-ChildItem'],
+    ['graphql', 'query User { user { id name } }', 'query'],
+    ['diff', '+added line\n-removed line', 'added'],
+    ['http', 'GET / HTTP/1.1\nHost: example.com', 'GET'],
+    ['nginx', 'server { listen 80; }', 'server'],
   ];
 
-  for (const language of languages) {
-    const html = await markdownToHtml(fence + language + '\nconst answer = 42;\n' + fence);
+  for (const [language, source, token] of samples) {
+    const html = await markdownToHtml(fence + language + '\n' + source + '\n' + fence);
     assert.match(html, /class="shiki[^"]*github-light[^"]*github-dark/i, language + ' should include both GitHub themes');
-    assert.match(html, new RegExp('class="language-' + language + '"'));
-    assert.match(html, /<span[^>]*style="[^"]*--shiki-light:[^"]*--shiki-dark:/i, language + ' should contain both theme token colors');
-    assert.match(html, new RegExp('data-language="' + language + '"'));
+    assert.ok(html.includes('class="language-' + language + '"'), language + ' should retain its language class');
+    assert.match(html, /<span[^>]*style="[^"]*--shiki-light:[^"]*--shiki-dark:/i, language + ' should contain colored syntax tokens');
+    assert.ok(html.includes(token), language + ' should retain its sample source');
+  }
+});
+
+test('normalizes common language aliases before loading Shiki grammars', async () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const aliases = [
+    ['c++', 'cpp', 'std'],
+    ['c#', 'csharp', 'Console'],
+    ['dockerfile', 'docker', 'FROM'],
+    ['ps1', 'powershell', 'Get-ChildItem'],
+    ['gql', 'graphql', 'query'],
+    ['cjs', 'javascript', 'module'],
+  ];
+
+  for (const [alias, canonical, sample] of aliases) {
+    const html = await markdownToHtml(fence + alias + '\n' + sample + '\n' + fence);
+    assert.ok(html.includes('class="language-' + canonical + '"'), alias + ' should map to ' + canonical);
+    assert.ok(html.includes('data-language="' + canonical + '"'), alias + ' should display its canonical language label');
+    assert.match(html, /class="shiki[^"]*github-light[^"]*github-dark/i);
   }
 });
 

@@ -86,10 +86,10 @@ function walk(node: RichTextNodeLike, listDepth = 0): string {
       child.nodeType === 1 && child.tagName?.toUpperCase() === 'CODE',
     );
     const codeClass = codeNode?.getAttribute?.('class') || '';
-    const languageFromClass = codeClass.match(/(?:^|\s)language-([a-zA-Z0-9_+#.-]{1,32})(?=\s|$)/)?.[1];
+    const languageFromClass = codeClass.match(/(?:^|\s)language-([a-zA-Z0-9_+#.-]{1,40})(?=\s|$)/)?.[1];
     const languageFromData = node.getAttribute?.('data-language') || '';
     const candidateLanguage = languageFromClass || languageFromData;
-    const language = /^[a-zA-Z0-9_+#.-]{1,32}$/.test(candidateLanguage)
+    const language = /^[a-zA-Z0-9_+#.-]{1,40}$/.test(candidateLanguage)
       ? candidateLanguage.toLowerCase()
       : '';
     const code = textContent(codeNode || node).replace(/\r\n?/g, '\n');

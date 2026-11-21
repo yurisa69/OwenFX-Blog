@@ -150,21 +150,40 @@ function rehypeWrapTables() {
 
 const languageAliases: Record<string, string> = {
   js: 'javascript',
+  cjs: 'javascript',
+  mjs: 'javascript',
   ts: 'typescript',
   py: 'python',
   sh: 'bash',
   shell: 'bash',
   yml: 'yaml',
   md: 'markdown',
+  htm: 'html',
+  'c++': 'cpp',
+  'c#': 'csharp',
+  cs: 'csharp',
+  dockerfile: 'docker',
+  ps1: 'powershell',
+  pwsh: 'powershell',
+  gql: 'graphql',
   plaintext: 'text',
   plain: 'text',
   txt: 'text',
 };
 
-const supportedLanguages = new Set([
+const preloadedLanguages = [
   'bash', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 'html', 'css',
   'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust', 'nginx', 'text',
+];
+
+const supportedLanguages = new Set([
+  ...preloadedLanguages,
+  'c', 'cpp', 'csharp', 'php', 'ruby', 'kotlin', 'swift', 'dart',
+  'vue', 'svelte', 'scss', 'docker', 'toml', 'ini', 'xml',
+  'powershell', 'graphql', 'diff', 'http',
 ]);
+
+const pendingLanguageLoads = new Map<string, Promise<void>>();
 
 function getClassNames(value: unknown): string[] {
   if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
@@ -198,6 +217,40 @@ function rehypeNormalizeCodeLanguages() {
       node.children?.forEach(visit);
     };
     visit(tree);
+  };
+}
+
+function rehypeLoadCodeLanguages(highlighter: Awaited<ReturnType<typeof import('shiki').createHighlighter>>) {
+  return async (tree: HtmlNode) => {
+    const languages = new Set<string>();
+    const visit = (node: HtmlNode) => {
+      if (node.type === 'element' && node.tagName === 'pre') {
+        const code = node.children?.find(child => child.type === 'element' && child.tagName === 'code');
+        const classNames = getClassNames(code?.properties?.className ?? code?.properties?.class);
+        const languageClass = classNames.find(value => value.startsWith('language-'));
+        if (languageClass) {
+          const language = languageClass.slice('language-'.length);
+          if (supportedLanguages.has(language) && !preloadedLanguages.includes(language)) {
+            languages.add(language);
+          }
+        }
+      }
+      node.children?.forEach(visit);
+    };
+
+    visit(tree);
+    await Promise.all([...languages].map(language => {
+      let pending = pendingLanguageLoads.get(language);
+      if (!pending) {
+        pending = highlighter.loadLanguage(language as Parameters<typeof highlighter.loadLanguage>[0])
+          .catch(error => {
+            pendingLanguageLoads.delete(language);
+            throw error;
+          });
+        pendingLanguageLoads.set(language, pending);
+      }
+      return pending;
+    }));
   };
 }
 
@@ -252,7 +305,7 @@ async function createMarkdownProcessor() {
   ]);
   const highlighter = await createHighlighter({
     themes: ['github-light', 'github-dark'],
-    langs: [...supportedLanguages],
+    langs: preloadedLanguages,
   });
 
   return remark()
@@ -263,6 +316,7 @@ async function createMarkdownProcessor() {
     // Sanitize untrusted Markdown/HTML before Shiki adds trusted token styles.
     .use(rehypeSanitize, markdownSanitizeSchema)
     .use(rehypeNormalizeCodeLanguages)
+    .use(rehypeLoadCodeLanguages, highlighter)
     .use(rehypeShikiFromHighlighter, highlighter, {
       themes: {
         light: 'github-light',

@@ -41,7 +41,7 @@ description: OwenFX 文章内容、Markdown、富文本编辑器、代码块、�
 
 - 保留代码块语言标识与语法高亮；不能仅凭语言名称判断是否高亮成功，应检查最终 HTML class 和样式规则。
 - 代码块的复制按钮、语言标签、滚动、换行和移动端显示属于既有交互，除非用户明确要求，不得顺手更改。
-- Bash/Shell、Nginx、JSON、YAML、JavaScript/TypeScript、HTML、CSS、SQL 等语言应按真实语言标识处理；未知或缺失语言应有安全回退。
+- Bash/Shell、Nginx、JSON、YAML、JavaScript/TypeScript、HTML、CSS、SQL、C/C++/C#、PHP、Ruby、Kotlin、Swift、Dart、Vue、Svelte、SCSS、Dockerfile、TOML、INI、XML、PowerShell、GraphQL、Diff、HTTP 等常用语言/配置格式应按真实语言标识处理；扩展语法按需加载，未知或缺失语言应有安全回退。
 - 不把所有代码块统一当成 Bash，也不要为追求颜色而错误识别纯文本。
 - sanitize 必须继续限制危险标签、属性、URL 和不可信 HTML；不能为修复高亮而放开任意 HTML。
 

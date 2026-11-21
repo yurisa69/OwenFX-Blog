@@ -302,6 +302,26 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
               <option value="java">Java</option>
               <option value="go">Go</option>
               <option value="rust">Rust</option>
+              <option value="c">C</option>
+              <option value="cpp">C++</option>
+              <option value="csharp">C#</option>
+              <option value="php">PHP</option>
+              <option value="ruby">Ruby</option>
+              <option value="kotlin">Kotlin</option>
+              <option value="swift">Swift</option>
+              <option value="dart">Dart</option>
+              <option value="vue">Vue</option>
+              <option value="svelte">Svelte</option>
+              <option value="scss">SCSS</option>
+              <option value="docker">Dockerfile</option>
+              <option value="toml">TOML</option>
+              <option value="ini">INI</option>
+              <option value="xml">XML</option>
+              <option value="powershell">PowerShell</option>
+              <option value="graphql">GraphQL</option>
+              <option value="diff">Diff</option>
+              <option value="http">HTTP</option>
+              <option value="nginx">Nginx</option>
               <option value="plaintext">纯文本</option>
             </select>
             <button className="admin-tool" type="button" onClick={insertCodeBlock}>插入代码块</button>
