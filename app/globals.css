@@ -848,3 +848,20 @@ html[data-theme="light"] .code-copy-button {
   50% { opacity: 1; }
 }
 
+
+
+/* Persisted notification read states: keep the existing account drawer language. */
+.nav-profile-trigger{position:relative}
+.nav-unread-badge{position:absolute;top:-3px;right:-4px;display:grid;min-width:16px;height:16px;place-items:center;border:1.5px solid var(--bg-glass);border-radius:999px;background:#ef4444;padding:0 4px;color:#fff;font-size:9px;font-weight:700;line-height:1}
+.profile-notification-mark-all{display:block;margin-left:auto;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-glass);padding:7px 11px;color:var(--text-secondary);font-size:11px;transition:border-color .18s,color .18s,background .18s}
+.profile-notification-mark-all:hover{border-color:rgba(129,140,248,.45);background:var(--accent-bg);color:var(--accent)}
+.profile-notification-mark-all:disabled{cursor:wait;opacity:.55}
+.profile-notification-item.is-unread{border-color:rgba(129,140,248,.34);background:var(--accent-bg)}
+.profile-notification-link{display:block;min-width:0;color:var(--text-primary)}
+.profile-notification-item.is-unread .profile-notification-link strong{color:var(--accent)}
+.profile-notification-action{flex:0 0 auto;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-glass);padding:6px 8px;color:var(--text-tertiary);font-size:10px;white-space:nowrap;transition:border-color .18s,color .18s}
+.profile-notification-action:hover{border-color:rgba(129,140,248,.45);color:var(--accent)}
+.profile-notification-action:disabled{cursor:wait;opacity:.5}
+.profile-bookmarks-more{display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid var(--border-color);border-radius:12px;padding:10px;color:var(--text-secondary);font-size:11px;transition:border-color .18s,color .18s}
+.profile-bookmarks-more:hover{border-color:rgba(129,140,248,.45);color:var(--accent)}
+@media(max-width:767px){.profile-notification-item{gap:7px;padding:10px}.profile-notification-action{padding:6px 7px;font-size:9px}}

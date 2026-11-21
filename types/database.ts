@@ -2,7 +2,7 @@
  * OwenFX Supabase database types.
  *
  * Source of truth: production project gjzxultalptqwqmpagzj.
- * Verified against the live public schema on 2026-11-21.
+ * Verified against the live public schema on 2026-11-22.
  *
  * This file describes the database contract only. It does not apply schema
  * changes. Text columns constrained by CHECK constraints remain string types,
@@ -103,6 +103,21 @@ export type Database = {
         created_at: string;
       }, 'user_id' | 'article_id' | 'interaction_type', [
         Relationship<'article_interactions_article_id_fkey', 'article_id', 'articles', 'id'>,
+      ]>;
+
+      notifications: Table<{
+        id: string;
+        recipient_id: string;
+        actor_id: string | null;
+        type: string;
+        comment_id: string;
+        article_id: string;
+        created_at: string;
+        read_at: string | null;
+      }, 'recipient_id' | 'type' | 'comment_id' | 'article_id', [
+        Relationship<'notifications_actor_id_fkey', 'actor_id', 'profiles', 'id'>,
+        Relationship<'notifications_article_id_fkey', 'article_id', 'articles', 'id'>,
+        Relationship<'notifications_comment_id_fkey', 'comment_id', 'comments', 'id'>,
       ]>;
 
       article_revisions: Table<{

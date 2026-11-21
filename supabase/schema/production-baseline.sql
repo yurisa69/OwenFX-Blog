@@ -1,5 +1,5 @@
 -- OwenFX production public-schema structural baseline
--- Captured: 2026-11-21 | PostgreSQL 17.11
+-- Captured: 2026-11-22 | PostgreSQL 17.11
 -- Project ref: gjzxultalptqwqmpagzj
 -- Structure only; no application rows, Auth users, or business data are included.
 -- Scope: public tables, constraints, indexes, functions, RLS policies and table grants.
@@ -1338,3 +1338,105 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.get_admin_analytics(timestamptz) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_admin_analytics(timestamptz) TO authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Additive production structure verified on 2026-11-22
+-- TABLE: public.notifications
+-- Structure only; the production table contained zero rows at verification.
+CREATE TABLE public.notifications (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
+  recipient_id uuid NOT NULL,
+  actor_id uuid,
+  type text NOT NULL,
+  comment_id uuid NOT NULL,
+  article_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  read_at timestamp with time zone,
+  CONSTRAINT notifications_pkey PRIMARY KEY (id),
+  CONSTRAINT notifications_actor_id_fkey FOREIGN KEY (actor_id)
+    REFERENCES public.profiles(id) ON DELETE SET NULL,
+  CONSTRAINT notifications_article_id_fkey FOREIGN KEY (article_id)
+    REFERENCES public.articles(id) ON DELETE CASCADE,
+  CONSTRAINT notifications_comment_id_fkey FOREIGN KEY (comment_id)
+    REFERENCES public.comments(id) ON DELETE CASCADE,
+  CONSTRAINT notifications_recipient_id_fkey FOREIGN KEY (recipient_id)
+    REFERENCES auth.users(id) ON DELETE CASCADE,
+  CONSTRAINT notifications_recipient_type_comment_key
+    UNIQUE (recipient_id, type, comment_id),
+  CONSTRAINT notifications_type_check CHECK (type = 'comment_reply'::text)
+);
+
+CREATE INDEX notifications_recipient_created_idx
+  ON public.notifications USING btree (recipient_id, created_at DESC);
+
+CREATE INDEX notifications_unread_recipient_created_idx
+  ON public.notifications USING btree (recipient_id, created_at DESC)
+  WHERE read_at IS NULL;
+
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users read own notifications"
+  ON public.notifications
+  FOR SELECT
+  TO authenticated
+  USING ((SELECT auth.uid()) = recipient_id);
+
+CREATE POLICY "Users update own notification read state"
+  ON public.notifications
+  FOR UPDATE
+  TO authenticated
+  USING ((SELECT auth.uid()) = recipient_id)
+  WITH CHECK ((SELECT auth.uid()) = recipient_id);
+
+REVOKE ALL ON TABLE public.notifications FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT ON TABLE public.notifications TO authenticated;
+GRANT UPDATE (read_at) ON TABLE public.notifications TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.create_comment_reply_notification()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''
+AS $function$
+DECLARE
+  v_recipient_id uuid;
+BEGIN
+  IF NEW.parent_comment_id IS NULL
+     OR NEW.status <> 'approved'
+     OR NEW.deleted_at IS NOT NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT parent.author_id
+    INTO v_recipient_id
+  FROM public.comments AS parent
+  WHERE parent.id = NEW.parent_comment_id
+    AND parent.parent_comment_id IS NULL
+    AND parent.status = 'approved'
+    AND parent.deleted_at IS NULL;
+
+  IF v_recipient_id IS NULL OR v_recipient_id = NEW.author_id THEN
+    RETURN NEW;
+  END IF;
+
+  INSERT INTO public.notifications (
+    recipient_id, actor_id, type, comment_id, article_id, created_at
+  )
+  VALUES (
+    v_recipient_id, NEW.author_id, 'comment_reply', NEW.id, NEW.article_id, NEW.created_at
+  )
+  ON CONFLICT ON CONSTRAINT notifications_recipient_type_comment_key DO NOTHING;
+
+  RETURN NEW;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.create_comment_reply_notification() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_comment_reply_notification() TO service_role;
+
+CREATE TRIGGER comments_create_reply_notification
+  AFTER INSERT OR UPDATE OF status, parent_comment_id, author_id, article_id, deleted_at
+  ON public.comments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.create_comment_reply_notification();

@@ -15,7 +15,7 @@ type Profile = { display_name: string; bio: string; avatar_url: string | null };
 type ProfileTab = 'profile' | 'notifications' | 'likes' | 'bookmarks';
 type ProfileArticle = { id?: string; title?: string; slug?: string } | null;
 type ProfileInteraction = { id: string; created_at: string; article: ProfileArticle };
-type ProfileNotification = { id: string; body: string; author_id: string; created_at: string; author: { display_name?: string | null } | { display_name?: string | null }[] | null; article: ProfileArticle };
+type ProfileNotification = { id: string; type: string; created_at: string; read_at: string | null; actor: { display_name?: string | null } | null; comment: { body?: string | null } | null; article: ProfileArticle };
 
 const navLinks = [
   { label: '首页', href: '/' },
@@ -53,6 +53,8 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
   const [profileLikes, setProfileLikes] = useState<ProfileInteraction[]>([]);
   const [profileBookmarks, setProfileBookmarks] = useState<ProfileInteraction[]>([]);
   const [profileNotifications, setProfileNotifications] = useState<ProfileNotification[]>([]);
+  const [profileUnreadCount, setProfileUnreadCount] = useState(0);
+  const [notificationActionBusy, setNotificationActionBusy] = useState<string | null>(null);
   const [profileListsLoading, setProfileListsLoading] = useState(false);
   const [profileListsError, setProfileListsError] = useState('');
   const [profileLoadedTabs, setProfileLoadedTabs] = useState<Record<'notifications' | 'likes' | 'bookmarks', boolean>>({ notifications: false, likes: false, bookmarks: false });
@@ -60,6 +62,26 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => setUser(initialUser), [initialUser]);
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) {
+      setProfileUnreadCount(0);
+      return;
+    }
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+    let active = true;
+    const loadUnreadCount = async () => {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('recipient_id', userId)
+        .is('read_at', null);
+      if (active && !error) setProfileUnreadCount(count || 0);
+    };
+    void loadUnreadCount();
+    return () => { active = false; };
+  }, [user?.id]);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 767px)');
     const update = () => setIsMobileSearch(media.matches);
@@ -168,7 +190,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
       return;
     }
     setProfileTab(tab);
-    if (!user?.id || profileLoadedTabs[tab] || profileListsLoading) return;
+    if (!user?.id || (profileLoadedTabs[tab] && tab !== 'notifications') || profileListsLoading) return;
     const supabase = getSupabaseBrowser();
     if (!supabase) {
       setProfileListsError('Supabase 尚未配置，暂时无法加载记录。');
@@ -179,29 +201,20 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
     setProfileListsError('');
     try {
       if (tab === 'notifications') {
-        const { data: ownComments, error: ownCommentsError } = await supabase.from('comments')
-          .select('id')
-          .eq('author_id', user.id)
-          .eq('status', 'approved')
-          .is('parent_comment_id', null)
-          .order('created_at', { ascending: false })
-          .limit(500);
-        if (ownCommentsError) throw ownCommentsError;
-
-        const commentIds = (ownComments || []).map(comment => comment.id);
-        if (commentIds.length === 0) {
-          setProfileNotifications([]);
-        } else {
-          const { data, error } = await supabase.from('comments')
-            .select('id,body,author_id,created_at,author:profiles!comments_author_id_profiles_fkey(display_name),article:articles(id,title,slug)')
-            .in('parent_comment_id', commentIds)
-            .eq('status', 'approved')
-            .neq('author_id', user.id)
+        const [{ data, error }, { count, error: countError }] = await Promise.all([
+          supabase.from('notifications')
+            .select('id,type,created_at,read_at,actor:profiles!notifications_actor_id_fkey(display_name),comment:comments!notifications_comment_id_fkey(body),article:articles!notifications_article_id_fkey(id,title,slug)')
+            .eq('recipient_id', user.id)
             .order('created_at', { ascending: false })
-            .limit(100);
-          if (error) throw error;
-          setProfileNotifications((data || []) as unknown as ProfileNotification[]);
-        }
+            .limit(100),
+          supabase.from('notifications')
+            .select('id', { count: 'exact', head: true })
+            .eq('recipient_id', user.id)
+            .is('read_at', null),
+        ]);
+        if (error) throw error;
+        setProfileNotifications((data || []) as unknown as ProfileNotification[]);
+        setProfileUnreadCount(countError ? (data || []).filter(item => !item.read_at).length : count || 0);
       } else {
         const { data, error } = await supabase.from('article_interactions')
           .select('id,created_at,article:articles(id,title,slug)')
@@ -218,6 +231,60 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
     } finally {
       setProfileListsLoading(false);
     }
+  };
+
+  const updateNotificationReadState = async (item: ProfileNotification, isRead: boolean) => {
+    if (!user?.id || notificationActionBusy || Boolean(item.read_at) === isRead) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) {
+      setProfileListsError('Supabase 尚未配置，暂时无法更新通知状态。');
+      return;
+    }
+
+    setProfileListsError('');
+    setNotificationActionBusy(item.id);
+    const readAt = isRead ? new Date().toISOString() : null;
+    const { error } = await supabase.from('notifications')
+      .update({ read_at: readAt })
+      .eq('id', item.id)
+      .eq('recipient_id', user.id);
+    setNotificationActionBusy(null);
+
+    if (error) {
+      setProfileListsError('通知状态更新失败，请稍后重试。');
+      return;
+    }
+
+    setProfileNotifications(current => current.map(notification =>
+      notification.id === item.id ? { ...notification, read_at: readAt } : notification
+    ));
+    setProfileUnreadCount(current => Math.max(0, current + (isRead ? -1 : 1)));
+  };
+
+  const markAllNotificationsRead = async () => {
+    if (!user?.id || profileUnreadCount === 0 || notificationActionBusy) return;
+    const supabase = getSupabaseBrowser();
+    if (!supabase) {
+      setProfileListsError('Supabase 尚未配置，暂时无法更新通知状态。');
+      return;
+    }
+
+    setProfileListsError('');
+    setNotificationActionBusy('all');
+    const readAt = new Date().toISOString();
+    const { error } = await supabase.from('notifications')
+      .update({ read_at: readAt })
+      .eq('recipient_id', user.id)
+      .is('read_at', null);
+    setNotificationActionBusy(null);
+
+    if (error) {
+      setProfileListsError('批量更新通知状态失败，请稍后重试。');
+      return;
+    }
+
+    setProfileNotifications(current => current.map(notification => ({ ...notification, read_at: notification.read_at || readAt })));
+    setProfileUnreadCount(0);
   };
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -296,8 +363,9 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
               </div>
               <div className="nav-theme-slot"><ThemeToggle/></div>
               {user ? (
-                <button type="button" aria-label="我的" aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setProfileTab('profile'); setNotice(''); }}>
+                <button type="button" aria-label={profileUnreadCount > 0 ? '我的，' + profileUnreadCount + ' 条未读通知' : '我的'} aria-expanded={drawerOpen} className="nav-icon-btn nav-profile-trigger" onClick={() => { setMenuOpen(false); setDrawerOpen(true); setEditing(false); setProfileTab('profile'); setNotice(''); }}>
                   <StarIcon/>
+                  {profileUnreadCount > 0 && <span className="nav-unread-badge">{profileUnreadCount > 99 ? '99+' : profileUnreadCount}</span>}
                 </button>
               ) : <Link href="/login" aria-label="我的（登录）" className="nav-icon-btn"><StarIcon/></Link>}
               <button type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} className="nav-icon-btn mobile-menu-toggle md:hidden" onClick={() => setMenuOpen(value => !value)}>
@@ -386,7 +454,7 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                   </section>
                   <nav className="profile-activity-tabs" aria-label="个人活动">
                     <button type="button" className={profileTab === 'notifications' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('notifications')}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></svg><span>通知</span>{profileLoadedTabs.notifications && profileNotifications.length > 0 && <b>{profileNotifications.length}</b>}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></svg><span>通知</span>{profileUnreadCount > 0 && <b>{profileUnreadCount > 99 ? '99+' : profileUnreadCount}</b>}
                     </button>
                     <button type="button" className={profileTab === 'likes' ? 'profile-activity-tab active' : 'profile-activity-tab'} onClick={() => void loadProfileTab('likes')}>
                       <ArticleActionIcon type="like" /><span>喜欢</span>{profileLoadedTabs.likes && profileLikes.length > 0 && <b>{profileLikes.length}</b>}
@@ -396,36 +464,69 @@ function SiteNavbarContent({ initialUser = null }: { initialUser?: NavUser | nul
                     </button>
                   </nav>
                   {profileListsError && <p role="status" className="profile-list-notice">{profileListsError}</p>}
+                  {profileTab === 'notifications' && profileUnreadCount > 0 && (
+                    <button
+                      type="button"
+                      className="profile-notification-mark-all"
+                      onClick={() => void markAllNotificationsRead()}
+                      disabled={notificationActionBusy !== null}
+                    >
+                      {notificationActionBusy === 'all' ? '处理中…' : '全部标记已读'}
+                    </button>
+                  )}
                   {profileTab !== 'profile' && <section className="profile-activity-list" aria-live="polite">
                     {profileListsLoading ? (
                       <div className="profile-list-empty">正在加载记录…</div>
                     ) : profileTab === 'notifications' ? (
                       profileNotifications.length === 0 ? (
                         <div className="profile-list-empty">暂时没有人回复你的评论</div>
-                      ) : profileNotifications.map(item => {
-                        const replyAuthor = Array.isArray(item.author) ? item.author[0] : item.author;
-                        return (
-                          <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
-                            <span className="profile-activity-item-mark"><ArticleActionIcon type="comment" /></span>
-                            <span className="min-w-0 flex-1">
-                              <strong>{replyAuthor?.display_name || '用户'} 回复了你的评论</strong>
-                              <small>{item.article?.title || '文章'} · {formatChineseDateLocal(item.created_at)}</small>
-                              <small className="mt-1 block truncate">{item.body}</small>
-                            </span>
-                            <span className="profile-activity-arrow">›</span>
+                      ) : profileNotifications.map(item => (
+                        <article key={item.id} className={'profile-activity-item profile-notification-item ' + (item.read_at ? '' : 'is-unread')}>
+                          <span className="profile-activity-item-mark"><ArticleActionIcon type="comment" /></span>
+                          <Link
+                            href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'}
+                            className="profile-notification-link min-w-0 flex-1"
+                            onClick={() => {
+                              if (!item.read_at) void updateNotificationReadState(item, true);
+                              setDrawerOpen(false);
+                            }}
+                          >
+                            <strong>{item.actor?.display_name || '用户'} 回复了你的评论</strong>
+                            <small>{item.article?.title || '文章'} · {formatChineseDateLocal(item.created_at)}</small>
+                            <small className="mt-1 block truncate">{item.comment?.body || '这条回复暂时不可见'}</small>
                           </Link>
-                        );
-                      })
+                          <button
+                            type="button"
+                            className="profile-notification-action"
+                            aria-label={item.read_at ? '标记为未读' : '标记为已读'}
+                            title={item.read_at ? '标记为未读' : '标记为已读'}
+                            disabled={notificationActionBusy !== null}
+                            onClick={() => void updateNotificationReadState(item, !item.read_at)}
+                          >
+                            {notificationActionBusy === item.id ? '…' : item.read_at ? '未读' : '已读'}
+                          </button>
+                        </article>
+                      ))
                     ) : (
                       (profileTab === 'likes' ? profileLikes : profileBookmarks).length === 0 ? (
                         <div className="profile-list-empty">{profileTab === 'likes' ? '还没有喜欢的文章' : '还没有收藏的文章'}</div>
-                      ) : (profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
-                        <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
-                          <span className="profile-activity-item-mark">{profileTab === 'likes' ? <ArticleActionIcon type="like" /> : <ArticleActionIcon type="bookmark" />}</span>
-                          <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{formatChineseDateLocal(item.created_at)}</small></span>
-                          <span className="profile-activity-arrow">›</span>
-                        </Link>
-                      ))
+                      ) : (
+                        <>
+                          {(profileTab === 'likes' ? profileLikes : profileBookmarks).map(item => (
+                            <Link key={item.id} href={item.article?.slug ? '/articles/' + item.article.slug : '/articles'} className="profile-activity-item" onClick={() => setDrawerOpen(false)}>
+                              <span className="profile-activity-item-mark">{profileTab === 'likes' ? <ArticleActionIcon type="like" /> : <ArticleActionIcon type="bookmark" />}</span>
+                              <span className="min-w-0 flex-1"><strong>{item.article?.title || '文章'}</strong><small>{formatChineseDateLocal(item.created_at)}</small></span>
+                              <span className="profile-activity-arrow">›</span>
+                            </Link>
+                          ))}
+                          {profileTab === 'bookmarks' && (
+                            <Link href="/bookmarks" className="profile-bookmarks-more" onClick={() => setDrawerOpen(false)}>
+                              查看全部收藏
+                              <span aria-hidden="true">›</span>
+                            </Link>
+                          )}
+                        </>
+                      )
                     )}
                   </section>}
                 </>

@@ -2,7 +2,7 @@
 
 Project: `gjzxultalptqwqmpagzj`  
 Database engine: PostgreSQL 17.11  
-Snapshot date: 2026-11-17
+Snapshot date: 2026-11-22
 
 This document reconciles the production migration ledger with the SQL files tracked in GitHub. The eight earlier historical SQL files listed below were recovered from the supplied `owenfx-Backup.zip` archive, whose SQL checksums match its manifest. They were reviewed against the live production schema and selectively reconciled: retired database objects and policies were not restored. Two additional migrations were restored to GitHub from the historical repository commit and are also present in the production migration ledger. These files are historical records, not instructions to replay migrations against production.
 
@@ -124,3 +124,17 @@ The machine-readable production migration-version snapshot is `supabase/migratio
 - The migration is forward-only and additive. Applied to production after isolated SQL validation; the production migration ledger and baseline now include the verified schema.
 
 - `20261121085503` `analytics_geo_ip_statistics`: adds Vercel-derived country, region, city, and privacy-masked IP network prefixes to page-view analytics; adds admin-only country/city/IP aggregate rankings. Raw IP addresses and precise coordinates are not stored. Applied to production.
+
+
+## 2026-11-22 — notifications_read_states
+
+| Version | Migration | Production status |
+|---|---|---|
+| 20261121165453 | notifications_read_states | Applied and verified in production |
+
+- Adds a dedicated public.notifications table for comment-reply notification records and persistent read_at state.
+- Enables RLS. Authenticated users can read only rows addressed to their own recipient_id; column-level grants permit updating only read_at.
+- Adds a SECURITY DEFINER trigger function with an empty search_path. It creates a notification only when a reply to an approved root comment is approved and the reply author differs from the recipient.
+- The migration checks for existing eligible replies. The only existing approved reply was authored by the same user who wrote the parent comment, so it correctly did not create a self-notification. No comment rows were changed.
+- Production verification confirmed the table, indexes, trigger, function security mode, recipient-scoped RLS policies, and authenticated column privileges. The notifications table currently contains zero rows.
+- The change is additive; no existing tables, comments, users, or article-interaction rows were deleted or rewritten.
