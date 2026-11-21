@@ -289,11 +289,13 @@ function usesLegacyHeadingHierarchy(markdown: string): boolean {
     const match = line.replace(/^\s{0,3}/, '').match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
     if (!match) continue;
     const level = match[1].length;
-    const heading = stripExistingHeadingNumber(match[2].trim());
+    const originalHeading = match[2].trim();
+    const heading = stripExistingHeadingNumber(originalHeading);
+    const hasNumberedH1Prefix = heading !== originalHeading;
     if (level === 1 && !isStructuralHeading(heading)) {
-      if (!hasArticleTitle && !/^(?:[零〇一二三四五六七八九十百千万]+)[、.．-]/.test(match[2].trim())) {
+      if (!hasArticleTitle && !hasNumberedH1Prefix) {
         hasArticleTitle = true;
-      } else if (/^[零〇一二三四五六七八九十百千万]+、/.test(match[2].trim())) {
+      } else if (hasNumberedH1Prefix) {
         hasNumberedH1Step = true;
       }
     }
