@@ -603,18 +603,8 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
 .prose-block .hljs-string,.prose-block .hljs-attr,.prose-block .hljs-template-variable{color:#a5d6ff}
 .prose-block .hljs-number,.prose-block .hljs-symbol,.prose-block .hljs-bullet{color:#79c0ff}
 .prose-block .hljs-title,.prose-block .hljs-function,.prose-block .hljs-section{color:#d2a8ff}
-.prose-block .hljs-built_in,.prose-block .hljs-type{color:#ffa657}
-.prose-block .hljs-params,.prose-block .hljs-variable,.prose-block .hljs-subst{color:#e6edf3}
-.prose-block .hljs-attr,.prose-block .hljs-attribute,.prose-block .hljs-property{color:#7ee787}
-.prose-block .hljs-selector-class,.prose-block .hljs-selector-id,.prose-block .hljs-selector-pseudo{color:#d2a8ff}
-.prose-block .hljs-tag{color:#7ee787}
-.prose-block .hljs-punctuation{color:#8b949e}
-.prose-block .hljs-operator{color:#ff7b72}
-.prose-block .hljs-regexp,.prose-block .hljs-link,.prose-block .hljs-code{color:#a5d6ff}
-.prose-block .hljs-addition{color:#7ee787}
-.prose-block .hljs-deletion{color:#ff7b72}
-.prose-block .hljs-emphasis{font-style:italic}
-.prose-block .hljs-strong{font-weight:700}
+.prose-block .hljs-built_in,.prose-block .hljs-type,.prose-block .hljs-params{color:#ffa657}
+.prose-block .hljs-variable,.prose-block .hljs-property{color:#e6edf3}
 .prose-block .hljs-meta,.prose-block .hljs-doctag{color:#d2a8ff}
 .prose-block .contains-task-list{padding-left:0;list-style:none}
 .prose-block .task-list-item{list-style:none}
@@ -625,17 +615,8 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-keyword
 html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-string,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-attr,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-template-variable{color:#075985}
 html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-number,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-symbol,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-bullet{color:#1d4ed8}
 html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-title,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-function,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-section{color:#6d28d9}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-built_in,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-type{color:#9a3412}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-params,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-variable,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-subst{color:#1f2937}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-attr,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-attribute,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-property{color:#0f766e}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-selector-class,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-selector-id,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-selector-pseudo{color:#6d28d9}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-tag{color:#047857}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-punctuation{color:#6b7280}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-operator,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-deletion{color:#b42318}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-regexp,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-link,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-code{color:#075985}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-addition{color:#166534}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-emphasis{font-style:italic}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-strong{font-weight:700}
+html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-built_in,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-type,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-params{color:#9a3412}
+html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-variable,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-property{color:#1f2937}
 
 
 /* Code copy control: hover to reveal on desktop, tap the code block on touch devices. */
