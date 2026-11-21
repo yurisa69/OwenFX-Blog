@@ -97,24 +97,3 @@ Node 主版本由仓库根目录 `.nvmrc` 指定；当前为 Node.js 24。安装
 10. 未完成事项、限制或风险。
 
 只报告工具或实际检查证据支持的结果。不得将「已提交」「已推送」「已构建」「已部署」「网站正常」混为一个状态。
-
-
-## 8. Vercel 监测与 Sandbox 验收
-
-### 代码集成
-- 根布局应只挂载一份 @vercel/analytics/next 的 Analytics 和一份 @vercel/speed-insights/next 的 SpeedInsights；不得在页面或子布局重复挂载。
-- 包已安装、组件已接入，不代表 Vercel 控制台功能已启用。Web Analytics 与 Speed Insights 必须分别在项目控制台启用；没有控制台证据时报告为「代码已接入，平台功能待启用/待验证」。
-- 不新增用户身份、邮箱、Token、私密文章或表单内容等自定义分析事件；除非用户另行明确授权并完成隐私评估。
-
-### 发布后观察
-- Web Analytics 用于查看访问量、页面浏览、热门文章/软件详情路由和来源；优先分析聚合数据，不把统计导出文件或访客级数据提交到仓库。
-- Speed Insights 用于查看真实用户性能趋势和 Core Web Vitals，按路由、设备和环境比较；数据不足时标注样本不足。
-- Vercel Toolbar 用于有明确目标的布局偏移、交互耗时和无障碍诊断。不得为了使用 Toolbar 擅自创建 Preview Deployment；生产环境临时启用需要用户授权，完成后恢复原设置。
-
-### Sandbox 结束验收
-1. 记录最终 Commit SHA、执行过的检查、通过/失败结果和必要的非敏感日志摘要。
-2. 不将 .env、密钥、生产数据、完整调试日志或构建产物复制到仓库。
-3. 停止本次 Sandbox 会话并删除本次 Sandbox 资源；persistent: false，不创建 Snapshot，不挂载或创建 Drive。
-4. 再次查询项目资源，确认本次 Sandbox 已不存在，且没有本次产生的 Snapshot/Drive 遗留。
-5. 若清理失败，立即停止继续创建 Sandbox 或进行下一轮验证，报告准确资源名称和状态；不得声称已清理。
-6. 不清理其他历史任务的 Sandbox、Snapshot 或 Drive。

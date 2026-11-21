@@ -110,18 +110,3 @@
 ## 8. 规范优先级
 
 本文件补充 OwenFX 的开发协作规则，不替代 README、数据库变更规范、备份恢复手册、环境变量安全要求和用户明确确认的项目决定。出现冲突时，优先遵守安全要求和用户最新明确决定，并在执行前说明冲突。
-
-
-## 9. Vercel 工具与临时环境生命周期
-
-1. Vercel Sandbox 仅用于需要隔离环境的源码检查、依赖安装、测试、类型检查、构建和 AI 修改验证；普通只读文档查询不必创建 Sandbox。
-2. 每次任务从 GitHub 最新 main 的明确 Commit SHA 创建全新 Sandbox，使用非持久化配置（persistent: false），不得从旧快照恢复，不得挂载已有 Drive，不得创建快照。
-3. Sandbox 内只使用测试所需的虚构/占位环境变量；不得拉取或复制生产 .env、密钥、Token、Supabase 生产数据或 Cloudflare R2 对象。
-4. Sandbox 不作为正式修改来源。最终变更必须经过完整差异审查，并按本文件既定流程统一提交和推送。
-5. 每次 Sandbox 任务结束后，无论成功、失败或中止，都必须先记录必要的非敏感检查结论，再停止会话、删除本次 Sandbox，并核验本次创建的 Sandbox/快照/Drive 等资源均已清理。不得保留工作目录、依赖目录、构建产物、日志副本、快照或其他临时内容。
-6. 不得为了清理本次环境而删除其他任务或用户已有的 Sandbox、Snapshot、Drive；如果本次操作误建了持久化资源，先确认其归属和内容，再清理本次资源。
-7. Vercel Web Analytics 与 Speed Insights 通过官方 Next.js 组件接入根布局；还需在 Vercel 项目控制台分别启用。未完成控制台启用前，不得声称数据采集已生效。
-8. Web Analytics 用于聚合访问量、页面浏览、热门页面、来源、设备/浏览器等分析；Speed Insights 用于真实用户 Core Web Vitals 和性能趋势。数据不足时标注样本不足，不编造趋势或指标。
-9. Analytics 不得采集或发送用户 ID、邮箱、认证信息、Token、私密文章内容、表单内容或其他敏感信息；不得将用户级分析数据或导出文件提交到 Git。
-10. Vercel Toolbar 用于按需诊断布局偏移、交互耗时和无障碍问题。不得为使用 Toolbar 擅自创建 Preview Deployment；生产环境可见性设置只有在用户授权时才临时调整，检查后恢复原设置。
-11. Vercel 工具使用规范的详细步骤以 .agents/skills/owenfx-vercel-tooling/SKILL.md 为准。

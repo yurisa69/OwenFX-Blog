@@ -7,7 +7,6 @@ import { readMarkdownFile } from '@/lib/github-articles';
 import ArticleContent from '@/components/ArticleContent';
 import ArticleSupport from '@/components/ArticleSupport';
 import ArticleInteractions from '@/components/ArticleInteractions';
-import ArticleViewTracker from '@/components/ArticleViewTracker';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://owenfx-blog.vercel.app';
 
@@ -104,7 +103,6 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
   return (
     <>
-      <ArticleViewTracker articleId={article.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{
         __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c'),
       }} />

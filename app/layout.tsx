@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Caramel, Geist, Geist_Mono, Splash } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -90,8 +88,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <BackToTop />
           <ScrollToTop />
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

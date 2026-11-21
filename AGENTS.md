@@ -38,7 +38,6 @@
 | `.agents/skills/owenfx-performance/SKILL.md` | 性能测量、渲染、媒体加载、动画实现和性能回归 |
 | `.agents/skills/owenfx-release-check/SKILL.md` | 修改完成后的测试、提交、推送、构建和生产部署核对 |
 | `.agents/skills/owenfx-unified-language/SKILL.md` | 面向用户/协作者的语言、Git 术语、提交说明和发布报告表达 |
-| `.agents/skills/owenfx-vercel-tooling/SKILL.md` | Vercel Sandbox 生命周期、Speed Insights、Web Analytics、Toolbar 的使用与清理 |
 
 用户只要求审查时，保持只读：不修改文件、不提交、不推送、不部署。只有用户明确要求实施时，才进入修改流程。
 
@@ -89,13 +88,3 @@
 - 明确区分通过、失败、进行中、未执行、未检查和无法验证。
 - 生产部署成功不等于网站所有页面和业务功能已正常运行；只有实际验证过的范围才能报告为已验证。
 - 不得把计划、建议或尚未执行的操作描述为已完成。
-
-
-## 9. Vercel 工具使用与清理
-
-- 涉及源码修改、依赖变更或需要隔离构建验证时，按 .agents/skills/owenfx-vercel-tooling/SKILL.md 使用 Vercel Sandbox。
-- Sandbox 必须从 GitHub 最新 main 的明确 Commit SHA 创建，使用 persistent: false，不挂载持久化 Drive，不创建快照，不导入生产密钥或生产数据。
-- 验证结束（无论通过、失败或中止）后，先保存必要的非敏感检查结论，再停止会话并删除本次 Sandbox；确认没有本次创建的快照、Drive 或其他临时资源遗留。不得删除其他任务或用户已有的 Sandbox/Drive。
-- Speed Insights 与 Web Analytics 使用 Vercel 官方组件集成到根布局；启用开关仍需在 Vercel 项目控制台完成。只分析聚合指标，不收集或记录用户身份、邮箱、Token、文章私密内容等个人/敏感数据。
-- Vercel Toolbar 用于有明确诊断目标的页面检查。Preview 环境默认可用，但不得为使用 Toolbar 擅自创建 Preview Deployment；生产环境启用须遵循用户授权，并在临时诊断结束后恢复原设置。
-- 具体触发时机、操作步骤、验收标准和清理流程以 .agents/skills/owenfx-vercel-tooling/SKILL.md 为准。

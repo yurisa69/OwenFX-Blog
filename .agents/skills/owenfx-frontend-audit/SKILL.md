@@ -106,16 +106,3 @@ OwenFX 当前基础可从源码定位：
 7. 修复建议（不自动实施）。
 
 审查结束后保持仓库不变：不创建文件、不改源码、不产生 Commit、不推送、不触发 Vercel 部署。
-
-
-## 7. Vercel Toolbar 诊断
-
-当任务涉及布局跳动、交互响应或无障碍问题，并且有可访问的已部署环境时，按需使用 Vercel Toolbar：
-
-- Layout Shift Tool：定位字体加载、媒体尺寸、动态内容、动画或容器尺寸变化引起的布局偏移；结合实际 DOM 和样式定位根因。
-- Interaction Timing Tool：检查交互耗时和当前会话 INP；记录具体操作、页面和设备，不能只凭单次测量下结论。
-- Accessibility Audit：辅助检查页面的 WCAG 规则问题；它不是完整的无障碍认证，仍需键盘、屏幕阅读器语义和真实交互核查。
-- 仅记录与当前任务相关的问题，不将 Toolbar 检查结果当成源码修复已完成。
-- Preview Deployment 默认可使用 Toolbar，但用户未授权时不得为此创建 Preview Deployment。优先使用现有已部署环境；若需要在 Production 临时启用 Toolbar，先确认授权，诊断结束后恢复原可见性设置。
-- 不得通过 data-allow-shifts 等方式隐藏真实布局问题；只有经确认的有意布局变化才可按官方机制排除。
-- Toolbar 不代替 Speed Insights 的真实用户指标，也不代替自动化测试。
