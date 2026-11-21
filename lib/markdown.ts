@@ -163,7 +163,7 @@ const languageAliases: Record<string, string> = {
 
 const supportedLanguages = new Set([
   'bash', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 'html', 'css',
-  'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust', 'text',
+  'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust', 'nginx', 'text',
 ]);
 
 function getClassNames(value: unknown): string[] {

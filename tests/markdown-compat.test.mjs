@@ -56,7 +56,7 @@ test('highlights the supported language set with GitHub Dark and GitHub Light th
   const fence = String.fromCharCode(96).repeat(3);
   const languages = [
     'bash', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 'html', 'css',
-    'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust',
+    'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust', 'nginx',
   ];
 
   for (const language of languages) {
@@ -66,6 +66,35 @@ test('highlights the supported language set with GitHub Dark and GitHub Light th
     assert.match(html, /<span[^>]*style="[^"]*--shiki-light:[^"]*--shiki-dark:/i, language + ' should contain both theme token colors');
     assert.match(html, new RegExp('data-language="' + language + '"'));
   }
+});
+
+test('highlights Nginx configuration blocks and standalone directives', async () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const config = [
+    'server {',
+    '    listen 80;',
+    '    server_name status.example.com;',
+    '}',
+  ].join('\n');
+  const directives = [
+    'proxy_http_version 1.1;',
+    'proxy_set_header Upgrade $http_upgrade;',
+    'proxy_set_header Connection "upgrade";',
+  ].join('\n');
+
+  for (const source of [config, directives]) {
+    const html = await markdownToHtml(fence + 'nginx\n' + source + '\n' + fence);
+    assert.match(html, /class="shiki[^"]*github-light[^"]*github-dark/i);
+    assert.match(html, /class="language-nginx"/);
+    assert.match(html, /data-language="nginx"/);
+    assert.match(html, /<span[^>]*style="[^"]*--shiki-light:[^"]*--shiki-dark:/i);
+  }
+
+  const directiveHtml = await markdownToHtml(fence + 'nginx\n' + directives + '\n' + fence);
+  assert.match(directiveHtml, /proxy_http_version/);
+  assert.match(directiveHtml, /proxy_set_header/);
+  assert.match(directiveHtml, /\$http_upgrade/);
+  assert.match(directiveHtml, /"upgrade"/);
 });
 
 test('maps plaintext aliases to Shiki text and retains a plain-text label', async () => {
