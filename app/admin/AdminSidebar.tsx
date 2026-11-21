@@ -95,7 +95,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
       : [...current, title]);
   }
 
-  function Navigation({ compact = false }: { compact?: boolean }) {
+  function renderNavigation(compact = false) {
     return (
       <nav aria-label="OwenFX Studio 工作空间导航" className="admin-sidebar-nav">
         <Link
@@ -161,7 +161,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
     );
   }
 
-  function Brand() {
+  function renderBrand() {
     return (
       <div className="admin-brand-header">
         <Link href="/admin" className="admin-brand text-xl font-bold tracking-tight md:text-2xl" style={{ color: 'var(--text-primary)' }}>
@@ -172,7 +172,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
     );
   }
 
-  function Footer() {
+  function renderFooter() {
     return (
       <div className="admin-sidebar-footer">
         <Link href="/" className="admin-sidebar-link" title={collapsed ? "BLOG" : undefined}>
@@ -207,7 +207,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
 
       <aside className={`admin-sidebar admin-sidebar-desktop hidden md:flex ${collapsed ? 'admin-sidebar-collapsed' : ''}`}>
         <div className="admin-sidebar-brand-row">
-          <Brand />
+          {renderBrand()}
           <button
             type="button"
             className="admin-sidebar-collapse"
@@ -218,8 +218,8 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
             {collapsed ? '›' : '‹'}
           </button>
         </div>
-        <Navigation compact={collapsed} />
-        <Footer />
+        {renderNavigation(collapsed)}
+        {renderFooter()}
       </aside>
 
       {mobileOpen && (
@@ -242,7 +242,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
                 ×
               </button>
             </div>
-            <Navigation />
+            {renderNavigation()}
             <Footer />
           </aside>
         </div>

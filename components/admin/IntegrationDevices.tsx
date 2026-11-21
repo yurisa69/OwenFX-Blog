@@ -20,12 +20,14 @@ export default function IntegrationDevices() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [siteOrigin, setSiteOrigin] = useState('');
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
 
   async function load() {
     const response = await fetch('/api/admin/integrations/devices', { cache: 'no-store' });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || '授权设备读取失败');
     setDevices(result.devices || []);
+    setCurrentTime(Date.now());
   }
 
   useEffect(() => {
@@ -148,7 +150,7 @@ Content-Type: application/json
     <section className="admin-panel space-y-3">
       <h2 className="font-semibold">已授权设备</h2>
       {!devices.length ? <p className="text-sm opacity-60">尚未创建导入授权。</p> : devices.map(device => {
-        const expired = Boolean(device.expires_at && new Date(device.expires_at).getTime() <= Date.now());
+        const expired = Boolean(currentTime !== null && device.expires_at && new Date(device.expires_at).getTime() <= currentTime);
         const status = device.active ? (expired ? '已过期' : '已启用') : '已撤销';
         return <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
           <div className="min-w-0">

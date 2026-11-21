@@ -36,6 +36,14 @@ description: OwenFX 发布前检查、测试、GitHub main 提交推送、Vercel
 
 Node 主版本由仓库根目录 `.nvmrc` 指定；当前为 Node.js 24。安装依赖使用锁文件对应的方式（当前为 `npm ci`）。`npm run typecheck` 会先运行 Next.js `typegen` 生成路由类型，再执行 `tsc --noEmit`。
 
+### ESLint 版本与插件兼容性
+
+- 调整 ESLint 或 Next.js ESLint 配置前，先核对 `eslint`、`eslint-config-next` 及其实际解析到的插件版本和 `peerDependencies`，并检查对应版本的官方支持状态。
+- 不使用 `--legacy-peer-deps`、手工改写锁文件或隐藏安装警告的方式掩盖依赖声明不匹配。
+- 当前项目保留 ESLint `10.14.0`；`eslint-config-next@16.4.6` 声明支持 ESLint 9 及以上，部分上游插件的 peer range 尚未包含 ESLint 10。现有 `npm ci` 可完成，相关警告属于上游 peer metadata 尚未更新，不是本次 lint 失败原因。
+- 不为消除上述警告而降级到已结束维护周期的 ESLint 9；待上游插件更新 peer 声明后再复核依赖树。
+- 只有在官方兼容性核查确认确有运行时问题时，才评估调整依赖版本；不得仅凭 npm peer warning 自动降级。
+
 按变更选择并执行测试：
 - UI/组件/页面：lint、相关测试、build；必要时浏览器检查主要视口。
 - Markdown/文章编辑器：Markdown、编辑器转换、文章编号相关测试及完整测试。
