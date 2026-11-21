@@ -232,7 +232,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
           />
           <aside id="admin-mobile-navigation" className="admin-sidebar admin-sidebar-mobile-panel">
             <div className="admin-sidebar-brand-row">
-              <Brand />
+              {renderBrand()}
               <button
                 type="button"
                 className="admin-sidebar-collapse"
@@ -243,7 +243,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
               </button>
             </div>
             {renderNavigation()}
-            <Footer />
+            {renderFooter()}
           </aside>
         </div>
       )}
