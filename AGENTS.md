@@ -104,5 +104,5 @@
 
 ## 10. Vercel 工具使用
 
-涉及 Vercel Sandbox、Speed Insights 或 Vercel Toolbar 时，必须先阅读 `.agents/skills/owenfx-vercel-tooling/SKILL.md`，遵守隔离验证、真实用户性能分析、视觉/无障碍验收和一次性资源清理要求。
+涉及 Vercel Sandbox、Speed Insights 或 Vercel Toolbar 时，必须先阅读 `.agents/skills/owenfx-vercel-tooling/SKILL.md`，遵守隔离验证、真实用户性能分析、视觉/无障碍验收要求。Sandbox 默认保存命名历史和快照；项目范围只保留最新 6 个快照，并同时遵守 15 GB 终身存储上限，不再默认删除本次 Sandbox 历史。
 - 每次使用 Vercel Hobby / Sandbox 前后，还必须读取并更新 docs/VERCEL_HOBBY_QUOTA_CONTROL.md，按官方总量扣减实际用量；未核实额度不得视为 0。

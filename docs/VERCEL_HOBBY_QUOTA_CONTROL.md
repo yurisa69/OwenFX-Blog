@@ -15,7 +15,7 @@ Vercel 项目：owenfx-blog
 5. Vercel Usage Dashboard / Sandbox Usage 是官方总账；Sandbox API 逐实例指标用于任务明细和交叉核对。两者不一致时以 Dashboard 为准，并记录差异。
 6. 数据缺失不等于 0。无法验证的项目标记「未核实」并保守预留；不能用未知余额批准会消耗该项目的操作。
 7. Hobby 超出包含额度后，相关 Sandbox 创建会暂停；不得反复创建、重试、切换区域或用其他项目规避限制。
-8. 默认使用一次性、非持久化 Sandbox；不创建快照、不创建 Drive、不复用其他任务 Sandbox。
+8. 默认使用可持久化 Sandbox 保存任务快照；每次任务结束后保留项目范围内最新 6 个快照，新增后删除最旧的超额快照。不得创建 Drive，不复用其他任务 Sandbox。
 9. 不向 Sandbox 注入生产密钥，不连接生产数据库，不执行生产迁移，不写入真实用户数据或生产 R2 对象。
 10. 纯文档、注释、翻译等不影响运行时的修改可不启动 Sandbox，但必须在台账记录本次 Sandbox 使用为 0。
 
@@ -34,7 +34,7 @@ Vercel 项目：owenfx-blog
 | 并发 Sandbox | 最多 10 个 | 创建前检查当前运行数量 |
 | 单次会话时长 | 最长 45 分钟 | 单次连续 session 上限 |
 | 单实例最大配置 | 4 vCPU / 8 GB | 默认优先 2 vCPU / 4 GB |
-| 快照存储 | 15 GB（终身包含） | 按实际快照大小计量；默认不创建 |
+| 快照存储 | 15 GB（终身包含） | 保存最新快照；项目级最多 6 个且总量不得超过 15 GB，按实际大小计量 |
 | Drive 存储 | 15 GB（终身包含） | 按实际逻辑存储计量；默认不创建 |
 | Drive 读取 | 30 GB / 月 | 挂载 Drive 的逻辑读取量 |
 | Drive 写入 | 30 GB / 月 | 挂载 Drive 的逻辑写入量 |
@@ -112,12 +112,15 @@ Vercel 项目：owenfx-blog
 
 ### 4.2 默认配置
 
-- 使用非持久化配置。
+- 使用持久化配置，默认 `persistent: true`，使任务结束时自动保存快照。
+- 创建时使用 Vercel Sandbox API v4，并设置 `keepLastSnapshots: { count: 6, deleteEvicted: true }`；该原生限制按单个命名 Sandbox 生效，不能代替项目级总量检查。
 - 默认 2 vCPU / 4 GB；任务适合时使用 1 vCPU / 2 GB。
 - 单次 session 不超过 Hobby 45 分钟上限。
-- 不创建快照、不创建 Drive、不挂载持久化存储。
+- 不创建 Drive，不挂载 Drive 或其他持久化存储。
 - 不开放端口；确需开放时将端口双向流量纳入预算。
-- 任务完成立即停止 Sandbox，不等待超时。
+- 任务完成立即停止当前 session，不等待超时；保留本次命名 Sandbox 元数据和自动快照，作为后续历史记录。
+- 每次生成新快照后，重新列出当前项目全部快照，按创建时间从新到旧排序；只保留最新 6 个，删除其余最旧快照，并逐个核验删除状态。
+- 同时核对全部保留快照的总字节数不得超过 15 GB 终身额度；若保留 6 个会超出 15 GB，则从最旧开始继续删除，直到同时满足数量和存储限制。新快照自身导致额度超限或存储余额未核实且可能产生费用时，停止快照创建路径并报告，不得付费。
 - 不复用其他任务 Sandbox，不通过持久化或快照绕过单次时长限制。
 
 ### 4.3 停止后记录
@@ -148,14 +151,14 @@ Vercel 项目：owenfx-blog
 2. 任一月度计量项达到 90%：停止非必要 Sandbox；仅在剩余量足以覆盖任务且保留 10% 安全余量时继续。
 3. 预计任务会突破安全余量：不创建 Sandbox，改用不消耗该资源的工作方式。
 4. 任一计量项达到 100%、Dashboard 显示超限/暂停或费用状态无法确认：立即停止相关操作，不重试、不升级、不产生付费。
-5. 快照和 Drive 实际占用未核实前，禁止创建新的快照或 Drive。
+5. 快照总量必须在每次任务后核对；项目级最多保留 6 个最新快照且总大小不得超过 15 GB。Drive 实际占用未核实前禁止创建 Drive。
 6. 用户无需为正常免费额度内的任务逐次批准；涉及付费、升级、超额或权限扩大时，本项目默认不执行。
 
 ## 5. Vercel Sandbox 使用台账
 
 ### 5.1 当前核算基线（2026-11-21）
 
-数据来自 Vercel 团队 owen-sove、项目 owenfx-blog 的命名 Sandbox 列表。团队当前列出 1 个项目、11 个命名 Sandbox，全部已停止。CPU、内存、时长和网络按 API 返回的逐实例累计指标汇总。Dashboard 是最终总账，本表是逐实例核对基线。
+数据来自 Vercel 团队 owen-sove、项目 owenfx-blog 的命名 Sandbox、Session 和快照 API。2026-11-21 清理后，项目当前命名 Sandbox 为 0 个、运行中为 0 个；历史 Session API 仍返回 13 条记录，平台未提供删除 Session 历史的接口。CPU、内存、时长和网络按清理前 API 返回的逐实例累计指标汇总，删除资源元数据不会冲销已发生用量。Dashboard 是最终总账，本表是逐实例核对基线。
 
 | 指标 | Hobby 包含量 | 当前已用 | 保守剩余 |
 | --- | ---: | ---: | ---: |
@@ -165,7 +168,7 @@ Vercel 项目：owenfx-blog
 | Sandbox 数据传输 | 20 GB | 2.0071 GB（入站+出站保守合计） | 至少 17.9929 GB |
 | Sandbox 墙钟运行时长 | 非独立额度 | 5.3850 小时（约 5 小时 23 分 6 秒） | 用于计算内存 |
 | 并发 Sandbox | 10 个 | 当前运行 0 个 | 当前可用并发 10 个 |
-| 快照存储 | 15 GB（终身） | 当前项目 API 可见有效快照 0 个（6 个记录均为 deleted） | 当前项目 API 占用 0 GB；团队 Dashboard 余额待核实 |
+| 快照存储 | 15 GB（终身） | 当前项目有效快照 0 个（6 条记录均为 deleted） | 当前项目 API 可见占用 0 GB；团队 Dashboard 余额待核实 |
 | Drive 存储 | 15 GB（终身） | 未取得可靠用量 | 未核实，禁止新建 |
 | Drive 读取 | 30 GB / 月 | 未取得可靠用量 | 未核实，禁止挂载读取 |
 | Drive 写入 | 30 GB / 月 | 未取得可靠用量 | 未核实，禁止挂载写入 |
@@ -181,10 +184,11 @@ Vercel 项目：owenfx-blog
 
 - 2026-11-21 对当前项目重新查询快照：共 6 条历史记录，状态均为 deleted，当前有效快照为 0 个；其中本次清理 4 个，另 2 个此前已删除。
 - 本次删除的 4 个自动快照合计 3,464,810,484 bytes（约 3.4648 GB），项目 API 可见快照占用已归零；团队总额度剩余仍以 Usage Dashboard 为准，未从 API 推断团队余额。
-- 4 个快照分别来自 owenfx-markdown-migration（3 个连续快照链）和 green-unknown-roundworm-b5YDNn（1 个）。删除后这两个持久化 Sandbox 的临时文件系统不能再从这些快照恢复；Sandbox 命名记录仍保留且均为 stopped。
+- 4 个快照分别来自 owenfx-markdown-migration（3 个连续快照链）和 green-unknown-roundworm-b5YDNn（1 个）。随后本次又删除了全部 11 个已停止 Sandbox 命名资源；这两个持久化 Sandbox 的临时文件系统不能再从这些快照恢复。
 - 当前项目 Drive 数量为 0；Drive 存储、读取和写入额度仍以 Usage Dashboard 为准。
+- 删除全部 11 个命名 Sandbox 后，项目命名 Sandbox 列表复查为 0；Session 列表仍有 13 条平台历史记录，Vercel 当前可用接口不能删除这些 Session 历史。
 
-### 5.2 历史 Sandbox 逐实例记录（截至 2026-11-21）
+### 5.2 历史 Sandbox 用量账本（资源元数据已清理，截至 2026-11-21）
 
 | Sandbox | 创建日期（UTC） | 累计运行 | 活动 CPU | 配置内存 | 出站 | 入站 | 持久化 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
@@ -208,12 +212,13 @@ Vercel 项目：owenfx-blog
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | 2026-11-21 | 新增 Hobby 免费额度控制规范，纯文档修改 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 2026-11-21 | 清理 4 个无用 Sandbox 自动快照（不启动 Sandbox） | 0 | 0 | 0 | 0 | 0 | 删除 3.4648 GB 快照；Drive 未变化 |
+| 2026-11-21 | 清理全部 11 个已停止 Sandbox 命名资源（不启动 Sandbox） | 0 | 0 | 0 | 0 | 0 | 删除 11 条命名资源；13 条 Session 历史仍保留 |
 
 本次未创建、启动或复用 Sandbox；未创建快照或 Drive；Sandbox 扣减为 0。GitHub 文档提交和 Vercel 自动构建属于独立资源，不计入 Sandbox CPU / 内存 / 创建次数。
 
 ### 5.4 Sandbox 快照清理记录（2026-11-21）
 
-本次仅删除当前项目中确认无用的 4 个自动快照；没有删除 Sandbox 命名记录、没有启动 Sandbox，也没有修改 GitHub 源码或生产数据。
+本次先删除当前项目中确认无用的 4 个自动快照，随后按用户要求删除全部 11 个已停止的 Sandbox 命名资源；没有启动 Sandbox，也没有修改生产数据。
 
 | Sandbox 来源 | 快照 ID | 原大小 | 删除后验证 |
 | --- | --- | ---: | --- |
@@ -224,7 +229,27 @@ Vercel 项目：owenfx-blog
 
 合计释放项目可见快照存储约 **3.4648 GB**。删除顺序为子快照优先，再删除其父快照；随后逐个读取快照详情，4 个均返回 status=deleted。项目快照列表复查后，当前有效快照为 0 个。
 
-### 5.5 后续任务追加模板
+### 5.5 本次历史命名 Sandbox 清理记录（2026-11-21）
+
+本次删除前重新查询确认 11 个命名 Sandbox 全部为 stopped，没有运行中实例。已逐个删除其命名资源元数据；删除后再次查询，项目命名 Sandbox 列表返回 0 个。
+
+| 已删除的命名 Sandbox | 删除前状态 |
+| --- | --- |
+| owenfx-automation-review-node24 | stopped |
+| owenfx-automation-audit-20261121 | stopped |
+| lime-anonymous-ptarmigan-X2pvxv | stopped |
+| owenfx-test-coverage | stopped |
+| owenfx-markdown-migration | stopped |
+| green-unknown-roundworm-b5YDNn | stopped |
+| owenfx-content-opt-20261114 | stopped |
+| owenfx-next16-lockcheck | stopped |
+| owenfx-next16-codemod | stopped |
+| owenfx-security-lint-audit-1111 | stopped |
+| owenfx-ci-check | stopped |
+
+说明：Vercel 的 13 条历史 Session 仍保留在平台记录中；当前可用接口没有删除 Session 历史的操作，因此不能声称所有历史 Session 都已清除。未来默认保留 Sandbox 命名历史和快照；只按“项目最新 6 个快照且总量不超过 15 GB”的规则淘汰最旧快照。
+
+### 5.6 后续任务追加模板
 
 每次实际使用 Sandbox 后，在同一份台账中追加逐实例记录，并追加任务汇总：
 

@@ -165,14 +165,14 @@
 历史回溯只影响 Git 仓库中的源码文件状态。数据库记录、用户数据、Supabase migration 执行历史、R2 文件、环境变量、Vercel 项目配置和其他外部服务状态均独立存在；任何需要改变这些内容的操作都必须单独评估、单独授权并单独执行。
 
 
-## 10. Vercel 工具使用与清理规范
+## 10. Vercel 工具使用与快照保留规范
 
 OwenFX 使用 Vercel Sandbox、Speed Insights 和 Vercel Toolbar 时，必须遵守 `.agents/skills/owenfx-vercel-tooling/SKILL.md`。
 
 1. **Vercel Sandbox 隔离验证：** AI 生成或修改运行时代码、依赖、配置及复杂修复，默认先在一次性 Sandbox 中验证。Sandbox 必须从 GitHub 最新 `main` 的准确 Commit SHA 克隆；候选改动在隔离环境内导入、审查、安装依赖、运行适用测试并构建，不直接污染正式工作区或 `main`。
 2. **生产隔离：** Sandbox 不注入生产密钥，不连接生产数据库，不执行生产迁移，不写入真实用户数据或 R2 对象。无法安全克隆或可能产生未经批准的费用时停止。
-3. **禁止持久化：** Sandbox 使用非持久化配置，不创建快照或 Drive，不长期保留环境、源码副本、依赖、日志或构建产物。
-4. **清理要求：** 本次任务无论成功、失败或中止，结束时都必须停止本次 session、删除本次 Sandbox 及其元数据，并清除意外创建的快照/Drive；再次核验不存在本次遗留资源。不得删除其他任务或项目的资源。
+3. **快照历史保留：** Sandbox 默认启用持久化快照，任务结束后保留命名历史和自动快照；不创建 Drive，不把完整源码、依赖目录、环境变量或日志作为长期存档。
+4. **项目级快照上限：** 每次新快照生成后清点项目全部快照，按创建时间只保留最新 6 个，并确保总大小不超过 15 GB 终身额度；超出数量或存储上限时，从最旧快照开始删除并核验。Vercel 原生 `keepLastSnapshots` 仅按单个命名 Sandbox 生效，不能替代项目级清点。
 5. **验收顺序：** Sandbox 检查通过后，仍须将审查后的改动纳入正式流程，统一检查、一个 Commit、一次 Push；再核对 GitHub Actions、Vercel 自动构建、生产部署和实际运行。Sandbox 通过不能替代正式验收。
 6. **Speed Insights：** 需要真实访客性能证据时，按 Mobile/Desktop、Production 环境、时间范围及 Route/Path 分析首页、软件详情和文章详情的 LCP、INP、CLS、FCP 等指标。记录样本量；数据不足时不得推断。启用功能、安装依赖或改变项目设置前须先检查影响并获得用户明确授权。
 7. **Vercel Toolbar：** 需要定位布局偏移、交互耗时或无障碍问题时，使用 Layout Shifts、Interaction Timing 和 Accessibility Audit，重点检查玻璃效果、卡片、图片/字体加载及移动端布局。Toolbar 审查不是完整无障碍认证。
@@ -188,7 +188,7 @@ OwenFX 当前使用 Vercel Hobby 免费套餐。所有 Vercel Sandbox 和其他 
 2. Sandbox 的 5 小时 CPU / 420 GB·小时内存，与 Vercel Functions / Fluid Compute 的 4 CPU·小时 / 360 GB·小时内存严格分开；Fast Data Transfer、Fast Origin Transfer、Sandbox Data Transfer 也分别记账。
 3. 每次任务结束后读取实例最终指标，记录墙钟时长、活动 CPU、配置内存 GB·小时、网络流量、创建次数及清理状态，并同步更新台账。相同 Sandbox / session ID 不得重复扣减。
 4. Dashboard 是官方总账，API 明细用于交叉核对。Dashboard 与 API 不一致时以 Dashboard 为准；数据不可读取时不得写成 0，必须保守预留并阻止消耗未核实额度的操作。
-5. 默认使用最小资源、非持久化 Sandbox；不创建快照、Drive，不开放端口，任务结束立即停止并删除本次资源。
+5. 默认使用最小资源、持久化 Sandbox；不创建 Drive，不开放端口。任务结束停止 session，但保留 Sandbox 命名历史和符合最新 6 个/15 GB 上限的快照。
 6. Hobby 免费额度达到 80% 预警、90% 停止非必要使用；预计超限、额度暂停或费用状态不明时，不创建、不重试、不升级、不产生费用。无需用户为正常免费额度内的任务逐次确认。
 7. 纯文档修改按 OwenFX Vercel Skill 可不使用 Sandbox，但仍应记录本次 Sandbox 使用为 0。
 8. 每次报告必须列出本次用量、累计用量、剩余量、统计窗口、数据来源和清理状态；Functions、CDN、构建、部署、Analytics 等其他 Hobby 资源另行列账，不得混入 Sandbox 数字。
