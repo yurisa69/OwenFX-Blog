@@ -30,13 +30,12 @@ description: OwenFX 使用 Vercel Sandbox、Speed Insights 与 Vercel Toolbar �
 ### 2.2 建立隔离环境
 
 1. 先读取 GitHub 仓库 `yurisa69/OwenFX-Blog` 的最新远程 `main` HEAD，记录完整 Commit SHA。
-2. 创建本次专用、短生命周期 Sandbox，从 GitHub 仓库克隆该准确 SHA；默认启用持久化快照以保存任务历史，禁止以旧快照或本地不明状态作为代码基线。
+2. 创建本次专用、短生命周期、非持久化 Sandbox，从 GitHub 仓库克隆该准确 SHA；禁止以旧快照或本地不明状态作为基线。
 3. 若用户的候选 AI 修改尚未包含在 `main`，将候选补丁/改动安全地导入 Sandbox，在 Sandbox 中审查和验证；不得直接把候选内容写入正式 `main` 或覆盖正式工作区。
 4. 若仓库无法在不暴露凭据的前提下克隆，停止并报告。禁止把 GitHub Token、密码或其他凭据嵌入 Git URL、命令参数、日志或普通环境变量。
 5. Sandbox 不得注入生产 Supabase、R2、Vercel 或其他生产密钥；优先使用无密钥构建、隔离测试配置和虚构测试数据。禁止连接生产数据库、执行生产迁移、写入真实用户数据或修改真实 R2 对象。
 6. 创建前检查 Vercel Sandbox 当前配额、计费方式和本次预计用量；若超出可用额度或可能产生未经批准的费用，暂停并说明，不得擅自继续。
-7. 月度台账按每月 1 日 00:00（默认 `Asia/Shanghai`，IANA 时区可配置）切换；只重置内部当月累计并归档上月，不得据此认定 Vercel 平台额度恢复。
-8. 不创建持久化 Drive，不复用其他任务的 Sandbox。使用锁定且经官方文档确认的 `@vercel/sandbox` SDK 版本；不要把 SDK 主版本、REST API 版本和工具接口版本混称为 API 版本。默认设置 `persistent: true`、`snapshotExpiration: 0`（快照不自动过期）及 `keepLastSnapshots: { count: 6, deleteEvicted: true }`；若 SDK 版本不支持相应选项，先核对官方文档，不得猜测参数。原生快照数量限制按单个命名 Sandbox 生效，任务结束后仍须执行项目级快照清点。
+7. 不创建持久化 Drive，不创建快照，不复用其他任务的 Sandbox，不保留可自动恢复的环境。优先设置 `persistent: false` 和合理超时。
 
 ### 2.3 验证步骤
 
@@ -53,12 +52,12 @@ description: OwenFX 使用 Vercel Sandbox、Speed Insights 与 Vercel Toolbar �
 1. Sandbox 验证通过后，将经审查的最终改动应用到正式开发流程；再次核对完整差异，确保没有把 Sandbox 临时文件、依赖目录、缓存、日志、凭据或构建产物带入提交。
 2. 按仓库统一规则一次性完成检查、一个 Commit、一次 Push 到 `main`；不在 Sandbox 内直接推送或绕过正式审查流程。
 3. 推送后核对 GitHub `main`、对应 GitHub Actions、Vercel 自动构建和生产部署状态。Sandbox 结果不能替代这些验收。
-4. **本次任务验收结束后停止当前 session，但默认保留命名 Sandbox 元数据和自动快照**，用于保留任务历史；不删除本次 Sandbox 或其最新快照。
-5. 每次新快照生成后，重新列出当前项目全部快照，按创建时间倒序只保留最新 6 个，删除更旧快照；同时核对团队全部项目的快照存储使用量不超过 Dashboard 显示的 15 GB 免费包含量（按 GB-month 计量，并非终身额度）。若数量与存储限制冲突，优先遵守 15 GB 免费额度，从最旧快照开始继续淘汰；不得为保留数量产生付费。
-6. 若创建过临时 Drive，任务结束后必须删除；不得将完整源码、依赖目录、环境变量或日志存入 Drive 或快照。
-7. 停止后再次查询 session、命名 Sandbox 和快照，确认 session 已停止、命名记录仍存在、快照保留数量与总大小符合限制。无法完成清理或保留策略时必须明确报告资源 ID 和未完成状态，不得声称已完成。
+4. **本次任务验收结束后立即清除本次 Sandbox。** 停止所有运行中的 session，删除本次命名 Sandbox 及其元数据；若意外生成快照，逐个删除并核验已删除。若创建过临时 Drive，也必须删除。
+5. 无论测试通过、失败、中止或用户决定不提交，都必须清理本次创建的 Sandbox 及其临时资源；不得为了保留失败现场而长期留存。
+6. 不创建快照、备份或长期日志存档。只在最终对话报告中保留必要的测试摘要、失败原因和验收状态；不得将完整源码、依赖目录、环境变量或日志长期留在 Vercel。
+7. 清理后再次查询本次 Sandbox、session 和快照，确认不存在仍运行或可恢复的本次资源。无法完成清理时必须明确报告资源 ID 和未完成状态，不得声称已清理。
 
-只清理超过“最新 6 个”或超出 15 GB 存储上限的最旧快照，以及本次临时 Drive；不得删除其他任务、其他项目或用户原有的 Sandbox、命名历史、保留快照和部署。
+Sandbox 清理只针对本次任务创建的资源；不得删除其他任务、其他项目或用户原有的 Sandbox、Drive、快照和部署。
 
 ## 3. Speed Insights：真实用户性能分析
 
@@ -129,46 +128,3 @@ description: OwenFX 使用 Vercel Sandbox、Speed Insights 与 Vercel Toolbar �
 - Speed Insights Metrics: https://vercel.com/docs/speed-insights/metrics
 - Vercel Toolbar: https://vercel.com/docs/vercel-toolbar
 - Layout Shift Tool: https://vercel.com/docs/vercel-toolbar/layout-shift-tool
-
-
-## 7. Vercel Hobby 免费额度自动控制（强制）
-
-每次使用 Sandbox 前后，必须遵守仓库正式文件 docs/VERCEL_HOBBY_QUOTA_CONTROL.md。该文件是额度总表、公式和逐次台账的唯一项目级记录入口。
-
-### 7.1 创建前自动预检
-
-1. 确认当前 Vercel 团队套餐为 Hobby，并读取最新官方额度和 Usage Dashboard 统计窗口。
-2. 检查团队内全部项目及 Sandbox 资源，不能只看当前项目；读取现存 Sandbox 的状态、CPU、内存、运行时间、网络、持久化、快照和 Drive 信息。
-3. 对 Sandbox CPU、配置内存、创建次数、数据传输、快照存储、Drive 存储、Drive 读写分别计算剩余量。
-4. 对本次任务可能触发的 Functions、CDN、Fast Data Transfer、Fast Origin Transfer、构建、部署、Analytics 等指标单独检查，不得与 Sandbox 混算。
-5. 预计用量必须覆盖完整任务并留出安全余量。额度不足或相关指标未核实，自动停止对应资源使用；不创建、不重试、不升级、不产生费用，也不要求用户逐次确认。
-6. 纯文档、注释、翻译等不影响运行时的修改可不创建 Sandbox；仍须在台账记录本次 Sandbox 使用为 0。
-
-### 7.2 运行后记录与扣减
-
-1. Sandbox 停止后读取最终 session / Sandbox 指标，记录创建时间、墙钟时长、活动 CPU、配置内存、出入站网络、暴露端口、创建次数、快照 / Drive 使用和清理状态。
-2. 使用官方公式计算 CPU 小时、配置内存 GB·小时和网络用量；内存按每个 Session 的配置量 × 墙钟时间计量，并按 1 分钟单位逐 Session 向上取整；不得先合并 Session 时长，也不得把墙钟时长当作活动 CPU。
-3. 将本次用量追加到 docs/VERCEL_HOBBY_QUOTA_CONTROL.md 台账，并更新累计用量与剩余量；按 Sandbox / session ID 去重。
-4. Dashboard 是官方总账，Sandbox API 是逐实例明细。数据不一致时以 Dashboard 为准并记录差异；不可读取的数据标记「未核实」，绝不能写 0。
-5. 清理本次 Sandbox、session 和临时资源后，重新读取状态确认已停止并删除；不得清理其他任务资源。
-
-### 7.3 额度隔离与停止阈值
-
-- Sandbox：5 CPU 小时、420 GB·小时配置内存、5,000 次创建、20 GB 数据传输。
-- Functions / Fluid Compute：4 CPU 小时、360 GB·小时配置内存，单独核算。
-- Fast Data Transfer 100 GB、Fast Origin Transfer 10 GB、Sandbox Data Transfer 20 GB，分别核算。
-- 80% 预警、90% 停止非必要使用；预计任务会突破安全余量时不创建 Sandbox。
-- Hobby 超限后不允许通过付费升级、重试、切换项目或创建其他团队绕过免费限制。用户未明确授权时绝不产生费用。
-- Hobby 额度恢复时间以 Dashboard 实际窗口为准；不因日历换月自行把余额归零。
-
-### 7.4 报告要求
-
-每次涉及 Vercel 的任务，必须列出套餐、团队、统计窗口、本次使用、累计已用、剩余量、数据来源、未核实项目、清理状态，以及 GitHub / Vercel 构建和生产部署结果。不得用「费用未知」「应该够用」代替额度计算；若资源数据不足，自动选择不消耗该资源的工作路径。
-
-
-### 7.5 月度台账周期
-
-- 内部额度台账每月 1 日 00:00 切换，默认 `Asia/Shanghai`，时区通过 IANA 标识配置；周期结束为下月 1 日 00:00（不含）。
-- 新月份当月累计初始化为 0，上月记录归档只读并保留历史；不得覆盖或删除历史月份。
-- 该操作只是内部自然月台账重置，不等于 Vercel Hobby 平台配额恢复。大多数 Hobby 限制按平台实际滚动恢复窗口处理；Web Analytics 有独立的 3 天宽限期及 7 天恢复规则。
-- 快照存储 15 GB 与 Drive 存储 15 GB lifetime included 是不同指标；前者按 GB-month 计量，后者才是终身包含额度。非月度限制不得因月初而归零。
