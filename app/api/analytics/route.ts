@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createRateLimitBucketKey, getRequestIp, readLimitedRequestBody } from '@/lib/api-rate-limit';
-import { resolveAnalyticsSource } from '@/lib/analytics';
+import {
+  isExternalAnalyticsSource,
+  normalizeAnalyticsSourceSnapshot,
+  resolveAnalyticsSource,
+  type AnalyticsSource,
+  type AnalyticsSourceSnapshot,
+} from '@/lib/analytics';
 import { createServiceClient } from '@/lib/supabase/service';
 
 export const runtime = 'nodejs';
@@ -27,6 +33,12 @@ function parseReferrerHost(raw: string) {
   } catch {
     return null;
   }
+}
+
+function getSourceSnapshot(value: unknown, fallback: AnalyticsSourceSnapshot | null): AnalyticsSourceSnapshot | null | false {
+  if (value === undefined) return fallback;
+  if (value === null) return null;
+  return normalizeAnalyticsSourceSnapshot(value) || false;
 }
 
 export async function POST(request: Request) {
@@ -105,26 +117,56 @@ export async function POST(request: Request) {
     articleId = article.id;
   }
 
+  const isPageView = pageViewEvents.has(eventType);
   const referrerInput = typeof body.referrer_url === 'string' ? body.referrer_url : '';
   const visitorInput = typeof body.visitor_id === 'string' ? body.visitor_id : '';
+  const sessionInput = typeof body.session_id === 'string' ? body.session_id : '';
   if (visitorInput && !uuidPattern.test(visitorInput)) {
     return NextResponse.json({ error: '访客标识无效。' }, { status: 400 });
   }
+  if (sessionInput && !uuidPattern.test(sessionInput)) {
+    return NextResponse.json({ error: '会话标识无效。' }, { status: 400 });
+  }
 
-  const source = pageViewEvents.has(eventType)
-    ? resolveAnalyticsSource(referrerInput, request.url, body.utm_source)
+  const source: AnalyticsSource | null = isPageView
+    ? resolveAnalyticsSource(referrerInput, request.url, body.utm_source, body.utm_medium, body.utm_campaign)
     : null;
-  const requestReferrer = request.headers.get('referer') || '';
+  const currentSnapshot: AnalyticsSourceSnapshot | null = source ? {
+    source_type: source.source_type,
+    source_name: source.source_name,
+    referrer_host: source.referrer_host,
+  } : null;
+  const firstSource = isPageView ? getSourceSnapshot(body.first_source, currentSnapshot) : null;
+  const lastExternalSource = isPageView
+    ? getSourceSnapshot(body.last_external_source, isExternalAnalyticsSource(currentSnapshot) ? currentSnapshot : null)
+    : null;
+  const sessionSource = isPageView ? getSourceSnapshot(body.session_source, currentSnapshot) : null;
+  if (firstSource === false || lastExternalSource === false || sessionSource === false) {
+    return NextResponse.json({ error: '来源归因信息无效。' }, { status: 400 });
+  }
 
+  const requestReferrer = request.headers.get('referer') || '';
   const { error } = await service.from('analytics_events').insert({
     event_type: eventType,
     article_id: articleId,
     software_id: softwareId,
     target_key: targetKey || null,
     referrer_host: source ? source.referrer_host : parseReferrerHost(requestReferrer),
-    visitor_id: pageViewEvents.has(eventType) ? visitorInput || null : null,
+    visitor_id: isPageView ? visitorInput || null : null,
+    session_id: isPageView ? sessionInput || null : null,
     source_type: source?.source_type ?? null,
     source_name: source?.source_name ?? null,
+    utm_medium: source?.utm_medium ?? null,
+    utm_campaign: source?.utm_campaign ?? null,
+    first_source_type: firstSource?.source_type ?? null,
+    first_source_name: firstSource?.source_name ?? null,
+    first_referrer_host: firstSource?.referrer_host ?? null,
+    last_external_source_type: lastExternalSource?.source_type ?? null,
+    last_external_source_name: lastExternalSource?.source_name ?? null,
+    last_external_referrer_host: lastExternalSource?.referrer_host ?? null,
+    session_source_type: sessionSource?.source_type ?? null,
+    session_source_name: sessionSource?.source_name ?? null,
+    session_referrer_host: sessionSource?.referrer_host ?? null,
   } as never);
   if (error) return NextResponse.json({ error: '统计暂不可用。' }, { status: 503 });
   return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });

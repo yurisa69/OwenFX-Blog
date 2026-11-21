@@ -1,44 +1,95 @@
 export type AnalyticsSourceType = 'direct' | 'search' | 'referral' | 'internal' | 'campaign';
-export type AnalyticsSource = {
+export type AnalyticsSourceSnapshot = {
   source_type: AnalyticsSourceType;
   source_name: string | null;
   referrer_host: string | null;
 };
+export type AnalyticsSource = AnalyticsSourceSnapshot & {
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+};
+
+const sourceTypes = new Set<AnalyticsSourceType>(['direct', 'search', 'referral', 'internal', 'campaign']);
 
 const searchHostPatterns = [
-  /(^|\.)google\./iu,
+  /(^|\.)google\.(?:com|[a-z]{2,3}|co\.[a-z]{2}|com\.[a-z]{2})$/iu,
   /(^|\.)bing\.com$/iu,
   /(^|\.)duckduckgo\.com$/iu,
   /(^|\.)baidu\.com$/iu,
   /(^|\.)sogou\.com$/iu,
   /(^|\.)so\.com$/iu,
-  /(^|\.)yahoo\.com$/iu,
-  /(^|\.)yandex\./iu,
+  /(^|\.)sm\.cn$/iu,
+  /(^|\.)yahoo\.(?:com|[a-z]{2,3}|co\.[a-z]{2})$/iu,
+  /(^|\.)yandex\.(?:com|[a-z]{2,3}|com\.[a-z]{2})$/iu,
   /(^|\.)naver\.com$/iu,
+  /(^|\.)search\.brave\.com$/iu,
+  /(^|\.)ecosia\.org$/iu,
+  /(^|\.)qwant\.com$/iu,
+  /(^|\.)startpage\.com$/iu,
 ];
 
 function normalizeHost(host: string) {
   return host.toLowerCase().replace(/\.$/u, '').replace(/^www\./u, '');
 }
 
-export function resolveAnalyticsSource(rawReferrer: unknown, requestUrl: string, rawUtmSource: unknown): AnalyticsSource {
-  let referrerHost: string | null = null;
-  if (typeof rawReferrer === 'string' && rawReferrer.length <= 2048) {
-    try {
-      const referrer = new URL(rawReferrer);
-      if (referrer.protocol === 'http:' || referrer.protocol === 'https:') {
-        referrerHost = normalizeHost(referrer.hostname);
-      }
-    } catch {
-      referrerHost = null;
-    }
-  }
+export function sanitizeAnalyticsLabel(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const sanitized = value.normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f]/gu, '')
+    .replace(/\s+/gu, ' ')
+    .trim()
+    .slice(0, 80);
+  return sanitized || null;
+}
 
-  const utmSource = typeof rawUtmSource === 'string'
-    ? rawUtmSource.trim().replace(/[^a-z0-9._-]/giu, '').slice(0, 80)
-    : '';
-  if (utmSource) return { source_type: 'campaign', source_name: utmSource, referrer_host: referrerHost };
-  if (!referrerHost) return { source_type: 'direct', source_name: null, referrer_host: null };
+function parseHttpHost(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 2048) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return normalizeHost(url.hostname).slice(0, 180) || null;
+  } catch {
+    return null;
+  }
+}
+
+function parseSafeHost(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 180) return null;
+  const host = normalizeHost(value.trim());
+  if (!host || !/^[a-z0-9.-]+$/iu.test(host) || host.startsWith('.') || host.endsWith('.') || host.includes('..')) {
+    return null;
+  }
+  return host;
+}
+
+export function isExternalAnalyticsSource(source: AnalyticsSourceSnapshot | null | undefined): source is AnalyticsSourceSnapshot {
+  return !!source && (source.source_type === 'search' || source.source_type === 'referral' || source.source_type === 'campaign');
+}
+
+export function normalizeAnalyticsSourceSnapshot(value: unknown): AnalyticsSourceSnapshot | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const candidate = value as Record<string, unknown>;
+  const sourceType = candidate.source_type;
+  if (typeof sourceType !== 'string' || !sourceTypes.has(sourceType as AnalyticsSourceType)) return null;
+  return {
+    source_type: sourceType as AnalyticsSourceType,
+    source_name: sanitizeAnalyticsLabel(candidate.source_name),
+    referrer_host: parseSafeHost(candidate.referrer_host),
+  };
+}
+
+export function resolveAnalyticsSource(
+  rawReferrer: unknown,
+  requestUrl: string,
+  rawUtmSource: unknown,
+  rawUtmMedium?: unknown,
+  rawUtmCampaign?: unknown,
+): AnalyticsSource {
+  const utmSource = sanitizeAnalyticsLabel(rawUtmSource);
+  const utmMedium = sanitizeAnalyticsLabel(rawUtmMedium);
+  const utmCampaign = sanitizeAnalyticsLabel(rawUtmCampaign);
+  const rawReferrerHost = parseHttpHost(rawReferrer);
 
   let currentHost = '';
   try {
@@ -46,11 +97,47 @@ export function resolveAnalyticsSource(rawReferrer: unknown, requestUrl: string,
   } catch {
     currentHost = '';
   }
-  if (currentHost && referrerHost === currentHost) {
-    return { source_type: 'internal', source_name: null, referrer_host: referrerHost };
+
+  if (utmSource || utmMedium || utmCampaign) {
+    return {
+      source_type: 'campaign',
+      source_name: utmSource || utmCampaign || utmMedium,
+      referrer_host: rawReferrerHost && rawReferrerHost !== currentHost ? rawReferrerHost : null,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+    };
   }
-  if (searchHostPatterns.some(pattern => pattern.test(referrerHost))) {
-    return { source_type: 'search', source_name: null, referrer_host: referrerHost };
+
+  if (!rawReferrerHost) {
+    return {
+      source_type: 'direct',
+      source_name: null,
+      referrer_host: null,
+      utm_source: null,
+      utm_medium: null,
+      utm_campaign: null,
+    };
   }
-  return { source_type: 'referral', source_name: null, referrer_host: referrerHost };
+
+  if (currentHost && rawReferrerHost === currentHost) {
+    return {
+      source_type: 'internal',
+      source_name: null,
+      referrer_host: rawReferrerHost,
+      utm_source: null,
+      utm_medium: null,
+      utm_campaign: null,
+    };
+  }
+
+  const sourceType = searchHostPatterns.some(pattern => pattern.test(rawReferrerHost)) ? 'search' : 'referral';
+  return {
+    source_type: sourceType,
+    source_name: null,
+    referrer_host: rawReferrerHost,
+    utm_source: null,
+    utm_medium: null,
+    utm_campaign: null,
+  };
 }

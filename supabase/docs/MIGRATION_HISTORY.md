@@ -101,6 +101,7 @@ The hosted migration ledger retains the original historical identifiers for reti
 The machine-readable production migration-version snapshot is `supabase/migration-ledger.json`. The repository check verifies that every applied production version remains represented by exactly one local SQL filename and rejects duplicate or malformed timestamps. It intentionally permits additional local SQL files as pending migrations. After a reviewed migration is applied to production, update the snapshot from the live Supabase migration ledger in the same repository change. Never rename or delete an applied migration.
 
 ## 2026-11-21 — analytics_page_views_and_sources
+| 20261121084005 | analytics_attribution_sessions_and_visitors | Applied to production; additive first-touch / last-external / session attribution, session IDs, UTM fields, visitor classification and UV ranking |
 
 - Extends the existing public analytics_events table; no existing rows or business tables are deleted.
 - Adds first-party page-view events for general pages, article details, and software details.
@@ -109,3 +110,15 @@ The machine-readable production migration-version snapshot is `supabase/migratio
 - Adds an admin-only SECURITY INVOKER aggregation function for summary counts, daily trends, top articles, top software pages, and source breakdowns.
 - The existing analytics RLS policy remains the authorization boundary; the aggregation function also checks public.is_owenfx_admin().
 - Existing click events and the existing admin analytics route are retained.
+
+
+## 2026-11-21 — analytics_attribution_sessions_and_visitors
+
+- Add nullable session and attribution columns to the existing analytics_events table. Existing click and page-view rows are retained and remain valid.
+- First-touch attribution is held in a first-party cookie for 30 days; the latest external acquisition source is updated only for search, referral, or tagged campaign entries.
+- Session identifiers and the session entry source use a sliding 30-minute inactivity window. Client-side route changes are explicitly classified as internal navigation instead of reusing the original document Referer.
+- UTM source, medium, and campaign labels preserve Chinese characters after control-character removal and length validation.
+- The administrator aggregation adds observed-new / returning visitor counts, sessions, average views per session, PV/UV content rankings, first-touch source categories and domains, and latest external source rankings.
+- "New visitor" means a visitor UUID first observed by this analytics system, not a verified unique human. Cookie expiry, browser changes, and device changes can create a new anonymous identifier.
+- No IP address, user agent, device fingerprint, or full referrer URL is stored. The new attribution fields are not historically backfilled.
+- The migration is forward-only and additive. Applied to production after isolated SQL validation; the production migration ledger and baseline now include the verified schema.

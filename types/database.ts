@@ -2,7 +2,7 @@
  * OwenFX Supabase database types.
  *
  * Source of truth: production project gjzxultalptqwqmpagzj.
- * Verified against the live public schema on 2026-11-13.
+ * Verified against the live public schema on 2026-11-21.
  *
  * This file describes the database contract only. It does not apply schema
  * changes. Text columns constrained by CHECK constraints remain string types,
@@ -62,6 +62,18 @@ export type Database = {
         visitor_id: string | null;
         source_type: string | null;
         source_name: string | null;
+        session_id: string | null;
+        first_source_type: string | null;
+        first_source_name: string | null;
+        first_referrer_host: string | null;
+        last_external_source_type: string | null;
+        last_external_source_name: string | null;
+        last_external_referrer_host: string | null;
+        session_source_type: string | null;
+        session_source_name: string | null;
+        session_referrer_host: string | null;
+        utm_medium: string | null;
+        utm_campaign: string | null;
       }, 'event_type', [
         Relationship<'analytics_events_article_id_fkey', 'article_id', 'articles', 'id'>,
         Relationship<'analytics_events_software_id_fkey', 'software_id', 'software', 'id'>,

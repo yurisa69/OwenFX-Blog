@@ -154,6 +154,10 @@
     {
       "version": "20261121080744",
       "name": "analytics_page_views_and_sources"
+    },
+    {
+      "version": "20261121084005",
+      "name": "analytics_attribution_sessions_and_visitors"
     }
   ]
 }

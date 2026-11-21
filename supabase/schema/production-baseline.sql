@@ -27,7 +27,19 @@ CREATE TABLE public.analytics_events (
   software_id uuid,
   visitor_id uuid,
   source_type text,
-  source_name text
+  source_name text,
+  session_id uuid,
+  first_source_type text,
+  first_source_name text,
+  first_referrer_host text,
+  last_external_source_type text,
+  last_external_source_name text,
+  last_external_referrer_host text,
+  session_source_type text,
+  session_source_name text,
+  session_referrer_host text,
+  utm_medium text,
+  utm_campaign text
 );
 
 -- TABLE: public.api_devices
@@ -471,6 +483,29 @@ ALTER TABLE public.tags ADD CONSTRAINT tags_slug_key UNIQUE (slug);
 -- CONSTRAINT: public.analytics_events.analytics_events_source_type_check
 ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_source_type_check CHECK (source_type IS NULL OR source_type = ANY (ARRAY['direct'::text, 'search'::text, 'referral'::text, 'internal'::text, 'campaign'::text]));
 
+-- CONSTRAINT: public.analytics_events.analytics_events_attribution_source_type_check
+ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_attribution_source_type_check CHECK (
+  (first_source_type IS NULL OR first_source_type = ANY (ARRAY['direct'::text, 'search'::text, 'referral'::text, 'internal'::text, 'campaign'::text]))
+  AND (last_external_source_type IS NULL OR last_external_source_type = ANY (ARRAY['direct'::text, 'search'::text, 'referral'::text, 'internal'::text, 'campaign'::text]))
+  AND (session_source_type IS NULL OR session_source_type = ANY (ARRAY['direct'::text, 'search'::text, 'referral'::text, 'internal'::text, 'campaign'::text]))
+);
+
+-- CONSTRAINT: public.analytics_events.analytics_events_attribution_label_length_check
+ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_attribution_label_length_check CHECK (
+  (first_source_name IS NULL OR char_length(first_source_name) <= 80)
+  AND (last_external_source_name IS NULL OR char_length(last_external_source_name) <= 80)
+  AND (session_source_name IS NULL OR char_length(session_source_name) <= 80)
+  AND (utm_medium IS NULL OR char_length(utm_medium) <= 80)
+  AND (utm_campaign IS NULL OR char_length(utm_campaign) <= 80)
+);
+
+-- CONSTRAINT: public.analytics_events.analytics_events_attribution_host_length_check
+ALTER TABLE public.analytics_events ADD CONSTRAINT analytics_events_attribution_host_length_check CHECK (
+  (first_referrer_host IS NULL OR char_length(first_referrer_host) <= 180)
+  AND (last_external_referrer_host IS NULL OR char_length(last_external_referrer_host) <= 180)
+  AND (session_referrer_host IS NULL OR char_length(session_referrer_host) <= 180)
+);
+
 -- INDEX: public.analytics_events.analytics_events_article_view_idx
 CREATE INDEX analytics_events_article_view_idx ON public.analytics_events USING btree (article_id, created_at DESC) WHERE (event_type = 'article_view'::text);
 
@@ -479,6 +514,15 @@ CREATE INDEX analytics_events_visitor_created_idx ON public.analytics_events USI
 
 -- INDEX: public.analytics_events.analytics_events_source_created_idx
 CREATE INDEX analytics_events_source_created_idx ON public.analytics_events USING btree (source_type, created_at DESC) WHERE (source_type IS NOT NULL);
+
+-- INDEX: public.analytics_events.analytics_events_created_session_idx
+CREATE INDEX analytics_events_created_session_idx ON public.analytics_events USING btree (created_at, session_id) WHERE (session_id IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
+
+-- INDEX: public.analytics_events.analytics_events_created_first_source_idx
+CREATE INDEX analytics_events_created_first_source_idx ON public.analytics_events USING btree (created_at, first_source_type, first_referrer_host) WHERE (first_source_type IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
+
+-- INDEX: public.analytics_events.analytics_events_created_last_external_idx
+CREATE INDEX analytics_events_created_last_external_idx ON public.analytics_events USING btree (created_at, last_external_referrer_host) WHERE (last_external_referrer_host IS NOT NULL AND event_type = ANY (ARRAY['page_view'::text, 'article_view'::text, 'software_view'::text]));
 
 -- INDEX: public.analytics_events.analytics_events_software_idx
 CREATE INDEX analytics_events_software_idx ON public.analytics_events USING btree (software_id, created_at DESC);
@@ -1081,33 +1125,67 @@ SET search_path = ''
 AS $function$
 DECLARE
   v_since timestamptz := COALESCE(p_since, now() - interval '30 days');
+  v_result jsonb;
 BEGIN
   IF NOT public.is_owenfx_admin() THEN
     RAISE EXCEPTION 'Not authorized to read analytics' USING ERRCODE = '42501';
   END IF;
 
-  RETURN jsonb_build_object(
+  WITH period_events AS (
+    SELECT *
+    FROM public.analytics_events
+    WHERE created_at >= v_since
+      AND event_type IN ('page_view','article_view','software_view')
+  ),
+  period_visitors AS (
+    SELECT DISTINCT visitor_id
+    FROM period_events
+    WHERE visitor_id IS NOT NULL
+  ),
+  first_seen AS (
+    SELECT visitor_id, min(created_at) AS first_seen_at
+    FROM public.analytics_events
+    WHERE event_type IN ('page_view','article_view','software_view')
+      AND visitor_id IS NOT NULL
+    GROUP BY visitor_id
+  )
+  SELECT jsonb_build_object(
     'summary', (
       SELECT jsonb_build_object(
         'total_views', count(*)::bigint,
         'unique_visitors', count(DISTINCT visitor_id)::bigint,
+        'new_visitors', (
+          SELECT count(*)::bigint
+          FROM period_visitors pv
+          JOIN first_seen fs USING (visitor_id)
+          WHERE fs.first_seen_at >= v_since
+        ),
+        'returning_visitors', (
+          SELECT count(*)::bigint
+          FROM period_visitors pv
+          JOIN first_seen fs USING (visitor_id)
+          WHERE fs.first_seen_at < v_since
+        ),
+        'sessions', count(DISTINCT session_id)::bigint,
+        'views_per_session', COALESCE(round(count(*) FILTER (WHERE session_id IS NOT NULL)::numeric / NULLIF(count(DISTINCT session_id), 0), 2), 0),
         'article_views', count(*) FILTER (WHERE event_type = 'article_view')::bigint,
         'software_views', count(*) FILTER (WHERE event_type = 'software_view')::bigint,
         'other_page_views', count(*) FILTER (WHERE event_type = 'page_view')::bigint
       )
-      FROM public.analytics_events
-      WHERE created_at >= v_since AND event_type IN ('page_view','article_view','software_view')
+      FROM period_events
     ),
     'daily_trend', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
         'date', to_char(day_rows.day, 'YYYY-MM-DD'),
         'views', day_rows.views,
-        'visitors', day_rows.visitors
+        'visitors', day_rows.visitors,
+        'sessions', day_rows.sessions
       ) ORDER BY day_rows.day)
       FROM (
         SELECT calendar.day,
           COALESCE(daily.views, 0)::bigint AS views,
-          COALESCE(daily.visitors, 0)::bigint AS visitors
+          COALESCE(daily.visitors, 0)::bigint AS visitors,
+          COALESCE(daily.sessions, 0)::bigint AS sessions
         FROM generate_series(
           date_trunc('day', v_since AT TIME ZONE 'UTC'),
           date_trunc('day', now() AT TIME ZONE 'UTC'),
@@ -1116,39 +1194,56 @@ BEGIN
         LEFT JOIN (
           SELECT date_trunc('day', created_at AT TIME ZONE 'UTC') AS day,
             count(*)::bigint AS views,
-            count(DISTINCT visitor_id)::bigint AS visitors
-          FROM public.analytics_events
-          WHERE created_at >= v_since AND event_type IN ('page_view','article_view','software_view')
+            count(DISTINCT visitor_id)::bigint AS visitors,
+            count(DISTINCT session_id)::bigint AS sessions
+          FROM period_events
           GROUP BY 1
         ) AS daily ON daily.day = calendar.day
       ) AS day_rows
     ), '[]'::jsonb),
     'top_articles', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
-        'id', ranked.article_id, 'title', article.title, 'slug', article.slug, 'views', ranked.views
-      ) ORDER BY ranked.views DESC, article.title)
+        'id', ranked.id,
+        'title', ranked.title,
+        'slug', ranked.slug,
+        'views', ranked.views,
+        'visitors', ranked.visitors
+      ) ORDER BY ranked.views DESC, ranked.visitors DESC, ranked.title)
       FROM (
-        SELECT article_id, count(*)::bigint AS views
-        FROM public.analytics_events
-        WHERE event_type = 'article_view' AND article_id IS NOT NULL AND created_at >= v_since
-        GROUP BY article_id ORDER BY count(*) DESC LIMIT 10
+        SELECT article.id, article.title, article.slug,
+          count(*)::bigint AS views,
+          count(DISTINCT event.visitor_id)::bigint AS visitors
+        FROM period_events AS event
+        JOIN public.articles AS article ON article.id = event.article_id
+        WHERE event.event_type = 'article_view'
+          AND article.status = 'published'
+          AND article.published_at <= now()
+        GROUP BY article.id, article.title, article.slug
+        ORDER BY count(*) DESC, count(DISTINCT event.visitor_id) DESC, article.title
+        LIMIT 10
       ) AS ranked
-      JOIN public.articles AS article ON article.id = ranked.article_id
-      WHERE article.status = 'published' AND article.published_at <= now()
     ), '[]'::jsonb),
     'top_software', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
-        'id', ranked.software_id, 'title', software.title, 'slug', software.slug, 'views', ranked.views
-      ) ORDER BY ranked.views DESC, software.title)
+        'id', ranked.id,
+        'title', ranked.title,
+        'slug', ranked.slug,
+        'views', ranked.views,
+        'visitors', ranked.visitors
+      ) ORDER BY ranked.views DESC, ranked.visitors DESC, ranked.title)
       FROM (
-        SELECT software_id, count(*)::bigint AS views
-        FROM public.analytics_events
-        WHERE event_type = 'software_view' AND software_id IS NOT NULL AND created_at >= v_since
-        GROUP BY software_id ORDER BY count(*) DESC LIMIT 10
+        SELECT software.id, software.title, software.slug,
+          count(*)::bigint AS views,
+          count(DISTINCT event.visitor_id)::bigint AS visitors
+        FROM period_events AS event
+        JOIN public.software AS software ON software.id = event.software_id
+        WHERE event.event_type = 'software_view'
+          AND software.status = 'published'
+          AND (software.published_at IS NULL OR software.published_at <= now())
+        GROUP BY software.id, software.title, software.slug
+        ORDER BY count(*) DESC, count(DISTINCT event.visitor_id) DESC, software.title
+        LIMIT 10
       ) AS ranked
-      JOIN public.software AS software ON software.id = ranked.software_id
-      WHERE software.status = 'published'
-        AND (software.published_at IS NULL OR software.published_at <= now())
     ), '[]'::jsonb),
     'sources', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
@@ -1156,23 +1251,69 @@ BEGIN
         'source_name', ranked.source_name,
         'referrer_host', ranked.referrer_host,
         'views', ranked.views,
-        'visitors', ranked.visitors
-      ) ORDER BY ranked.views DESC, ranked.source_type, ranked.referrer_host)
+        'visitors', ranked.visitors,
+        'sessions', ranked.sessions
+      ) ORDER BY ranked.views DESC, ranked.source_type, ranked.source_name)
       FROM (
-        SELECT COALESCE(source_type, 'unknown') AS source_type,
-          source_name, referrer_host,
+        SELECT COALESCE(first_source_type, 'unknown') AS source_type,
+          first_source_name AS source_name,
+          first_referrer_host AS referrer_host,
+          count(*)::bigint AS views,
+          count(DISTINCT visitor_id)::bigint AS visitors,
+          count(DISTINCT session_id)::bigint AS sessions
+        FROM period_events
+        GROUP BY 1, 2, 3
+        ORDER BY count(*) DESC
+        LIMIT 12
+      ) AS ranked
+    ), '[]'::jsonb),
+    'source_domains', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'source_type', ranked.source_type,
+        'referrer_host', ranked.referrer_host,
+        'views', ranked.views,
+        'visitors', ranked.visitors
+      ) ORDER BY ranked.views DESC, ranked.visitors DESC, ranked.referrer_host)
+      FROM (
+        SELECT COALESCE(first_source_type, 'unknown') AS source_type,
+          first_referrer_host AS referrer_host,
           count(*)::bigint AS views,
           count(DISTINCT visitor_id)::bigint AS visitors
-        FROM public.analytics_events
-        WHERE created_at >= v_since AND event_type IN ('page_view','article_view','software_view')
+        FROM period_events
+        WHERE first_referrer_host IS NOT NULL
+          AND first_source_type IN ('search','referral','campaign')
+        GROUP BY 1, 2
+        ORDER BY count(*) DESC, count(DISTINCT visitor_id) DESC
+        LIMIT 15
+      ) AS ranked
+    ), '[]'::jsonb),
+    'recent_external_sources', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'source_type', ranked.source_type,
+        'source_name', ranked.source_name,
+        'referrer_host', ranked.referrer_host,
+        'views', ranked.views,
+        'visitors', ranked.visitors
+      ) ORDER BY ranked.views DESC, ranked.visitors DESC, ranked.referrer_host)
+      FROM (
+        SELECT COALESCE(last_external_source_type, 'unknown') AS source_type,
+          last_external_source_name AS source_name,
+          last_external_referrer_host AS referrer_host,
+          count(*)::bigint AS views,
+          count(DISTINCT visitor_id)::bigint AS visitors
+        FROM period_events
+        WHERE last_external_source_type IN ('search','referral','campaign')
         GROUP BY 1, 2, 3
-        ORDER BY count(*) DESC LIMIT 12
+        ORDER BY count(*) DESC, count(DISTINCT visitor_id) DESC
+        LIMIT 15
       ) AS ranked
     ), '[]'::jsonb)
-  );
+  )
+  INTO v_result;
+
+  RETURN v_result;
 END;
 $function$;
-
 
 REVOKE ALL ON FUNCTION public.get_admin_analytics(timestamptz) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_admin_analytics(timestamptz) TO authenticated;
