@@ -2,7 +2,6 @@ import { remark } from 'remark';
 import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 
 export type MarkdownOptions = {
@@ -149,17 +148,68 @@ function rehypeWrapTables() {
   };
 }
 
+const languageAliases: Record<string, string> = {
+  js: 'javascript',
+  ts: 'typescript',
+  py: 'python',
+  sh: 'bash',
+  shell: 'bash',
+  yml: 'yaml',
+  md: 'markdown',
+  plaintext: 'text',
+  plain: 'text',
+  txt: 'text',
+};
+
+const supportedLanguages = new Set([
+  'bash', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 'html', 'css',
+  'json', 'sql', 'yaml', 'markdown', 'java', 'go', 'rust', 'text',
+]);
+
+function getClassNames(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
+  if (typeof value === 'string') return value.split(/\s+/).filter(Boolean);
+  return [];
+}
+
+function rehypeNormalizeCodeLanguages() {
+  return (tree: HtmlNode) => {
+    const visit = (node: HtmlNode) => {
+      if (node.type === 'element' && node.tagName === 'pre') {
+        const code = node.children?.find(child => child.type === 'element' && child.tagName === 'code');
+        if (code?.properties) {
+          const classNames = getClassNames(code.properties.className ?? code.properties.class);
+          const languageClass = classNames.find(value => value.startsWith('language-'));
+          if (languageClass) {
+            const originalLanguage = languageClass.slice('language-'.length);
+            const normalizedLanguage = languageAliases[originalLanguage.toLowerCase()] ?? originalLanguage.toLowerCase();
+            if (supportedLanguages.has(normalizedLanguage)) {
+              code.properties.className = classNames.map(value =>
+                value === languageClass ? 'language-' + normalizedLanguage : value,
+              );
+              if (normalizedLanguage !== originalLanguage) {
+                node.properties ??= {};
+                node.properties.dataLanguage = originalLanguage;
+              }
+            }
+          }
+        }
+      }
+      node.children?.forEach(visit);
+    };
+    visit(tree);
+  };
+}
+
 function rehypeAddCodeLanguageLabels() {
   return (tree: HtmlNode) => {
     const visit = (node: HtmlNode) => {
       if (node.type === 'element' && node.tagName === 'pre') {
         const code = node.children?.find(child => child.type === 'element' && child.tagName === 'code');
-        const classNames = code?.properties?.className;
-        if (Array.isArray(classNames)) {
-          const languageClass = classNames.find(value =>
-            typeof value === 'string' && value.startsWith('language-'),
-          );
-          if (typeof languageClass === 'string') {
+        const classNames = getClassNames(code?.properties?.className ?? code?.properties?.class);
+        if (!node.properties?.dataLanguage) {
+          const languageClass = classNames.find(value => value.startsWith('language-'));
+          if (languageClass) {
             node.properties ??= {};
             node.properties.dataLanguage = languageClass.slice('language-'.length);
           }
@@ -179,9 +229,8 @@ const markdownSanitizeSchema = {
     ...defaultSchema.attributes,
     a: [...(defaultSchema.attributes?.a ?? []), 'title', ['target', '_blank'], 'rel'],
     div: [...(defaultSchema.attributes?.div ?? []), ['className', 'article-table-wrap']],
-    code: [['className', /^language-/, 'hljs']],
+    code: [['className', /^language-/]],
     pre: [['dataLanguage', /^[a-zA-Z0-9_+#.-]+$/]],
-    span: [['className', /^hljs-/]],
     img: [
       ...(defaultSchema.attributes?.img ?? []),
       'alt',
@@ -196,17 +245,45 @@ const markdownSanitizeSchema = {
   },
 } as import('rehype-sanitize').Options;
 
-const markdownProcessor = remark()
-  .use(remarkGfm)
-  .use(remarkOwenFxCompatibility)
-  .use(remarkRehype)
-  .use(rehypeWrapTables)
-  .use(rehypeHighlight)
-  .use(rehypeAddCodeLanguageLabels)
-  .use(rehypeSanitize, markdownSanitizeSchema)
-  .use(rehypeStringify);
+async function createMarkdownProcessor() {
+  const [{ createHighlighter }, { default: rehypeShikiFromHighlighter }] = await Promise.all([
+    import('shiki'),
+    import('@shikijs/rehype/core'),
+  ]);
+  const highlighter = await createHighlighter({
+    themes: ['dracula'],
+    langs: [...supportedLanguages],
+  });
 
-export function markdownToHtml(source: string, options: MarkdownOptions = {}) {
+  return remark()
+    .use(remarkGfm)
+    .use(remarkOwenFxCompatibility)
+    .use(remarkRehype)
+    .use(rehypeWrapTables)
+    // Sanitize untrusted Markdown/HTML before Shiki adds trusted token styles.
+    .use(rehypeSanitize, markdownSanitizeSchema)
+    .use(rehypeNormalizeCodeLanguages)
+    .use(rehypeShikiFromHighlighter, highlighter, {
+      theme: 'dracula',
+      addLanguageClass: true,
+    })
+    .use(rehypeAddCodeLanguageLabels)
+    .use(rehypeStringify);
+}
+
+let markdownProcessorPromise: ReturnType<typeof createMarkdownProcessor> | null = null;
+
+async function getMarkdownProcessor() {
+  if (!markdownProcessorPromise) {
+    markdownProcessorPromise = createMarkdownProcessor().catch(error => {
+      markdownProcessorPromise = null;
+      throw error;
+    });
+  }
+  return markdownProcessorPromise;
+}
+
+export async function markdownToHtml(source: string, options: MarkdownOptions = {}) {
   let cleanedSource = source;
 
   if (options.removeDownloadLinks) {
@@ -225,5 +302,6 @@ export function markdownToHtml(source: string, options: MarkdownOptions = {}) {
     }
   }
 
-  return String(markdownProcessor.processSync(lines.join('\n')));
+  const processor = await getMarkdownProcessor();
+  return String(await processor.process(lines.join('\n')));
 }

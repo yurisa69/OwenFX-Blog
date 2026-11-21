@@ -32,21 +32,54 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
   const [slug, setSlug] = useState(initial.slug || '');
   const [excerpt, setExcerpt] = useState(initial.excerpt || '');
   const [content, setContent] = useState(initial.content_markdown || '');
+  const contentRef = useRef(content);
   const [status, setStatus] = useState(initial.status === 'published' ? 'published' : 'draft');
   const [githubBlobSha, setGithubBlobSha] = useState(initial.github_blob_sha || '');
   const [busy, setBusy] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [preview, setPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState('');
   const [editorRevision, setEditorRevision] = useState(0);
   const [codeLanguage, setCodeLanguage] = useState('bash');
   const numberingIssues = useMemo(() => validateArticleNumbering(content), [content]);
 
-  // 不将 content 加入依赖：每次输入都会更新它，重新写入 innerHTML 会导致编辑光标跳动。
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (mode === 'rich' && richRef.current) richRef.current.innerHTML = markdownToHtml(content);
+    contentRef.current = content;
+  }, [content]);
+
+  // 富文本初始化异步高亮；不监听每次输入的 content，避免重写 innerHTML 导致光标跳动。
+  useEffect(() => {
+    let cancelled = false;
+    if (mode !== 'rich' || preview) return;
+
+    void markdownToHtml(contentRef.current).then(html => {
+      if (!cancelled && richRef.current) richRef.current.innerHTML = html;
+    }).catch(error => {
+      if (!cancelled) setMessage(error instanceof Error ? error.message : '富文本内容加载失败');
+    });
+
+    return () => { cancelled = true; };
   }, [mode, preview, editorRevision]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!preview) return;
+
+    setPreviewLoading(true);
+    setPreviewError('');
+    void markdownToHtml(content, { articleTitle: title, removeDownloadLinks: true }).then(html => {
+      if (!cancelled) setPreviewHtml(html);
+    }).catch(error => {
+      if (!cancelled) setPreviewError(error instanceof Error ? error.message : '文章预览生成失败');
+    }).finally(() => {
+      if (!cancelled) setPreviewLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [preview, content, title]);
 
   function switchMode(next: 'markdown' | 'rich') {
     if (mode === 'rich' && richRef.current) setContent(htmlToMarkdown(richRef.current.innerHTML));
@@ -142,7 +175,6 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       : content;
     const result = autoFixArticleNumbering(source);
     setContent(result.markdown);
-    if (mode === 'rich' && richRef.current) richRef.current.innerHTML = markdownToHtml(result.markdown);
     setEditorRevision(value => value + 1);
     const remaining = validateArticleNumbering(result.markdown);
 
@@ -241,7 +273,9 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       </div>
     </div>
 
-    {preview ? <article className="admin-preview prose-block" dangerouslySetInnerHTML={{ __html: markdownToHtml(content, { articleTitle: title, removeDownloadLinks: true }) }} /> :
+    {preview ? <article className="admin-preview prose-block">
+      {previewLoading ? <p>正在生成预览…</p> : previewError ? <p role="alert">{previewError}</p> : <div dangerouslySetInnerHTML={{ __html: previewHtml }} />}
+    </article> :
       mode === 'markdown' ? <textarea value={content} onChange={event => setContent(event.target.value)} rows={22} className="admin-input font-mono text-sm leading-7" placeholder={'# 文章标题\n\n在这里编写 Markdown 内容…'} /> :
         <div className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex flex-wrap gap-1 border-b p-2" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>

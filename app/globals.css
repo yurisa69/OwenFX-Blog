@@ -592,34 +592,15 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
 @media(max-width:767px){.account-settings-page{gap:18px}}
 
 
-/* Markdown code highlighting and copy controls restored from the established implementation. */
-.article-content .prose-block pre{position:relative;width:fit-content;min-width:min(120px,100%);max-width:100%;box-sizing:border-box;padding-top:2.65rem}
-.article-content .prose-block pre[data-language]::before{content:attr(data-language);position:absolute;top:9px;left:13px;font-size:10px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;color:var(--text-tertiary)}
-.code-copy-button{position:absolute;top:7px;right:8px;z-index:2;border:1px solid var(--border-color);border-radius:7px;background:var(--bg-glass);color:var(--text-secondary);padding:3px 9px;font-size:11px;line-height:1.5;cursor:pointer;transition:background-color .18s ease,color .18s ease}
-.code-copy-button:hover{background:var(--accent-bg);color:var(--text-primary)}
-.prose-block pre code.hljs{display:block;overflow-x:auto;background:transparent;color:var(--text-primary);padding-bottom:8px}
-.prose-block .hljs-comment,.prose-block .hljs-quote{color:#8b949e;font-style:italic}
-.prose-block .hljs-keyword,.prose-block .hljs-selector-tag,.prose-block .hljs-literal,.prose-block .hljs-name{color:#ff7b72}
-.prose-block .hljs-string,.prose-block .hljs-attr,.prose-block .hljs-template-variable{color:#a5d6ff}
-.prose-block .hljs-number,.prose-block .hljs-symbol,.prose-block .hljs-bullet{color:#79c0ff}
-.prose-block .hljs-title,.prose-block .hljs-function,.prose-block .hljs-section{color:#d2a8ff}
-.prose-block .hljs-built_in,.prose-block .hljs-type,.prose-block .hljs-params{color:#ffa657}
-.prose-block .hljs-variable,.prose-block .hljs-property{color:#e6edf3}
-.prose-block .hljs-meta,.prose-block .hljs-doctag{color:#d2a8ff}
+/* Shiki Dracula code blocks and copy controls. */
+.prose-block pre.shiki{position:relative;width:fit-content;min-width:min(120px,100%);max-width:100%;box-sizing:border-box;overflow-x:auto;padding:2.65rem 14px 14px;border:1px solid rgba(189,147,249,.22);border-radius:12px;background-color:#282a36;color:#f8f8f2;font-size:13px;line-height:1.7}
+.prose-block pre[data-language]::before{content:attr(data-language);position:absolute;top:9px;left:13px;font-size:10px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;color:#bd93f9}
+.prose-block pre.shiki code{display:block;overflow-x:visible;background:transparent;color:inherit;padding:0 0 8px}
 .prose-block .contains-task-list{padding-left:0;list-style:none}
 .prose-block .task-list-item{list-style:none}
 .prose-block .task-list-item input[type="checkbox"]{margin-right:.5rem;accent-color:var(--accent);vertical-align:middle}
 
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-comment,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-quote{color:#6b7280}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-keyword,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-selector-tag,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-literal,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-name{color:#b42318}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-string,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-attr,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-template-variable{color:#075985}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-number,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-symbol,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-bullet{color:#1d4ed8}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-title,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-function,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-section{color:#6d28d9}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-built_in,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-type,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-params{color:#9a3412}
-html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-variable,html[data-theme="light"]:not(:has(.admin-theme-root)) .prose-block .hljs-property{color:#1f2937}
-
-
-/* Code copy control: hover to reveal on desktop, tap the code block on touch devices. */
+/* Code copy control: hover to reveal on desktop, tap the code block on touch devices. *//* Code copy control: hover to reveal on desktop, tap the code block on touch devices. */
 .code-copy-button {
   position: absolute;
   top: 7px;
