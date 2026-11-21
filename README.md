@@ -44,7 +44,7 @@
 
 - 独立维护软件资料，不把软件列表当作网盘文件列表。
 - 软件资料包含名称、英文 Slug、开发者、版本、平台、图标、介绍和截图等字段。
-- 每个软件可配置官方 HTTPS 下载入口，以及百度网盘、夸克网盘、阿里云盘、天翼云盘、123 云盘等外部分享链接。
+- 每个软件可配置官方 HTTPS 下载入口，以及当前管理界面支持的 UC 网盘、夸克网盘、百度网盘和迅雷网盘外部分享链接。
 - 支持软件草稿、发布和撤回。
 - 已登录用户可对失效网盘链接提交原因和补充说明；每个账号每小时最多 5 条。
 - 管理后台提供独立的网盘失效反馈审核入口，可标记已查看、已修复或忽略；不会自动修改下载链接。
@@ -71,9 +71,9 @@
 - Next.js 16 使用根目录 `proxy.ts` 与 Supabase SSR 客户端刷新登录会话；服务端身份读取使用经过验证的 Auth 用户信息。
 - 管理接口会检查登录状态及站长 / 内容编辑权限。
 - 评论系统使用 Akismet 与本地规则自动识别垃圾评论；后台支持垃圾评论、软删除、恢复和永久删除。
-- 头像和管理端图片上传通过服务器端接口写入 Cloudflare R2，并将媒体元数据写入 `media_assets`。
+- 头像兼容上传接口和管理端统一媒体上传均使用服务端 R2 凭据；统一媒体上传由服务端签发短时 URL，浏览器直传 R2，服务端校验对象后将媒体元数据写入 `media_assets`。
 - ChatGPT 等外部工具可通过受控 API 设备令牌导入文章草稿；令牌可在「管理后台 → AI 导入」创建和撤销。
-- 图片上传限制为 JPG、PNG、WebP、GIF、AVIF，单张不超过 10 MB。
+- 统一媒体上传支持 JPG、PNG、WebP、GIF、AVIF 图片（单张最大 20 MB）及 MP4、WebM、MOV 视频（单个最大 250 MB）；旧版头像兼容上传接口单张图片最大 10 MB。具体规则见 `docs/R2-MEDIA.md`。
 - 注册确认邮件及其他认证邮件统一由 Supabase Auth 根据 Authentication → Email Templates 中的六种模板发送。
 - Supabase Service Role 和 R2 密钥只允许放在服务端环境变量中。
 
@@ -119,6 +119,8 @@ Next.js App Router（Vercel）
 
 ```text
 .
+├── .agents/skills/         # OwenFX 七个项目级 AI 开发 Skill
+├── .github/workflows/      # GitHub Actions（当前包含 Supabase migration guard）
 ├── app/                    # 当前 Next.js App Router 页面与 API
 │   ├── admin/              # 管理后台
 │   ├── api/                # 服务端 API
@@ -126,14 +128,20 @@ Next.js App Router（Vercel）
 │   ├── software/           # 软件列表与详情
 │   └── layout.tsx          # 全局布局
 ├── components/             # 页面与交互组件
+├── content/articles/       # GitHub 管理的 Markdown 正文文件
+├── database/               # 数据库相关辅助配置（当前含 R2 CORS 配置）
+├── docs/                   # 开发规范、文章规范、R2 媒体规范和 OpenAPI 文档
+├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
+├── public/                 # 静态资源
+├── scripts/                # 数据库迁移历史检查脚本
 ├── supabase/               # Supabase CLI 配置、迁移、结构快照与数据库文档
 │   ├── migrations/         # 增量 SQL 迁移
 │   ├── schema/             # 生产结构参考快照（不可直接对生产执行）
 │   └── docs/               # 迁移历史、数据库变更规范和备份恢复手册
-├── content/articles/       # GitHub 管理的 Markdown 正文文件
-├── docs/openapi/           # 外部文章导入 API Schema
-├── lib/                    # Supabase、GitHub Markdown、R2、权限和业务工具
-├── public/                 # 静态资源
+├── tests/                  # 文章 API、Markdown、编辑器和编号测试
+├── types/                  # TypeScript 数据库类型
+├── AGENTS.md               # Codex / AI 项目统一开发入口
+├── proxy.ts                # Next.js 请求代理与 Supabase 会话刷新
 ├── .env.example            # 环境变量模板
 ├── .nvmrc                  # Node.js 主版本（24）
 ├── next.config.ts
@@ -142,6 +150,24 @@ Next.js App Router（Vercel）
 ```
 
 > 当前项目使用仓库根目录的 `app/`、`components/` 和 `lib/` 作为源码目录，`tsconfig.json` 明确排除了 `src/`。旧版占位路由已保留为兼容重定向入口。
+
+## AI 辅助开发规范
+
+仓库提供项目级 AI 开发指令和专项 Skills，供 Codex 等 AI 编程工具在处理 OwenFX 任务时遵循：
+
+- 根目录 `AGENTS.md`：项目统一开发入口，说明规范优先级、项目保护边界、Skill 选择、验证流程及 GitHub / Vercel 发布要求。
+- `docs/DEVELOPMENT_GUIDELINES.md`：正式开发协作与 Git 操作规范。
+- `docs/ARTICLE-WRITING-GUIDELINES.md`：文章标题层级、编号和内容结构规范。
+- `.agents/skills/`：七个可按任务加载的专项 Skill：
+  - `owenfx-design`：视觉与交互设计。
+  - `owenfx-frontend-audit`：前端只读审查与回归检查。
+  - `owenfx-article-system`：文章、Markdown、编辑器和发布流程。
+  - `owenfx-database-security`：Supabase、RLS、API、R2 与数据安全。
+  - `owenfx-performance`：性能测量、渲染、媒体和动效保真。
+  - `owenfx-release-check`：测试、提交、推送和部署状态核对。
+  - `owenfx-unified-language`：中文表达、Git 术语和发布报告。
+
+开始任务时先遵循 `AGENTS.md`，再按任务范围阅读正式规范并加载对应 Skill。Skill 是任务执行指引，不替代正式规范；README 仅作为项目概览和辅助导航，不能替代当前源码检查。
 
 ## 环境变量配置
 
@@ -297,6 +323,10 @@ npm run dev
 | `npm run build` | 执行 Next.js 生产构建。 |
 | `npm run start` | 启动生产构建后的服务。 |
 | `npm run lint` | 执行 ESLint 检查。 |
+| `npm test` | 运行 `tests/*.test.mjs` 中的全部自动化测试。 |
+| `npm run test:markdown` | 运行 Markdown 渲染兼容性测试。 |
+| `npm run test:editor` | 运行文章编辑器 Markdown / HTML 转换测试。 |
+| `npm run check:supabase-migrations` | 检查 Supabase 迁移文件与历史账本一致性。 |
 
 ## Supabase 数据库与迁移管理
 
@@ -319,13 +349,11 @@ Supabase 负责 OwenFX 的身份认证、用户资料和业务数据。当前 `p
 
 免费套餐下的备份与恢复范围、Auth 用户限制、当前项目触发器 / 扩展清单、CLI 导出流程及恢复核对步骤，统一见 [`supabase/docs/BACKUP_AND_RECOVERY.md`](supabase/docs/BACKUP_AND_RECOVERY.md)。备份文件必须保存在加密的异地位置，不得提交到 GitHub；网站部署不得自动执行备份或数据库恢复。
 
-### 使用电脑或 VPS 导出 / 检查数据库
+### 使用可信工作站导出 / 检查数据库
 
-电脑和 VPS 都可以作为数据库备份操作环境。两种环境均需要安装 **Docker** 和 **Supabase CLI**，并确保 Docker 服务正常运行。当前 VPS 已具备 Docker 和 Supabase CLI 环境，不需要重复安装。选择可信任、磁盘空间充足且访问权限受控的环境即可。
+建议在可信任的电脑 / 工作站上执行官方 Supabase CLI 逻辑导出，并安装 Docker（例如 Docker Desktop）和 Supabase CLI。不要仅为备份任务在生产 VPS 上安装 Docker；备份文件应加密并保存在独立于生产 Supabase 项目和生产 VPS 的异地位置。具体备份范围、Auth 限制、R2 对象备份和恢复步骤以 [`supabase/docs/BACKUP_AND_RECOVERY.md`](supabase/docs/BACKUP_AND_RECOVERY.md) 为准。
 
-无论在电脑还是 VPS 上执行，官方 Supabase CLI 的数据库导出流程和备份范围相同。导出的文件应保存在独立的备份目录中，并加密后存放到生产 Supabase 项目和生产 VPS 之外的位置。**电脑适合保存长期异地备份；VPS 可用于执行备份或检查已有归档，但不要把 VPS 本机作为唯一备份位置。**
-
-#### 方式 A：在电脑上使用 Supabase CLI 导出
+#### 官方 CLI 逻辑导出
 
 适用于 Windows、macOS 或 Linux 工作站。准备 Docker 和 Supabase CLI，并从 Supabase Dashboard → Connect 获取数据库连接字符串，在本机安全地设置为环境变量 `SUPABASE_DB_URL`。连接字符串包含数据库凭据，不要写入脚本、README、聊天记录或 GitHub。
 
@@ -340,12 +368,6 @@ supabase db dump --db-url "$SUPABASE_DB_URL" -f ./owenfx-backup/data.sql --use-c
 ```
 
 检查导出文件是否存在且非空，记录导出时间、项目 Ref、PostgreSQL 版本、文件大小和 SHA-256。随后将备份加密并保存到独立于 Supabase 和生产 VPS 的安全位置。
-
-#### 方式 B：在 VPS 上使用 Supabase CLI 备份或检查归档
-
-VPS 已安装 Docker 和 Supabase CLI，可以承担与电脑相同的官方 CLI 逻辑备份工作。操作前确认连接的是 OwenFX 正确的生产项目，并遵守与电脑端相同的凭据保护、文件权限、校验和异地保存要求。
-
-VPS 也可用于检查已有的 PostgreSQL custom-format 归档，以及从归档中恢复迁移历史。**本次迁移文件恢复使用的是此前已经存在的数据库备份归档**；恢复过程不是重新连接生产数据库逐条导出迁移 SQL，也不是重新执行历史迁移。
 
 #### 迁移文件恢复
 
@@ -364,9 +386,9 @@ VPS 也可用于检查已有的 PostgreSQL custom-format 归档，以及从归�
 
 **备份范围边界：** 官方 `supabase db dump` 是逻辑导出，不是物理快照，也不是完整 Supabase 项目备份。它不包含 Supabase 托管的 `auth`、`storage` 等 Schema，也不包含 R2 对象和所有 Dashboard 配置。PostgreSQL custom-format 归档可用于检查归档目录和提取指定数据；不得仅凭归档可读取就认定它是可直接恢复整个 Supabase 项目的完整备份。恢复演练必须在隔离项目或测试环境中进行。
 
-#### 两种方式的共同安全要求
+#### 备份与恢复的共同安全要求
 
-- 电脑和 VPS 都应使用专用、权限受限的备份目录；备份文件不得放在网站公开目录。
+- 备份操作环境应使用专用、权限受限的目录；备份文件不得放在网站公开目录。
 - 数据库密码、Supabase Access Token、Service Role Key 和连接字符串不得写入命令历史、源码或 README。
 - 不要为了方便下载而开放整个备份目录；只对明确需要下载的临时副本授予最小读取权限，下载后及时清理临时副本。
 - 逻辑备份、custom-format 归档、迁移历史 SQL、Auth 用户清单、R2 对象和平台配置是不同的备份对象，不能互相替代。
@@ -429,7 +451,7 @@ supabase link --project-ref gjzxultalptqwqmpagzj
 supabase migration list --linked
 ```
 
-> 上述命令只用于 CLI 登录、项目关联和迁移状态检查。日常网站代码更新不需要执行这些命令。电脑或 VPS 执行数据库导出时均需要 Docker 和 Supabase CLI；当前 VPS 已安装 Docker，无需重复安装。生产数据库变更仍须遵守前文审核和单独批准流程，也不要把 CLI Access Token 当作数据库密码。
+> 上述命令只用于 CLI 登录、项目关联和迁移状态检查。日常网站代码更新不需要执行这些命令。数据库逻辑导出建议在可信工作站上执行，需要 Docker 和 Supabase CLI；不要仅为备份任务在生产 VPS 上安装 Docker。生产数据库变更仍须遵守前文审核和单独批准流程，也不要把 CLI Access Token 当作数据库密码。
 
 ## Cloudflare R2 配置说明
 
@@ -437,7 +459,7 @@ supabase migration list --linked
 2. 创建用于 S3 API 的访问密钥，并按最小权限原则授予目标存储桶所需权限。
 3. 将账户对应的 S3 API Endpoint、Bucket、Access Key ID 和 Secret Access Key 配置到服务端环境变量。
 4. 为存储桶配置公开访问域名或自定义域名，并将域名填写到 `R2_PUBLIC_BASE_URL`。
-5. 上传接口只接受图片类型，单个文件最大 10 MB。
+5. 统一媒体上传接口支持图片最大 20 MB、视频最大 250 MB；旧版头像兼容上传接口图片最大 10 MB。支持格式和上传流程见 [`docs/R2-MEDIA.md`](docs/R2-MEDIA.md)。
 
 R2 密钥只用于服务端上传。公开图片 URL 可以展示在网页中，但不能因此公开 R2 的访问密钥。
 

@@ -7,7 +7,7 @@ description: OwenFX 项目统一语言规范。涉及面向用户/协作者的�
 
 ## 1. 规范依据与适用范围
 
-- 本 Skill 以仓库根目录 `docs/DEVELOPMENT_GUIDELINES.md` 的「1. 统一语言规范」为唯一直接依据。
+- 本 Skill 以仓库根目录 `docs/DEVELOPMENT_GUIDELINES.md` 为唯一直接依据：统一语言、提交说明、分支命名、Git 术语、操作流程和报告分别对应其第 1 至第 6 节；安全边界和规范优先级同时遵循第 7、8 节。
 - 开始 OwenFX 项目协作或 Git 操作前，应先阅读当前版本的 `docs/DEVELOPMENT_GUIDELINES.md`；不得仅凭本 Skill 或历史记忆替代对正式规范的核对。
 - 本 Skill 负责提炼和执行统一语言要求，不得修改、覆盖或扩展正式开发规范中的规则。
 - 本 Skill 与正式开发规范不一致时，以 `docs/DEVELOPMENT_GUIDELINES.md` 为准，并应修正本 Skill。
@@ -93,5 +93,7 @@ description: OwenFX 项目统一语言规范。涉及面向用户/协作者的�
 ## 8. 权威文件
 
 - 统一语言规范：`docs/DEVELOPMENT_GUIDELINES.md` 第 1 节。
+- 提交说明：第 2 节；分支命名：第 3 节；Git 术语：第 4 节。
+- 提交与推送流程：第 5 节；检查与部署报告：第 6 节；安全与项目保护：第 7 节；规范优先级：第 8 节。
 - 本 Skill 是执行指引，不是第二份独立规范。
 - 正式规范发生变化时，应先核对正式文件，再同步更新本 Skill；不得反向以本 Skill 修改正式规范。
