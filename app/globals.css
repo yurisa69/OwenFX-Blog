@@ -592,10 +592,13 @@ html[data-theme="light"]:not(:has(.admin-theme-root)) .profile-identity-card,htm
 @media(max-width:767px){.account-settings-page{gap:18px}}
 
 
-/* Shiki Dracula code blocks and copy controls. */
-.prose-block pre.shiki{position:relative;width:fit-content;min-width:min(120px,100%);max-width:100%;box-sizing:border-box;overflow-x:auto;padding:2.65rem 14px 14px;border:1px solid rgba(189,147,249,.22);border-radius:12px;background-color:#282a36;color:#f8f8f2;font-size:13px;line-height:1.7}
-.prose-block pre[data-language]::before{content:attr(data-language);position:absolute;top:9px;left:13px;font-size:10px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;color:#bd93f9}
+/* Shiki GitHub Dark / GitHub Light code blocks and copy controls. */
+.prose-block pre.shiki{position:relative;width:fit-content;min-width:min(120px,100%);max-width:100%;box-sizing:border-box;overflow-x:auto;padding:2.65rem 14px 14px;border:1px solid var(--border-color);border-radius:12px;background-color:var(--shiki-light-bg);color:var(--shiki-light);font-size:13px;line-height:1.7}
+html[data-theme="dark"] .prose-block pre.shiki{background-color:var(--shiki-dark-bg);color:var(--shiki-dark)}
+.prose-block pre[data-language]::before{content:attr(data-language);position:absolute;top:9px;left:13px;font-size:10px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
 .prose-block pre.shiki code{display:block;overflow-x:visible;background:transparent;color:inherit;padding:0 0 8px}
+.prose-block pre.shiki code span{color:var(--shiki-light)}
+html[data-theme="dark"] .prose-block pre.shiki code span{color:var(--shiki-dark)}
 .prose-block .contains-task-list{padding-left:0;list-style:none}
 .prose-block .task-list-item{list-style:none}
 .prose-block .task-list-item input[type="checkbox"]{margin-right:.5rem;accent-color:var(--accent);vertical-align:middle}

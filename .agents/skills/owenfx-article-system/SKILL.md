@@ -37,7 +37,7 @@ description: OwenFX 文章内容、Markdown、富文本编辑器、代码块、�
 
 ## 4. Markdown 渲染与代码块
 
-当前渲染链路位于 `lib/markdown.ts`，使用 remark、remark-gfm、remark-rehype、rehype-sanitize、Shiki（通过 `@shikijs/rehype`，采用 Dracula 主题）和 rehype-stringify。修改前先阅读当前插件顺序、sanitize schema 与兼容处理。
+当前渲染链路位于 `lib/markdown.ts`，使用 remark、remark-gfm、remark-rehype、rehype-sanitize、Shiki（通过 `@shikijs/rehype`，同时生成 GitHub Light 与 GitHub Dark 双主题色值）和 rehype-stringify。代码块通过 `html[data-theme]` 与 Shiki CSS 变量跟随网站深色/浅色模式切换；修改前先阅读当前插件顺序、sanitize schema 与兼容处理。
 
 - 保留代码块语言标识与语法高亮；不能仅凭语言名称判断是否高亮成功，应检查最终 HTML class 和样式规则。
 - 代码块的复制按钮、语言标签、滚动、换行和移动端显示属于既有交互，除非用户明确要求，不得顺手更改。

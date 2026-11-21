@@ -251,7 +251,7 @@ async function createMarkdownProcessor() {
     import('@shikijs/rehype/core'),
   ]);
   const highlighter = await createHighlighter({
-    themes: ['dracula'],
+    themes: ['github-light', 'github-dark'],
     langs: [...supportedLanguages],
   });
 
@@ -264,7 +264,11 @@ async function createMarkdownProcessor() {
     .use(rehypeSanitize, markdownSanitizeSchema)
     .use(rehypeNormalizeCodeLanguages)
     .use(rehypeShikiFromHighlighter, highlighter, {
-      theme: 'dracula',
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+      defaultColor: false,
       addLanguageClass: true,
     })
     .use(rehypeAddCodeLanguageLabels)

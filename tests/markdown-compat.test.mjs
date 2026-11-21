@@ -44,7 +44,7 @@ test('supports GFM task lists and strikethrough', async () => {
 test('highlights known code languages and safely handles unknown languages', async () => {
   const fence = String.fromCharCode(96).repeat(3);
   const known = await markdownToHtml(fence + 'javascript\nconst answer = 42;\n' + fence);
-  assert.match(known, /class="shiki dracula"/i);
+  assert.match(known, /class="shiki[^"]*github-light[^"]*github-dark/i);
   assert.match(known, /class="language-javascript"/);
   assert.match(known, /data-language="javascript"/);
   const unknown = await markdownToHtml(fence + 'madeup-language\nplain text\n' + fence);
@@ -52,7 +52,7 @@ test('highlights known code languages and safely handles unknown languages', asy
   assert.match(unknown, /plain text/);
 });
 
-test('highlights the supported language set with the Dracula theme', async () => {
+test('highlights the supported language set with GitHub Dark and GitHub Light themes', async () => {
   const fence = String.fromCharCode(96).repeat(3);
   const languages = [
     'bash', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 'html', 'css',
@@ -61,9 +61,9 @@ test('highlights the supported language set with the Dracula theme', async () =>
 
   for (const language of languages) {
     const html = await markdownToHtml(fence + language + '\nconst answer = 42;\n' + fence);
-    assert.match(html, /class="shiki dracula"/i, language + ' should use the Dracula theme');
+    assert.match(html, /class="shiki[^"]*github-light[^"]*github-dark/i, language + ' should include both GitHub themes');
     assert.match(html, new RegExp('class="language-' + language + '"'));
-    assert.match(html, /<span[^>]*style="color:/i, language + ' should contain highlighted tokens');
+    assert.match(html, /<span[^>]*style="[^"]*--shiki-light:[^"]*--shiki-dark:/i, language + ' should contain both theme token colors');
     assert.match(html, new RegExp('data-language="' + language + '"'));
   }
 });
@@ -71,7 +71,7 @@ test('highlights the supported language set with the Dracula theme', async () =>
 test('maps plaintext aliases to Shiki text and retains a plain-text label', async () => {
   const fence = String.fromCharCode(96).repeat(3);
   const html = await markdownToHtml(fence + 'plaintext\nplain text\n' + fence);
-  assert.match(html, /class="shiki dracula"/i);
+  assert.match(html, /class="shiki[^"]*github-light[^"]*github-dark/i);
   assert.match(html, /class="language-text"/);
   assert.match(html, /data-language="text"/);
   assert.match(html, /plain text/);
