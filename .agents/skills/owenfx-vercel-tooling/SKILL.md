@@ -128,3 +128,38 @@ Sandbox 清理只针对本次任务创建的资源；不得删除其他任务、
 - Speed Insights Metrics: https://vercel.com/docs/speed-insights/metrics
 - Vercel Toolbar: https://vercel.com/docs/vercel-toolbar
 - Layout Shift Tool: https://vercel.com/docs/vercel-toolbar/layout-shift-tool
+
+
+## 7. Vercel Hobby 免费额度自动控制（强制）
+
+每次使用 Sandbox 前后，必须遵守仓库正式文件 docs/VERCEL_HOBBY_QUOTA_CONTROL.md。该文件是额度总表、公式和逐次台账的唯一项目级记录入口。
+
+### 7.1 创建前自动预检
+
+1. 确认当前 Vercel 团队套餐为 Hobby，并读取最新官方额度和 Usage Dashboard 统计窗口。
+2. 检查团队内全部项目及 Sandbox 资源，不能只看当前项目；读取现存 Sandbox 的状态、CPU、内存、运行时间、网络、持久化、快照和 Drive 信息。
+3. 对 Sandbox CPU、配置内存、创建次数、数据传输、快照存储、Drive 存储、Drive 读写分别计算剩余量。
+4. 对本次任务可能触发的 Functions、CDN、Fast Data Transfer、Fast Origin Transfer、构建、部署、Analytics 等指标单独检查，不得与 Sandbox 混算。
+5. 预计用量必须覆盖完整任务并留出安全余量。额度不足或相关指标未核实，自动停止对应资源使用；不创建、不重试、不升级、不产生费用，也不要求用户逐次确认。
+6. 纯文档、注释、翻译等不影响运行时的修改可不创建 Sandbox；仍须在台账记录本次 Sandbox 使用为 0。
+
+### 7.2 运行后记录与扣减
+
+1. Sandbox 停止后读取最终 session / Sandbox 指标，记录创建时间、墙钟时长、活动 CPU、配置内存、出入站网络、暴露端口、创建次数、快照 / Drive 使用和清理状态。
+2. 使用官方公式计算 CPU 小时、配置内存 GB·小时和网络用量；内存按配置量 × 墙钟时间计量，不得把墙钟时长当作活动 CPU。
+3. 将本次用量追加到 docs/VERCEL_HOBBY_QUOTA_CONTROL.md 台账，并更新累计用量与剩余量；按 Sandbox / session ID 去重。
+4. Dashboard 是官方总账，Sandbox API 是逐实例明细。数据不一致时以 Dashboard 为准并记录差异；不可读取的数据标记「未核实」，绝不能写 0。
+5. 清理本次 Sandbox、session 和临时资源后，重新读取状态确认已停止并删除；不得清理其他任务资源。
+
+### 7.3 额度隔离与停止阈值
+
+- Sandbox：5 CPU 小时、420 GB·小时配置内存、5,000 次创建、20 GB 数据传输。
+- Functions / Fluid Compute：4 CPU 小时、360 GB·小时配置内存，单独核算。
+- Fast Data Transfer 100 GB、Fast Origin Transfer 10 GB、Sandbox Data Transfer 20 GB，分别核算。
+- 80% 预警、90% 停止非必要使用；预计任务会突破安全余量时不创建 Sandbox。
+- Hobby 超限后不允许通过付费升级、重试、切换项目或创建其他团队绕过免费限制。用户未明确授权时绝不产生费用。
+- Hobby 额度恢复时间以 Dashboard 实际窗口为准；不因日历换月自行把余额归零。
+
+### 7.4 报告要求
+
+每次涉及 Vercel 的任务，必须列出套餐、团队、统计窗口、本次使用、累计已用、剩余量、数据来源、未核实项目、清理状态，以及 GitHub / Vercel 构建和生产部署结果。不得用「费用未知」「应该够用」代替额度计算；若资源数据不足，自动选择不消耗该资源的工作路径。

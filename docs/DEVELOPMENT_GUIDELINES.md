@@ -178,3 +178,19 @@ OwenFX 使用 Vercel Sandbox、Speed Insights 和 Vercel Toolbar 时，必须遵
 7. **Vercel Toolbar：** 需要定位布局偏移、交互耗时或无障碍问题时，使用 Layout Shifts、Interaction Timing 和 Accessibility Audit，重点检查玻璃效果、卡片、图片/字体加载及移动端布局。Toolbar 审查不是完整无障碍认证。
 8. **部署边界：** 默认不创建 Preview Deployment；优先使用已获准的现有部署或本地环境。不得为使用工具擅自改变项目/团队设置、发布评论或产生额外费用。
 9. **真实性：** 分别报告工具是否启用、是否执行、检查结果、数据是否充足及 Sandbox 清理状态；未执行不得声称通过。
+
+
+## 11. Vercel Hobby 免费额度控制与使用台账
+
+OwenFX 当前使用 Vercel Hobby 免费套餐。所有 Vercel Sandbox 和其他 Hobby 资源必须遵守 docs/VERCEL_HOBBY_QUOTA_CONTROL.md。
+
+1. 每次 Sandbox 创建前自动读取团队范围当前用量、统计窗口、全部项目及 Sandbox 运行状态；按 CPU、配置内存、创建次数、数据传输、快照、Drive 等独立维度计算「包含总量 - 已用 = 剩余」。
+2. Sandbox 的 5 小时 CPU / 420 GB·小时内存，与 Vercel Functions / Fluid Compute 的 4 CPU·小时 / 360 GB·小时内存严格分开；Fast Data Transfer、Fast Origin Transfer、Sandbox Data Transfer 也分别记账。
+3. 每次任务结束后读取实例最终指标，记录墙钟时长、活动 CPU、配置内存 GB·小时、网络流量、创建次数及清理状态，并同步更新台账。相同 Sandbox / session ID 不得重复扣减。
+4. Dashboard 是官方总账，API 明细用于交叉核对。Dashboard 与 API 不一致时以 Dashboard 为准；数据不可读取时不得写成 0，必须保守预留并阻止消耗未核实额度的操作。
+5. 默认使用最小资源、非持久化 Sandbox；不创建快照、Drive，不开放端口，任务结束立即停止并删除本次资源。
+6. Hobby 免费额度达到 80% 预警、90% 停止非必要使用；预计超限、额度暂停或费用状态不明时，不创建、不重试、不升级、不产生费用。无需用户为正常免费额度内的任务逐次确认。
+7. 纯文档修改按 OwenFX Vercel Skill 可不使用 Sandbox，但仍应记录本次 Sandbox 使用为 0。
+8. 每次报告必须列出本次用量、累计用量、剩余量、统计窗口、数据来源和清理状态；Functions、CDN、构建、部署、Analytics 等其他 Hobby 资源另行列账，不得混入 Sandbox 数字。
+
+具体官方额度、公式、历史基线和逐次台账以 docs/VERCEL_HOBBY_QUOTA_CONTROL.md 为准。
