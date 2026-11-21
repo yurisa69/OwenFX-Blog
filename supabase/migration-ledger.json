@@ -1,6 +1,6 @@
 {
   "projectRef": "gjzxultalptqwqmpagzj",
-  "verifiedAt": "2026-11-17",
+  "verifiedAt": "2026-11-21",
   "description": "Snapshot of applied production migration versions. Extra local SQL files are allowed as pending migrations; every version listed here must remain present in supabase/migrations.",
   "appliedMigrations": [
     {
@@ -146,6 +146,14 @@
     {
       "version": "20261116005317",
       "name": "restrict_software_download_providers"
+    },
+    {
+      "version": "20261118143458",
+      "name": "add_comment_replies_and_likes"
+    },
+    {
+      "version": "20261121080744",
+      "name": "analytics_page_views_and_sources"
     }
   ]
 }

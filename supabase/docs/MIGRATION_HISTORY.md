@@ -99,3 +99,13 @@ The production schema snapshot is stored in `supabase/schema/production-baseline
 The hosted migration ledger retains the original historical identifiers for retired schema stages as immutable audit metadata. The repository contains neutralized historical placeholders; those records do not represent active application logic or database objects.
 
 The machine-readable production migration-version snapshot is `supabase/migration-ledger.json`. The repository check verifies that every applied production version remains represented by exactly one local SQL filename and rejects duplicate or malformed timestamps. It intentionally permits additional local SQL files as pending migrations. After a reviewed migration is applied to production, update the snapshot from the live Supabase migration ledger in the same repository change. Never rename or delete an applied migration.
+
+## 2026-11-21 — analytics_page_views_and_sources
+
+- Extends the existing public analytics_events table; no existing rows or business tables are deleted.
+- Adds first-party page-view events for general pages, article details, and software details.
+- Adds a random first-party visitor UUID cookie with a 30-day expiry; analytics rows do not store IP addresses, device fingerprints, user agents, or full referrer URLs.
+- Stores normalized source categories (direct, search, referral, internal, campaign) and the referrer hostname / sanitized UTM source.
+- Adds an admin-only SECURITY INVOKER aggregation function for summary counts, daily trends, top articles, top software pages, and source breakdowns.
+- The existing analytics RLS policy remains the authorization boundary; the aggregation function also checks public.is_owenfx_admin().
+- Existing click events and the existing admin analytics route are retained.

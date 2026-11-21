@@ -59,6 +59,9 @@ export type Database = {
         referrer_host: string | null;
         created_at: string;
         software_id: string | null;
+        visitor_id: string | null;
+        source_type: string | null;
+        source_name: string | null;
       }, 'event_type', [
         Relationship<'analytics_events_article_id_fkey', 'article_id', 'articles', 'id'>,
         Relationship<'analytics_events_software_id_fkey', 'software_id', 'software', 'id'>,
@@ -357,6 +360,10 @@ export type Database = {
       consume_api_rate_limit: {
         Args: { p_bucket_key: string; p_limit?: number; p_window_seconds?: number };
         Returns: boolean;
+      };
+      get_admin_analytics: {
+        Args: { p_since?: string };
+        Returns: Json;
       };
       create_article_sync_job: { Args: { p_id: string; p_idempotency_key: string; p_operation: string; p_article_id: string | null; p_actor_id: string | null; p_target_path: string; p_content_hash: string; p_metadata: Json }; Returns: Json };
       get_article_sync_job: { Args: { p_id: string }; Returns: Json };

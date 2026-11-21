@@ -50,7 +50,7 @@ export default async function AdminHome() {
       title: '网站运营',
       description: '查看网站流量数据，分别维护文章和软件的赞赏配置。',
       links: [
-        { label: '流量统计', href: '/admin/analytics', detail: '查看软件、公众号等点击事件' },
+        { label: '流量统计', href: '/admin/analytics', detail: '查看访问量、热门文章、热门软件页面和访问来源' },
         { label: '赞赏设置', href: '/admin/support', detail: '分别配置文章赞赏与软件赞赏' },
       ],
     },

@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import ScrollToTop from '@/components/ScrollToTop';
+import PageViewTracker from '@/components/PageViewTracker';
 import { createClient } from '@/lib/supabase/server';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -80,6 +81,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
           <Navbar initialUser={initialUser} />
+          <PageViewTracker />
           <main style={{ paddingTop: '56px', overflowX: 'hidden' }}>
             <div className="max-w-6xl mx-auto min-h-[calc(100vh-3.5rem)] pb-[5.5rem] md:pb-0" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
               {children}
