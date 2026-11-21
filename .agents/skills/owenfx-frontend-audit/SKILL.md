@@ -13,13 +13,18 @@ description: OwenFX 前端只读审查规范。涉及页面、组件、路由、
 
 ## 2. 审查前建立项目上下文
 
-先检查仓库当前状态、README、开发规范及目标页面实际实现。OwenFX 当前基础为：
-- Next.js App Router，React，TypeScript，Tailwind CSS。
-- 页面与组件位于 `app/`、`components/`；业务辅助逻辑位于 `lib/`。
-- Supabase SSR 客户端封装位于 `lib/supabase/`。
-- GitHub Markdown 文章内容位于 `content/articles/`。
-- Supabase 保存用户和业务元数据；Cloudflare R2 保存媒体二进制。
-- Vercel 负责网站构建与部署。
+按以下顺序建立事实基准：
+
+1. 检查当前分支、最新 Commit、工作区状态及目标页面/组件的实际源码和调用链。
+2. 阅读仓库根目录 `AGENTS.md` 与 `docs/DEVELOPMENT_GUIDELINES.md`。
+3. 阅读与审查范围对应的专项规范和 Skill。
+4. 检查当前测试、依赖和实际运行结果。
+5. 最后将 README 作为项目概览和辅助导航；若与源码、正式规范或测试不一致，不得以 README 覆盖实际证据。
+
+OwenFX 当前基础可从源码定位：
+- 页面与组件通常位于 `app/`、`components/`；业务辅助逻辑通常位于 `lib/`。
+- Supabase SSR 客户端封装可从 `lib/supabase/` 定位。
+- 文章内容、软件数据和媒体存储路径以当前仓库实现及正式规范为准。
 
 目录和实现可能演进。以上是定位线索，不是跳过源码检查的理由；不要臆测文件路径、组件行为或接口契约。
 

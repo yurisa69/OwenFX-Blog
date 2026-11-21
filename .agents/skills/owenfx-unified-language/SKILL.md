@@ -1,6 +1,6 @@
 ---
-name: owenfx-development-guide
-description: OwenFX 项目统一语言与协作表达规范。涉及项目开发协作、Git 操作说明、提交说明、分支命名、合并请求、发布记录或部署报告时使用。
+name: owenfx-unified-language
+description: OwenFX 项目统一语言规范。涉及面向用户/协作者的中文表达、Git 术语、提交说明、分支命名、发布记录、检查结果或部署报告时使用。
 ---
 
 # OwenFX 统一语言规范
