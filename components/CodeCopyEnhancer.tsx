@@ -11,8 +11,15 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
 
     const cleanups: Array<() => void> = [];
     const codeBlocks = Array.from(container.querySelectorAll('pre'));
+    const codeBlockShells = new Map<HTMLPreElement, HTMLDivElement>();
 
     codeBlocks.forEach((pre) => {
+      const shell = document.createElement('div');
+      shell.className = 'code-block-shell';
+      pre.parentNode?.insertBefore(shell, pre);
+      shell.appendChild(pre);
+      codeBlockShells.set(pre, shell);
+
       const codeElement = pre.querySelector<HTMLElement>('code');
       if (codeElement) {
         const updateOverflowState = () => {
@@ -36,7 +43,7 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
         });
       }
 
-      if (pre.querySelector('.code-copy-button')) return;
+      if (shell.querySelector('.code-copy-button')) return;
 
       const button = document.createElement('button');
       button.type = 'button';
@@ -65,12 +72,16 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
       };
 
       button.addEventListener('click', onClick);
-      pre.appendChild(button);
+      shell.appendChild(button);
 
       cleanups.push(() => {
         button.removeEventListener('click', onClick);
         button.remove();
-        pre.classList.remove('code-copy-visible');
+        shell.classList.remove('code-copy-visible');
+        if (shell.parentNode) {
+          shell.parentNode.insertBefore(pre, shell);
+          shell.remove();
+        }
       });
     });
 
@@ -79,8 +90,8 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
       if (!(target instanceof Element)) return;
 
       const activePre = target.closest('pre');
-      codeBlocks.forEach((pre) => {
-        pre.classList.toggle('code-copy-visible', pre === activePre);
+      codeBlockShells.forEach((shell, pre) => {
+        shell.classList.toggle('code-copy-visible', pre === activePre);
       });
     };
 
