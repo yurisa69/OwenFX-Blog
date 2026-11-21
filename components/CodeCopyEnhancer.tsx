@@ -20,7 +20,7 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
             codeElement.scrollWidth > codeElement.clientWidth + 1 ||
             pre.scrollWidth > pre.clientWidth + 1;
           pre.classList.toggle('has-horizontal-scroll', hasHorizontalScroll);
-          codeElement.style.paddingBottom = hasHorizontalScroll ? '8px' : '0px';
+          codeElement.style.paddingBottom = hasHorizontalScroll ? '12px' : '0px';
         };
 
         const resizeObserver = new ResizeObserver(updateOverflowState);
