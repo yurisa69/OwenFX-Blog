@@ -194,3 +194,12 @@ OwenFX 当前使用 Vercel Hobby 免费套餐。所有 Vercel Sandbox 和其他 
 8. 每次报告必须列出本次用量、累计用量、剩余量、统计窗口、数据来源和清理状态；Functions、CDN、构建、部署、Analytics 等其他 Hobby 资源另行列账，不得混入 Sandbox 数字。
 
 具体官方额度、公式、历史基线和逐次台账以 docs/VERCEL_HOBBY_QUOTA_CONTROL.md 为准。
+
+
+## 11. Vercel Hobby 月度额度台账周期
+
+1. OwenFX 项目内部月度额度台账统一按自然月划分：每月 1 日 00:00 开始，下一月 1 日 00:00 结束，采用左闭右开区间。
+2. 默认时区为 `Asia/Shanghai`，必须支持通过 IANA 时区配置调整；禁止写死 UTC 偏移量或固定 30 天周期。月份天数、跨年、闰年和夏令时由日期/时区规则动态计算。
+3. 每月新建当月汇总并将当月累计初始化为 0；上月记录归档只读保留，不覆盖、不删除。
+4. 此重置仅作用于项目内部自然月账本，不代表 Vercel Hobby 平台额度、滚动窗口或暂停状态在每月 1 日恢复。平台实际窗口和恢复状态必须独立以官方文档及 Usage Dashboard 为准。
+5. 终身额度、按 GB-month 计量的存储、并发/单次运行限制及其他非月度指标不得随月度台账重置。具体字段与模板以 `docs/VERCEL_HOBBY_QUOTA_CONTROL.md` 为准。
