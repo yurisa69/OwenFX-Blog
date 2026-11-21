@@ -104,7 +104,7 @@ test('converts preformatted code blocks without losing their content', () => {
 test('preserves the selected language when converting rich-text code blocks', () => {
   const fence = String.fromCharCode(96).repeat(3);
   const html = [element('pre', [
-    element('code', [text('const answer = 42;')], { class: 'hljs language-javascript' }),
+    element('code', [text('const answer = 42;')], { class: 'language-javascript' }),
   ], { 'data-language': 'javascript' })];
   assert.equal(richTextNodesToMarkdown(html), fence + 'javascript\nconst answer = 42;\n' + fence);
 });

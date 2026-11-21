@@ -13,7 +13,7 @@ export default function CodeCopyEnhancer({ html }: { html: string }) {
     const codeBlocks = Array.from(container.querySelectorAll('pre'));
 
     codeBlocks.forEach((pre) => {
-      const codeElement = pre.querySelector<HTMLElement>('code.hljs, code');
+      const codeElement = pre.querySelector<HTMLElement>('code');
       if (codeElement) {
         const updateOverflowState = () => {
           const hasHorizontalScroll =

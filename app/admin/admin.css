@@ -62,13 +62,6 @@ body:has(.admin-theme-root[data-admin-theme="light"]){--bg-primary:#f8fafc;--bg-
 .admin-theme-root .admin-panel{border:1px solid var(--border-color);border-radius:14px;background:var(--bg-glass);padding:18px}
 .admin-theme-root .admin-input{width:100%;min-height:40px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-secondary);color:var(--text-primary);padding:10px 12px;outline:none}
 .admin-theme-root .admin-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-comment,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-quote{color:#6b7280}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-keyword,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-selector-tag,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-literal,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-name{color:#b42318}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-string,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-attr,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-template-variable{color:#075985}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-number,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-symbol,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-bullet{color:#1d4ed8}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-title,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-function,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-section{color:#6d28d9}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-built_in,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-type,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-params{color:#9a3412}
-.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-variable,.admin-theme-root[data-admin-theme="light"] .prose-block .hljs-property{color:#1f2937}
 
 /* Hide the mobile admin drawer scrollbar without disabling scrolling. */
 .admin-sidebar-mobile-panel{scrollbar-width:none;-ms-overflow-style:none}
