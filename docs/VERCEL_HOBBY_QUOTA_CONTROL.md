@@ -165,7 +165,7 @@ Vercel 项目：owenfx-blog
 | Sandbox 数据传输 | 20 GB | 2.0071 GB（入站+出站保守合计） | 至少 17.9929 GB |
 | Sandbox 墙钟运行时长 | 非独立额度 | 5.3850 小时（约 5 小时 23 分 6 秒） | 用于计算内存 |
 | 并发 Sandbox | 10 个 | 当前运行 0 个 | 当前可用并发 10 个 |
-| 快照存储 | 15 GB（终身） | 2 个保留快照，实际占用未取得 | 未核实，禁止新建 |
+| 快照存储 | 15 GB（终身） | 当前项目 API 可见有效快照 0 个（6 个记录均为 deleted） | 当前项目 API 占用 0 GB；团队 Dashboard 余额待核实 |
 | Drive 存储 | 15 GB（终身） | 未取得可靠用量 | 未核实，禁止新建 |
 | Drive 读取 | 30 GB / 月 | 未取得可靠用量 | 未核实，禁止挂载读取 |
 | Drive 写入 | 30 GB / 月 | 未取得可靠用量 | 未核实，禁止挂载写入 |
@@ -179,9 +179,10 @@ Vercel 项目：owenfx-blog
 
 快照 / Drive 说明：
 
-- 11 个命名 Sandbox 中有 2 个持久化 Sandbox 保留当前快照 ID；快照实际 GB 数未在列表中提供。
-- Sandbox 列表未返回 Drive 实际存储、读取或写入计量，不能推断已用量为 0。
-- 不删除这 2 个历史快照，也不删除其他任务资源。
+- 2026-11-21 对当前项目重新查询快照：共 6 条历史记录，状态均为 deleted，当前有效快照为 0 个；其中本次清理 4 个，另 2 个此前已删除。
+- 本次删除的 4 个自动快照合计 3,464,810,484 bytes（约 3.4648 GB），项目 API 可见快照占用已归零；团队总额度剩余仍以 Usage Dashboard 为准，未从 API 推断团队余额。
+- 4 个快照分别来自 owenfx-markdown-migration（3 个连续快照链）和 green-unknown-roundworm-b5YDNn（1 个）。删除后这两个持久化 Sandbox 的临时文件系统不能再从这些快照恢复；Sandbox 命名记录仍保留且均为 stopped。
+- 当前项目 Drive 数量为 0；Drive 存储、读取和写入额度仍以 Usage Dashboard 为准。
 
 ### 5.2 历史 Sandbox 逐实例记录（截至 2026-11-21）
 
@@ -206,10 +207,24 @@ Vercel 项目：owenfx-blog
 | 日期 | 任务 | Sandbox 创建 | 墙钟时长 | 活动 CPU | 配置内存 | 数据传输 | 快照 / Drive |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | 2026-11-21 | 新增 Hobby 免费额度控制规范，纯文档修改 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 2026-11-21 | 清理 4 个无用 Sandbox 自动快照（不启动 Sandbox） | 0 | 0 | 0 | 0 | 0 | 删除 3.4648 GB 快照；Drive 未变化 |
 
 本次未创建、启动或复用 Sandbox；未创建快照或 Drive；Sandbox 扣减为 0。GitHub 文档提交和 Vercel 自动构建属于独立资源，不计入 Sandbox CPU / 内存 / 创建次数。
 
-### 5.4 后续任务追加模板
+### 5.4 Sandbox 快照清理记录（2026-11-21）
+
+本次仅删除当前项目中确认无用的 4 个自动快照；没有删除 Sandbox 命名记录、没有启动 Sandbox，也没有修改 GitHub 源码或生产数据。
+
+| Sandbox 来源 | 快照 ID | 原大小 | 删除后验证 |
+| --- | --- | ---: | --- |
+| owenfx-markdown-migration | snap_5Sh4cSJbfX2CvprSNMLwUxFD0H1Q | 748,319,182 bytes | deleted |
+| owenfx-markdown-migration（父快照） | snap_x5m4nDIfTl53VX4MIcTeurDTM6Eg | 750,473,264 bytes | deleted |
+| owenfx-markdown-migration（父快照） | snap_s23TVK0GYskQJhYMvFuksx9Sotst | 745,147,918 bytes | deleted |
+| green-unknown-roundworm-b5YDNn | snap_9XOLdscPMZSk3rctbxkVJvDmFoUs | 1,220,870,120 bytes | deleted |
+
+合计释放项目可见快照存储约 **3.4648 GB**。删除顺序为子快照优先，再删除其父快照；随后逐个读取快照详情，4 个均返回 status=deleted。项目快照列表复查后，当前有效快照为 0 个。
+
+### 5.5 后续任务追加模板
 
 每次实际使用 Sandbox 后，在同一份台账中追加逐实例记录，并追加任务汇总：
 
