@@ -253,7 +253,7 @@ export default function SettingsPage() {
       return;
     }
     setLogoutBusy(true);
-    const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
+    const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
       setLogoutBusy(false);
       setError(signOutError.message || '退出登录失败，请稍后重试。');
