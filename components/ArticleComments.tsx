@@ -249,7 +249,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
   const replyTargetName = replyingTo ? replyingToName : '';
 
   return (
-    <section id="article-comments-card" className="article-comments-surface uiverse-card mt-3 p-4 sm:p-6" aria-label="文章评论">
+    <section id="article-comments-card" className="article-comments-surface owenfx-card mt-3 p-4 sm:p-6" aria-label="文章评论">
       {composerOpen && (
       <div className="mb-5 md:grid md:grid-cols-[120px_minmax(0,1fr)] md:items-center md:gap-5">
         <div className="article-comments-identity mb-5 flex flex-col items-center justify-center text-center md:mb-0">
@@ -277,7 +277,7 @@ export default function ArticleComments({ articleId, composerOpen, commentModeRe
             disabled={Boolean(user && (!commentText.trim() || submitting))}
             aria-label={!user ? '登录后评论' : submitting ? '正在发送评论' : replyingTo ? '发送回复' : '发表评论'}
             title={!user ? '登录后评论' : submitting ? '正在发送' : replyingTo ? '发送回复' : '发表评论'}
-            className="article-comment-submit-desktop uiverse-btn uiverse-btn-primary hidden w-full rounded-xl !px-5 !py-2.5 text-sm md:block">
+            className="article-comment-submit-desktop owenfx-btn owenfx-btn-primary hidden w-full rounded-xl !px-5 !py-2.5 text-sm md:block">
             {!user ? '登录后评论' : submitting ? '提交中…' : replyingTo ? '发送回复' : '发表评论'}
           </button>
           <button type="button" onClick={() => user ? void submitComment() : login()}

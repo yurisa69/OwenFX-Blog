@@ -108,7 +108,7 @@ export default function SoftwareManager({ initialCreate = false }: { initialCrea
           {links.length > 1 && <button type="button" className="text-left text-sm text-red-500" onClick={() => setLinks(items => items.filter((_, i) => i !== index))}>删除此链接</button>}
         </div>)}
       </div>
-      <div className="flex flex-wrap gap-2 sm:col-span-2"><button disabled={busy} className="uiverse-btn uiverse-btn-primary">{busy ? '保存中…' : editId ? '保存修改' : '保存软件草稿'}</button>{editId && <button type="button" className="uiverse-btn uiverse-btn-ghost" onClick={reset}>取消编辑</button>}</div>
+      <div className="flex flex-wrap gap-2 sm:col-span-2"><button disabled={busy} className="owenfx-btn owenfx-btn-primary">{busy ? '保存中…' : editId ? '保存修改' : '保存软件草稿'}</button>{editId && <button type="button" className="owenfx-btn owenfx-btn-ghost" onClick={reset}>取消编辑</button>}</div>
       {error && <p className="text-sm text-red-500 sm:col-span-2">{error}</p>}
     </form>}
     <section className="admin-panel">

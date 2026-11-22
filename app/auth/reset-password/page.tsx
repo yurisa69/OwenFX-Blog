@@ -83,14 +83,14 @@ export default function ResetPasswordPage() {
         {invalidLink && !ready ? (
           <>
             <p role="alert" className="mb-4 text-sm text-red-500">重置链接无效或已过期，请重新申请密码重置邮件。</p>
-            <Link href="/auth/forgot-password" className="uiverse-btn uiverse-btn-primary w-full">重新申请</Link>
+            <Link href="/auth/forgot-password" className="owenfx-btn owenfx-btn-primary w-full">重新申请</Link>
           </>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <PasswordInput required minLength={12} autoComplete="new-password" className="form-input w-full" placeholder="新密码（至少12位）" value={newPassword} onChange={event => setNewPassword(event.target.value)} />
             <PasswordInput required minLength={12} autoComplete="new-password" className="form-input w-full" placeholder="确认新密码" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />
             {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
-            <button disabled={busy || !ready} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '正在更新…' : '确认重置密码'}</button>
+            <button disabled={busy || !ready} className="owenfx-btn owenfx-btn-primary w-full">{busy ? '正在更新…' : '确认重置密码'}</button>
           </form>
         )}
       </div>

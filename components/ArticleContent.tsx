@@ -19,7 +19,7 @@ export default async function ArticleContent({ content, title }: { content: stri
     if (match) {
       const item = software.get(match[1]);
       if (!item) return null;
-      return <Link key={index} href={'/software/' + item.slug} className="uiverse-card flex items-center gap-4 p-4">
+      return <Link key={index} href={'/software/' + item.slug} className="owenfx-card flex items-center gap-4 p-4">
         <div className="software-icon-frame flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl">
           {item.image_url ? <img src={item.image_url} alt={item.title + ' 图标'} width={56} height={56} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="h-full w-full object-cover" /> : <span className="text-xl font-bold">{item.title.slice(0, 1)}</span>}
         </div>

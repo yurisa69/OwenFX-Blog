@@ -109,7 +109,7 @@ export default function SupportSettingsManager({ placement }: { placement: Place
             )}
           </div>
         ))}
-        <button className="uiverse-btn uiverse-btn-primary w-full" onClick={() => void save()}>
+        <button className="owenfx-btn owenfx-btn-primary w-full" onClick={() => void save()}>
           保存{title}配置
         </button>
         {message && <p className="text-sm opacity-70" role="status">{message}</p>}

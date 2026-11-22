@@ -32,11 +32,11 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         {selectedCategory ? '该分类下的文章。' : '软件介绍、使用教程与技术分享。'}
       </p>
       {!data?.length ? (
-        <div className="uiverse-card p-6 text-sm opacity-70">暂无已发布的文章。</div>
+        <div className="owenfx-card p-6 text-sm opacity-70">暂无已发布的文章。</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.map(article => (
-            <Link key={article.id} href={'/articles/' + article.id} className="uiverse-card p-5">
+            <Link key={article.id} href={'/articles/' + article.id} className="owenfx-card p-5">
               <h2 className="font-semibold">{article.title}</h2>
               <p className="mt-3 line-clamp-3 text-sm opacity-70">{article.excerpt}</p>
               <div className="mt-4 inline-flex items-center gap-1.5 text-xs opacity-50">

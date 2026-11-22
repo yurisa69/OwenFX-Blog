@@ -138,7 +138,7 @@ export default function BookmarksList({
       )}
 
       {items.length === 0 && error ? (
-        <div className="uiverse-card flex min-h-64 flex-col items-center justify-center p-8 text-center">
+        <div className="owenfx-card flex min-h-64 flex-col items-center justify-center p-8 text-center">
           <h2 className="text-base font-semibold">收藏列表暂时无法加载</h2>
           <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--text-tertiary)]">
             请检查网络连接后重试，现有收藏记录不会受到影响。
@@ -148,7 +148,7 @@ export default function BookmarksList({
           </button>
         </div>
       ) : items.length === 0 ? (
-        <div className="uiverse-card flex min-h-64 flex-col items-center justify-center p-8 text-center">
+        <div className="owenfx-card flex min-h-64 flex-col items-center justify-center p-8 text-center">
           <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-[var(--border-color)] bg-[var(--bg-glass)] text-[var(--accent)]">
             <ArticleActionIcon type="bookmark" />
           </span>
@@ -166,7 +166,7 @@ export default function BookmarksList({
             const article = getArticle(item.article);
             if (!article) return null;
             return (
-              <article key={item.id} className="uiverse-card flex min-w-0 flex-col p-5">
+              <article key={item.id} className="owenfx-card flex min-w-0 flex-col p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <span className="rounded-full border border-[var(--border-color)] px-2.5 py-1 text-[11px] text-[var(--text-tertiary)]">
                     {article.category?.name || '文章'}

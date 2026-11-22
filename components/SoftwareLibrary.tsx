@@ -131,13 +131,13 @@ export default function SoftwareLibrary({
       )}
 
       {filteredItems.length === 0 ? (
-        <div className="uiverse-card p-6 text-center text-sm opacity-70">
+        <div className="owenfx-card p-6 text-center text-sm opacity-70">
           {selectedTag ? '没有找到带有该标签的软件。' : '该分类暂时没有上架软件。'}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {filteredItems.map((item) => (
-            <Link key={item.id} href={'/software/' + item.slug} className="uiverse-card flex flex-col items-center p-4 text-center transition hover:-translate-y-1">
+            <Link key={item.id} href={'/software/' + item.slug} className="owenfx-card flex flex-col items-center p-4 text-center transition hover:-translate-y-1">
               <div className="software-icon-frame mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl">
                 {item.image_url ? (
                   <img src={item.image_url} alt={item.title + ' 图标'} width={64} height={64} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="h-full w-full object-cover" />

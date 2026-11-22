@@ -178,12 +178,12 @@ export default function CommentsManager() {
               <div className="flex flex-wrap gap-2">
                 {row.status === 'spam' || row.status === 'deleted' ? (
                   <>
-                    <button type="button" disabled={busy} className="uiverse-btn uiverse-btn-primary !px-3 !py-1.5 text-xs" onClick={() => void runAction(row, 'restore')}>{busy ? '处理中…' : '恢复'}</button>
+                    <button type="button" disabled={busy} className="owenfx-btn owenfx-btn-primary !px-3 !py-1.5 text-xs" onClick={() => void runAction(row, 'restore')}>{busy ? '处理中…' : '恢复'}</button>
                     <button type="button" disabled={busy} className="admin-nav-link !px-3 !py-1.5 text-xs" onClick={() => void permanentlyDelete(row)}>永久删除</button>
                   </>
                 ) : (
                   <>
-                    {row.status !== 'approved' && <button type="button" disabled={busy} className="uiverse-btn uiverse-btn-primary !px-3 !py-1.5 text-xs" onClick={() => void updateStatus(row, 'approved')}>{busy ? '处理中…' : '通过'}</button>}
+                    {row.status !== 'approved' && <button type="button" disabled={busy} className="owenfx-btn owenfx-btn-primary !px-3 !py-1.5 text-xs" onClick={() => void updateStatus(row, 'approved')}>{busy ? '处理中…' : '通过'}</button>}
                     {row.status !== 'rejected' && <button type="button" disabled={busy} className="admin-nav-link !px-3 !py-1.5 text-xs" onClick={() => void updateStatus(row, 'rejected')}>拒绝</button>}
                     <button type="button" disabled={busy} className="admin-nav-link !px-3 !py-1.5 text-xs" onClick={() => void runAction(row, 'spam')}>标记垃圾</button>
                     <button type="button" disabled={busy} className="admin-nav-link !px-3 !py-1.5 text-xs" onClick={() => void runAction(row, 'delete')}>删除</button>

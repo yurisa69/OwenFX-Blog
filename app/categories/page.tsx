@@ -47,7 +47,7 @@ export default async function CategoriesPage() {
             <Link
               key={category.id}
               href={`/software?category=${encodeURIComponent(category.slug)}`}
-              className="uiverse-card p-6 text-center"
+              className="owenfx-card p-6 text-center"
             >
               <h3 className="mb-1 text-lg font-semibold">{category.name}</h3>
               <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{category.count} 个软件</p>
@@ -67,7 +67,7 @@ export default async function CategoriesPage() {
             <Link
               key={category.id}
               href={`/articles?category=${encodeURIComponent(category.slug)}`}
-              className="uiverse-card p-6 text-center"
+              className="owenfx-card p-6 text-center"
             >
               <h3 className="mb-1 text-lg font-semibold">{category.name}</h3>
               <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{category.count} 篇文章</p>

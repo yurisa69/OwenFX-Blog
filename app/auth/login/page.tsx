@@ -53,7 +53,7 @@ export default function AuthLoginPage() {
           <div className="flex justify-end">
             <Link href="/auth/forgot-password" className="text-xs underline" style={{ color: 'var(--accent)' }}>忘记密码？</Link>
           </div>
-          <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '登录中…' : '登录'}</button>
+          <button disabled={busy} className="owenfx-btn owenfx-btn-primary w-full">{busy ? '登录中…' : '登录'}</button>
         </form>
         <p className="mt-5 text-center text-xs opacity-70">没有账号？<Link href="/auth/register" className="underline" style={{ color: 'var(--accent)' }}>注册</Link></p>
       </div>

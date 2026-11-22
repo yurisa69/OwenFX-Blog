@@ -100,7 +100,7 @@ function FeedbackCard({ feedback, busy, onSave }: {
           {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
         <input value={note} onChange={event => setNote(event.target.value)} maxLength={500} placeholder="管理员备注（选填）" className="admin-input" />
-        <button type="button" disabled={busy} onClick={() => void onSave(feedback, status, note)} className="uiverse-btn uiverse-btn-primary">{busy ? '保存中…' : '保存处理结果'}</button>
+        <button type="button" disabled={busy} onClick={() => void onSave(feedback, status, note)} className="owenfx-btn owenfx-btn-primary">{busy ? '保存中…' : '保存处理结果'}</button>
       </div>
     </article>
   );

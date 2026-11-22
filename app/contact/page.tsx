@@ -43,7 +43,7 @@ export default function ContactPage() {
   return (
     <section className="animate-fade-in mx-auto max-w-3xl py-8 md:py-10">
       <h1 className="mb-4 text-center text-2xl font-bold">联系我们</h1>
-      <div className="uiverse-card p-5 md:p-6">
+      <div className="owenfx-card p-5 md:p-6">
         <p className="mb-6 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
           有任何建议或软件推荐？欢迎通过以下渠道联系 OwenFX。
         </p>

@@ -208,7 +208,7 @@ export default function ArticleSyncManager() {
                   {job.retryable && (
                     <button type="button" disabled={busyId !== null}
                       onClick={() => void retryJob(job)}
-                      className="uiverse-btn uiverse-btn-ghost shrink-0 disabled:cursor-not-allowed disabled:opacity-50">
+                      className="owenfx-btn owenfx-btn-ghost shrink-0 disabled:cursor-not-allowed disabled:opacity-50">
                       {busyId === job.id ? '处理中…' : '安全重试'}
                     </button>
                   )}

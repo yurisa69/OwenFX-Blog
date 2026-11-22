@@ -47,13 +47,13 @@ export default function ForgotPasswordPage() {
             <p role="status" className="rounded-xl border p-4 text-sm leading-7" style={{ borderColor: 'var(--border-color)' }}>
               如果该邮件地址已注册，密码重置邮件将发送至该邮件地址。请检查收件箱和垃圾邮件文件夹，并按邮件中的提示重置密码。
             </p>
-            <Link href="/auth/login" className="uiverse-btn uiverse-btn-primary mt-5 w-full">返回登录</Link>
+            <Link href="/auth/login" className="owenfx-btn owenfx-btn-primary mt-5 w-full">返回登录</Link>
           </>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <input type="email" required autoComplete="email" className="form-input w-full" placeholder="注册邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
             {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
-            <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '发送中…' : '发送重置邮件'}</button>
+            <button disabled={busy} className="owenfx-btn owenfx-btn-primary w-full">{busy ? '发送中…' : '发送重置邮件'}</button>
             <p className="text-center text-xs opacity-70"><Link href="/auth/login" className="underline" style={{ color: 'var(--accent)' }}>返回登录</Link></p>
           </form>
         )}

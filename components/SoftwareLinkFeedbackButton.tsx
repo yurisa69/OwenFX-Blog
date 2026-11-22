@@ -126,7 +126,7 @@ export default function SoftwareLinkFeedbackButton({
               {loginRequired && <a className="text-sm underline" href={'/auth/login?next=' + encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}>前往登录</a>}
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => setOpen(false)} className="rounded-full border px-4 py-2 text-sm" style={{ borderColor: 'var(--border-color)' }}>取消</button>
-                <button type="submit" disabled={busy} className="uiverse-btn uiverse-btn-primary">{busy ? '提交中…' : '提交反馈'}</button>
+                <button type="submit" disabled={busy} className="owenfx-btn owenfx-btn-primary">{busy ? '提交中…' : '提交反馈'}</button>
               </div>
             </form>
           </section>

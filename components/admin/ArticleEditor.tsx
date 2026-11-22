@@ -372,8 +372,8 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
       <p className="text-sm" aria-live="polite" style={{ color: message.includes('失败') || message.includes('不能为空') ? 'var(--danger)' : 'var(--text-secondary)' }}>{message || `${content.length.toLocaleString()} 字符 · 当前状态：${status === 'published' ? '已发布' : '草稿'}`}</p>
       <div className="flex gap-2">
-        <button type="button" disabled={busy || uploadBusy} onClick={() => void save('draft')} className="uiverse-btn uiverse-btn-ghost">{busy ? '保存中…' : '保存草稿'}</button>
-        <button type="button" disabled={busy || uploadBusy} onClick={() => numberingIssues.length > 0 ? repairAndRecheck() : void save('published')} className="uiverse-btn uiverse-btn-primary">{busy ? '处理中…' : numberingIssues.length > 0 ? '修正更新' : status === 'published' ? '更新发布' : '发布文章'}</button>
+        <button type="button" disabled={busy || uploadBusy} onClick={() => void save('draft')} className="owenfx-btn owenfx-btn-ghost">{busy ? '保存中…' : '保存草稿'}</button>
+        <button type="button" disabled={busy || uploadBusy} onClick={() => numberingIssues.length > 0 ? repairAndRecheck() : void save('published')} className="owenfx-btn owenfx-btn-primary">{busy ? '处理中…' : numberingIssues.length > 0 ? '修正更新' : status === 'published' ? '更新发布' : '发布文章'}</button>
       </div>
     </div>
 

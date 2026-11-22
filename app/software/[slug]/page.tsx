@@ -194,7 +194,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
         __html: JSON.stringify(softwareJsonLd).replace(/</g, '\\u003c'),
       }} />
     <article className="animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <section className="uiverse-card mb-6 rounded-xl p-5 sm:p-7">
+      <section className="owenfx-card mb-6 rounded-xl p-5 sm:p-7">
         <div className="mb-4 flex flex-col items-center text-center">
           <div className="software-icon-frame mb-3 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl sm:h-24 sm:w-24">
             {software.image_url
@@ -253,16 +253,16 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
           <div className="grid grid-cols-2 items-start gap-3">
             {software.official_download_url ? (
               <TrackLink href={software.official_download_url} eventType="software_click" targetKey="official"
-                softwareId={software.id} className="uiverse-btn uiverse-btn-primary flex w-full min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm">
+                softwareId={software.id} className="owenfx-btn owenfx-btn-primary flex w-full min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm">
                 官方下载
               </TrackLink>
             ) : (
-              <div className="uiverse-btn uiverse-btn-primary flex min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm opacity-60">
+              <div className="owenfx-btn owenfx-btn-primary flex min-w-0 items-center justify-center rounded-full !px-4 !py-2 text-sm opacity-60">
                 官方下载
               </div>
             )}
             <details className="group min-w-0">
-              <summary className="uiverse-btn uiverse-btn-primary flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
+              <summary className="owenfx-btn owenfx-btn-primary flex w-full min-w-0 cursor-pointer list-none items-center justify-center rounded-full !px-4 !py-2 text-sm [&::-webkit-details-marker]:hidden">
                 网盘下载
               </summary>
               <div className="relative left-[calc(-100%-0.75rem)] mt-3 grid w-[calc(200%+0.75rem)] grid-cols-4 items-start gap-x-3 gap-y-3 pt-1">
@@ -305,7 +305,7 @@ export default async function SoftwareDetail({ params }: { params: Promise<{ slu
       </section>
 
       {relatedSoftware && relatedSoftware.length > 0 && (
-        <section className="uiverse-card rounded-xl p-5 sm:p-6">
+        <section className="owenfx-card rounded-xl p-5 sm:p-6">
           <h2 className="mb-4 text-lg font-semibold">同类软件推荐</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {relatedSoftware.map(item => (

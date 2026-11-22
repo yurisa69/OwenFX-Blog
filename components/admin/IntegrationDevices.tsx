@@ -118,12 +118,12 @@ export default function IntegrationDevices() {
       <p className="text-sm opacity-70">每个授权仅允许导入文章草稿，默认 365 天过期。密钥只在创建时显示一次；撤销后可恢复，已撤销的记录也可以永久删除。</p>
       <form onSubmit={createDevice} className="flex flex-wrap gap-2">
         <input className="admin-input min-w-[220px] flex-1" value={name} onChange={event => setName(event.target.value)} maxLength={100} required aria-label="设备名称"/>
-        <button className="uiverse-btn uiverse-btn-primary" disabled={busy}>{busy ? '创建中…' : '创建授权密钥'}</button>
+        <button className="owenfx-btn owenfx-btn-primary" disabled={busy}>{busy ? '创建中…' : '创建授权密钥'}</button>
       </form>
       {token && <div className="rounded-xl border p-3 space-y-2" style={{ borderColor: 'var(--accent)' }}>
         <p className="text-sm font-medium">新授权密钥（仅显示这一次）</p>
         <code className="block break-all text-xs">{token}</code>
-        <button type="button" className="uiverse-btn uiverse-btn-ghost" onClick={() => void copyToken()}>复制密钥</button>
+        <button type="button" className="owenfx-btn owenfx-btn-ghost" onClick={() => void copyToken()}>复制密钥</button>
       </div>}
     </section>
 

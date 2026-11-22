@@ -99,7 +99,7 @@ export default function RegisterPage() {
               <input required type="email" autoComplete="email" className="form-input w-full" placeholder="邮件地址" value={email} onChange={event => setEmail(event.target.value)} />
               <PasswordInput required minLength={12} autoComplete="new-password" className="form-input w-full" placeholder="密码（至少12位）" value={password} onChange={event => setPassword(event.target.value)} />
               {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
-              <button disabled={busy} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '注册中…' : '注册并发送确认邮件'}</button>
+              <button disabled={busy} className="owenfx-btn owenfx-btn-primary w-full">{busy ? '注册中…' : '注册并发送确认邮件'}</button>
             </form>
             <p className="mt-5 text-center text-xs opacity-70">已有账号？<Link href="/auth/login" className="underline" style={{ color: 'var(--accent)' }}>登录</Link></p>
           </>
@@ -110,7 +110,7 @@ export default function RegisterPage() {
             <p className="mb-4 rounded-xl border p-3 text-sm opacity-80" style={{ borderColor: 'var(--border-color)' }}>完成验证后即可使用注册邮件地址和密码登录。如果没有收到邮件，请检查垃圾邮件文件夹。</p>
             {message && <p className="mb-3 text-sm" style={{ color: 'var(--success)' }}>{message}</p>}
             {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
-            <button type="button" disabled={busy} onClick={resend} className="uiverse-btn uiverse-btn-primary w-full">{busy ? '发送中…' : '重新发送确认邮件'}</button>
+            <button type="button" disabled={busy} onClick={resend} className="owenfx-btn owenfx-btn-primary w-full">{busy ? '发送中…' : '重新发送确认邮件'}</button>
             <p className="mt-5 text-center text-xs opacity-70">已经完成验证？<Link href="/auth/login" className="underline" style={{ color: 'var(--accent)' }}>前往登录</Link></p>
           </>
         )}

@@ -192,13 +192,13 @@ export default async function SearchPage({
         {matchedArticles.length ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {matchedArticles.map(article => (
-              <Link key={article.id} href={'/articles/' + article.id} className="uiverse-card p-5 transition hover:-translate-y-0.5">
+              <Link key={article.id} href={'/articles/' + article.id} className="owenfx-card p-5 transition hover:-translate-y-0.5">
                 <h3 className="font-semibold">{article.title}</h3>
                 {article.excerpt && <p className="mt-2 line-clamp-3 text-sm text-[var(--text-secondary)]">{article.excerpt}</p>}
               </Link>
             ))}
           </div>
-        ) : <p className="uiverse-card p-4 text-sm opacity-60">没有匹配的文章。</p>}
+        ) : <p className="owenfx-card p-4 text-sm opacity-60">没有匹配的文章。</p>}
       </section>
 
       <section>
@@ -215,7 +215,7 @@ export default async function SearchPage({
                 return entry.tag ? [entry.tag] : [];
               });
               return (
-                <Link key={item.id} href={'/software/' + item.slug} className="uiverse-card flex min-w-0 flex-col items-center p-4 text-center transition hover:-translate-y-0.5">
+                <Link key={item.id} href={'/software/' + item.slug} className="owenfx-card flex min-w-0 flex-col items-center p-4 text-center transition hover:-translate-y-0.5">
                   <div className="software-icon-frame mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl">
                     {item.image_url
                       ? <img src={item.image_url} alt={item.title + ' 图标'} width={56} height={56} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
@@ -230,7 +230,7 @@ export default async function SearchPage({
               );
             })}
           </div>
-        ) : <p className="uiverse-card p-4 text-sm opacity-60">没有匹配的软件。</p>}
+        ) : <p className="owenfx-card p-4 text-sm opacity-60">没有匹配的软件。</p>}
       </section>
 
       {total === 0 && <p className="mt-8 text-center text-sm text-[var(--text-tertiary)]">换一个关键词试试。</p>}

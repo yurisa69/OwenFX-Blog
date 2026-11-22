@@ -107,7 +107,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c'),
       }} />
     <div className="article-detail-page animate-fade-in mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <article className="article-detail-surface uiverse-card mb-8 rounded-xl p-5 sm:p-7">
+      <article className="article-detail-surface owenfx-card mb-8 rounded-xl p-5 sm:p-7">
         <h1 className="mb-2 text-2xl font-bold leading-tight text-left sm:text-3xl">{article.title}</h1>
         <div className="mb-6 flex items-center justify-start gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <span className="font-semibold monet-waterlily-flow">OWEN</span>
