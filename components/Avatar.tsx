@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 type AvatarProps = {
   src?: string | null;
@@ -30,9 +31,12 @@ export default function Avatar({
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={96}
+      height={96}
+      unoptimized
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
       fetchPriority={priority ? 'high' : 'auto'}
