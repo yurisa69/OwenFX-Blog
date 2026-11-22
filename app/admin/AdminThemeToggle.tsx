@@ -1,12 +1,11 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light';
 
 export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme }) {
   const [theme, setTheme] = useState<Theme>(initialTheme);
-  const switchTimeout = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
@@ -15,7 +14,6 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
     try { stored = localStorage.getItem('admin-theme'); } catch {}
     const saved: Theme = cookieMatch?.[1] === 'light' || (!cookieMatch && stored === 'light') ? 'light' : 'dark';
 
-    root?.classList.remove('admin-theme-switching');
     root?.setAttribute('data-admin-theme', saved);
     root?.style.setProperty('color-scheme', saved);
     setTheme(saved);
@@ -23,32 +21,16 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
     if (!cookieMatch) {
       document.cookie = 'admin-theme=' + saved + '; Path=/; Max-Age=31536000; SameSite=Lax';
     }
-
-    return () => {
-      if (switchTimeout.current !== null) {
-        window.clearTimeout(switchTimeout.current);
-        switchTimeout.current = null;
-      }
-      root?.classList.remove('admin-theme-switching');
-    };
   }, [initialTheme]);
 
   function handleToggle(event: React.MouseEvent<HTMLButtonElement>) {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
-    if (switchTimeout.current !== null) {
-      window.clearTimeout(switchTimeout.current);
-    }
-    root?.classList.add('admin-theme-switching');
     try { localStorage.setItem('admin-theme', next); } catch {}
     document.cookie = 'admin-theme=' + next + '; Path=/; Max-Age=31536000; SameSite=Lax';
     root?.setAttribute('data-admin-theme', next);
     root?.style.setProperty('color-scheme', next);
     setTheme(next);
-    switchTimeout.current = window.setTimeout(() => {
-      root?.classList.remove('admin-theme-switching');
-      switchTimeout.current = null;
-    }, 120);
     event.currentTarget.blur();
   }
 
