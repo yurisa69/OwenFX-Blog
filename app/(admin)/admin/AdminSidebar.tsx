@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { createAdminClient } from '@/lib/supabase/admin-client';
 import AdminThemeToggle from './AdminThemeToggle';
 
 type NavItem = {
@@ -62,6 +63,9 @@ function isActivePath(pathname: string, href: string) {
 
 export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 'light' }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [logoutBusy, setLogoutBusy] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(navGroups.map(group => group.title));
@@ -88,6 +92,20 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
       document.body.style.overflow = previousOverflow;
     };
   }, [mobileOpen]);
+
+  async function signOutAdmin() {
+    setLogoutBusy(true);
+    setLogoutError('');
+    try {
+      const { error } = await createAdminClient().auth.signOut({ scope: 'local' });
+      if (error) throw error;
+      router.replace('/admin/login');
+      router.refresh();
+    } catch {
+      setLogoutError('退出失败，请重试');
+      setLogoutBusy(false);
+    }
+  }
 
   function toggleGroup(title: string) {
     setExpandedGroups(current => current.includes(title)
@@ -201,7 +219,22 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
             </svg>
           </button>
           <AdminThemeToggle initialTheme={initialTheme} />
+          <button
+            type="button"
+            className="admin-nav-icon-btn"
+            aria-label="退出后台管理"
+            title="退出后台管理"
+            disabled={logoutBusy}
+            onClick={() => void signOutAdmin()}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10 17l5-5-5-5" />
+              <path d="M15 12H3" />
+              <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
+            </svg>
+          </button>
           </div>
+          {logoutError && <span role="status" className="px-2 text-xs text-red-400">{logoutError}</span>}
         </header>
       </div>
 

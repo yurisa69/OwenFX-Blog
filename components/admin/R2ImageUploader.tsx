@@ -29,7 +29,7 @@ export default function R2ImageUploader({ kind, label, alt, value, onChange }: P
 
     setUploading(true);
     try {
-      const signedResponse = await fetch('/api/r2-upload/presign', {
+      const signedResponse = await fetch('/api/admin/r2-upload/presign', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ kind, fileName: file.name, contentType: file.type, size: file.size }),
@@ -44,7 +44,7 @@ export default function R2ImageUploader({ kind, label, alt, value, onChange }: P
       });
       if (!putResponse.ok) throw new Error('R2 上传失败，请检查存储桶 CORS 配置');
 
-      const completeResponse = await fetch('/api/r2-upload/complete', {
+      const completeResponse = await fetch('/api/admin/r2-upload/complete', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ key: signed.key, kind, fileName: file.name, alt }),

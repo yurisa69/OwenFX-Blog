@@ -9,11 +9,14 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
 
   useLayoutEffect(() => {
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
+    const html = document.documentElement;
     const cookieMatch = document.cookie.match(/(?:^|; )admin-theme=(dark|light)(?:;|$)/);
     let stored: string | null = null;
     try { stored = localStorage.getItem('admin-theme'); } catch {}
     const saved: Theme = cookieMatch?.[1] === 'light' || (!cookieMatch && stored === 'light') ? 'light' : 'dark';
 
+    html.setAttribute('data-admin-theme', saved);
+    html.style.colorScheme = saved;
     root?.setAttribute('data-admin-theme', saved);
     root?.style.setProperty('color-scheme', saved);
     setTheme(saved);
@@ -26,8 +29,11 @@ export default function AdminThemeToggle({ initialTheme }: { initialTheme: Theme
   function handleToggle(event: React.MouseEvent<HTMLButtonElement>) {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
     const root = document.querySelector<HTMLElement>('.admin-theme-root');
+    const html = document.documentElement;
     try { localStorage.setItem('admin-theme', next); } catch {}
     document.cookie = 'admin-theme=' + next + '; Path=/; Max-Age=31536000; SameSite=Lax';
+    html.setAttribute('data-admin-theme', next);
+    html.style.colorScheme = next;
     root?.setAttribute('data-admin-theme', next);
     root?.style.setProperty('color-scheme', next);
     setTheme(next);

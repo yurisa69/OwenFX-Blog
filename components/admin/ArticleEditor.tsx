@@ -119,7 +119,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
     try {
       const alt = isVideo ? file.name : (window.prompt('图片替代文字（可选）', file.name) || file.name);
       const kind = isVideo ? 'video' : 'image';
-      const signedResponse = await fetch('/api/r2-upload/presign', {
+      const signedResponse = await fetch('/api/admin/r2-upload/presign', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ kind, fileName: file.name, contentType: file.type, size: file.size }),
@@ -134,7 +134,7 @@ export default function ArticleEditor({ initial = {} }: { initial?: Draft }) {
       });
       if (!putResponse.ok) throw new Error('R2 文件上传失败，请检查存储桶 CORS 配置');
 
-      const completeResponse = await fetch('/api/r2-upload/complete', {
+      const completeResponse = await fetch('/api/admin/r2-upload/complete', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ key: signed.key, kind, fileName: file.name, alt }),
