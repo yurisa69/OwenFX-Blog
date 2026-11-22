@@ -116,19 +116,27 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
   }
 }
 
-/* Match the reference theme-switch behavior: freeze transitions and animations
-   briefly across the document while theme variables are being updated. */
-html.theme-switching:not(:has(.admin-theme-root)) *,
-html.theme-switching:not(:has(.admin-theme-root)) *::before,
-html.theme-switching:not(:has(.admin-theme-root)) *::after {
+/* Share one brief animation freeze across public and admin theme switches. */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after,
+.admin-theme-root.admin-theme-switching,
+.admin-theme-root.admin-theme-switching *,
+.admin-theme-root.admin-theme-switching *::before,
+.admin-theme-root.admin-theme-switching *::after {
   transition: none !important;
   animation-duration: 0.001ms !important;
   animation-delay: 0s !important;
 }
 
-/* Keep the navbar's six-point star spinning smoothly during theme changes. */
-html.theme-switching:not(:has(.admin-theme-root)) .six-star-spin {
+/* Keep both navigation six-point stars spinning during theme changes. */
+html.theme-switching .six-star-spin {
   animation: six-star-spin 8s linear infinite !important;
+}
+
+.admin-theme-root.admin-theme-switching .admin-six-star-spin {
+  animation: admin-six-star-spin 8s linear infinite !important;
 }
 .nav-profile-trigger { padding: 2px; }
 
