@@ -1,6 +1,6 @@
 {
   "projectRef": "gjzxultalptqwqmpagzj",
-  "verifiedAt": "2026-11-22",
+  "verifiedAt": "2026-11-24",
   "description": "Snapshot of applied production migration versions. Extra local SQL files are allowed as pending migrations; every version listed here must remain present in supabase/migrations.",
   "appliedMigrations": [
     {
@@ -166,6 +166,10 @@
     {
       "version": "20261121165453",
       "name": "notifications_read_states"
+    },
+    {
+      "version": "20261123172955",
+      "name": "permanently_delete_article_cleanup"
     }
   ]
 }

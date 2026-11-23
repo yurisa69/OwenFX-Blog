@@ -138,3 +138,11 @@ The machine-readable production migration-version snapshot is `supabase/migratio
 - The migration checks for existing eligible replies. The only existing approved reply was authored by the same user who wrote the parent comment, so it correctly did not create a self-notification. No comment rows were changed.
 - Production verification confirmed the table, indexes, trigger, function security mode, recipient-scoped RLS policies, and authenticated column privileges. The notifications table currently contains zero rows.
 - The change is additive; no existing tables, comments, users, or article-interaction rows were deleted or rewritten.
+
+
+## 2026-11-24 — permanently_delete_article_cleanup
+
+- Adds a service-role-only permanently_delete_article RPC for atomic Supabase cleanup of a trashed article.
+- Removes article revisions, comments and their dependent records, notifications, interactions, tags, analytics events, media metadata, article/media audit logs, sync jobs and the deletion lock in one database transaction.
+- Requires the matching article-scoped deletion lease and rejects active sync leases. The application removes the current GitHub Markdown file and exclusively owned R2 media objects before invoking the database transaction.
+- Git commit history and Vercel deployment/build logs are intentionally retained.

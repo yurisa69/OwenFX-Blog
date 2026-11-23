@@ -1,6 +1,10 @@
 import 'server-only';
 
+import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { createHash, createHmac, randomUUID } from 'node:crypto';
+import type { createServiceClient } from '@/lib/supabase/service';
+
+type ServiceClient = ReturnType<typeof createServiceClient>;
 
 export const R2_MEDIA_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
@@ -110,4 +114,94 @@ export function createR2UploadUrl(key: string, contentType: string, expiresIn = 
 
 export function getR2ServerConfig() {
   return config();
+}
+
+
+export async function associateArticleMediaAssets(
+  service: ServiceClient,
+  articleId: string,
+  markdown: string,
+) {
+  const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL?.replace(/\/+$/, '');
+  if (!publicBaseUrl || !markdown) return;
+
+  const urls = [...new Set(
+    (markdown.match(/https?:\/\/[^\s"'<>]+/g) ?? [])
+      .map(url => url.replace(/[),.;!?]+$/g, ''))
+      .filter(url => url.startsWith(publicBaseUrl + '/')),
+  )];
+  if (!urls.length) return;
+
+  const { data: assets, error } = await service
+    .from('media_assets')
+    .select('id,entity_type,entity_id')
+    .in('public_url', urls);
+  if (error) throw new Error('读取文章媒体归属失败：' + error.message);
+
+  for (const asset of assets ?? []) {
+    if (asset.entity_type === 'article' && asset.entity_id === articleId) continue;
+
+    if (asset.entity_type === 'article' && asset.entity_id && asset.entity_id !== articleId) {
+      const { error: sharedError } = await service.from('media_assets')
+        .update({ entity_type: 'shared', entity_id: null })
+        .eq('id', asset.id).eq('entity_type', 'article').eq('entity_id', asset.entity_id);
+      if (sharedError) throw new Error('标记共享文章媒体失败：' + sharedError.message);
+      continue;
+    }
+
+    if (asset.entity_type !== null || asset.entity_id !== null) continue;
+
+    const { data: claimed, error: claimError } = await service.from('media_assets')
+      .update({ entity_type: 'article', entity_id: articleId })
+      .eq('id', asset.id).is('entity_type', null).is('entity_id', null)
+      .select('id').maybeSingle();
+    if (claimError) throw new Error('登记文章媒体归属失败：' + claimError.message);
+    if (claimed) continue;
+
+    const { data: current, error: currentError } = await service.from('media_assets')
+      .select('entity_type,entity_id').eq('id', asset.id).maybeSingle();
+    if (currentError) throw new Error('复核文章媒体归属失败：' + currentError.message);
+    if (current?.entity_type === 'article' && current.entity_id && current.entity_id !== articleId) {
+      const { error: sharedError } = await service.from('media_assets')
+        .update({ entity_type: 'shared', entity_id: null })
+        .eq('id', asset.id).eq('entity_type', 'article').eq('entity_id', current.entity_id);
+      if (sharedError) throw new Error('标记共享文章媒体失败：' + sharedError.message);
+    }
+  }
+}
+
+export type ArticleMediaAssetForDeletion = {
+  bucket: string;
+  object_key: string;
+  public_url: string;
+};
+
+export async function deleteArticleMediaObjects(assets: ArticleMediaAssetForDeletion[]) {
+  if (!assets.length) return 0;
+
+  const cfg = config();
+  const client = new S3Client({
+    region: 'auto',
+    endpoint: cfg.endpoint,
+    forcePathStyle: true,
+    credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
+  });
+
+  const allowedKey = /^(articles|videos)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp|gif|avif|mp4|webm|mov)$/i;
+
+  try {
+    for (const asset of assets) {
+      if (asset.bucket !== cfg.bucket || !allowedKey.test(asset.object_key)) {
+        throw new Error('文章媒体对象的存储桶或对象路径不符合安全校验，已停止删除');
+      }
+      const expectedUrl = cfg.publicBaseUrl + '/' + asset.object_key.split('/').map(encodeURIComponent).join('/');
+      if (asset.public_url !== expectedUrl) {
+        throw new Error('文章媒体对象 URL 与 R2 对象路径不匹配，已停止删除');
+      }
+      await client.send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: asset.object_key }));
+    }
+    return assets.length;
+  } finally {
+    client.destroy();
+  }
 }

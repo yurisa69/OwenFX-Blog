@@ -8,6 +8,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { validateArticleWriteInput } from '@/lib/article-input';
 import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
 import { getArticleNumberingPublishError } from '@/lib/article-numbering';
+import { associateArticleMediaAssets, deleteArticleMediaObjects } from '@/lib/r2-media';
 
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -159,6 +160,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       github_path: path, github_sha: commitSha, content_hash: contentHash, sync_job_id: job.id,
     };
     await upsertArticleRevision(service, revisionValues);
+    await associateArticleMediaAssets(service, id, content);
     await ensureArticleAuditLog(service, {
       actor_id: auth.user.id, action: nextStatus === 'published' ? 'article.publish' : 'article.update', entity_type: 'article', entity_id: id,
       details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
@@ -228,28 +230,87 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     auditAction = 'article.restore_trash';
   } else if (action === 'permanent_delete') {
     if (article.status !== 'trashed') return NextResponse.json({ error: '只能永久删除回收站中的文章。' }, { status: 409 });
-    if (article.github_path) {
-      const currentFile = await readMarkdownFileFresh(article.github_path);
-      if (currentFile) {
-        if (article.content_hash && hashMarkdown(currentFile.content) !== article.content_hash) {
-          return NextResponse.json({ error: 'GitHub 中的文章正文已发生变化，为保护数据已停止永久删除。' }, { status: 409 });
-        }
-        await deleteMarkdownFile(article.github_path, currentFile.sha, 'Permanently delete article: ' + article.title);
+
+    const deletionJobId = randomUUID();
+    const deletionLeaseToken = randomUUID();
+    let deletionLockAcquired = false;
+    let githubFileDeleted = false;
+    let mediaObjectsDeleted = 0;
+    let stage = '获取文章同步锁';
+
+    try {
+      const lockAcquired = await acquireArticleSyncLock(service, id, deletionJobId, deletionLeaseToken);
+      if (!lockAcquired) {
+        return NextResponse.json({ error: '文章正在同步或删除，请稍后重试。' }, { status: 409 });
       }
-    }
-    const { data: deleted, error: deleteError } = await service.from('articles')
-      .delete().eq('id', id).eq('status', 'trashed').select('id').maybeSingle();
-    if (deleteError || !deleted) {
-      return NextResponse.json({ error: '文章数据库记录删除失败；GitHub 正文如已移除，历史提交仍保留，可检查后重试。' }, { status: 500 });
-    }
-    await service.from('media_assets').delete().eq('entity_type', 'article').eq('entity_id', id);
-    await service.from('audit_logs').insert({
-      actor_id: auth.user.id, action: 'article.permanent_delete', entity_type: 'article', entity_id: id,
-      details: { github_path: article.github_path, github_history_preserved: true },
-    });
-    if (article.github_path) revalidateTag(articleMarkdownCacheTag(article.github_path), { expire: 0 });
-    return NextResponse.json({ success: true });
-  } else {
+      deletionLockAcquired = true;
+
+      const { data: currentArticle, error: currentArticleError } = await service.from('articles')
+        .select('id,title,status,github_path,content_hash')
+        .eq('id', id).maybeSingle();
+      if (currentArticleError) throw new Error('重新读取文章失败：' + currentArticleError.message);
+      if (!currentArticle) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
+      if (currentArticle.status !== 'trashed') {
+        return NextResponse.json({ error: '文章状态已变化，请刷新后重试。' }, { status: 409 });
+      }
+
+      stage = '读取文章媒体记录';
+      const { data: mediaAssets, error: mediaError } = await service.from('media_assets')
+        .select('id,bucket,object_key,public_url')
+        .eq('entity_type', 'article').eq('entity_id', id);
+      if (mediaError) throw new Error('读取文章媒体记录失败：' + mediaError.message);
+
+      stage = '删除 GitHub 当前文章文件';
+      if (currentArticle.github_path) {
+        const currentFile = await readMarkdownFileFresh(currentArticle.github_path);
+        if (currentFile) {
+          if (currentArticle.content_hash && hashMarkdown(currentFile.content) !== currentArticle.content_hash) {
+            return NextResponse.json({ error: 'GitHub 中的文章正文已发生变化，为保护数据已停止永久删除。' }, { status: 409 });
+          }
+          await deleteMarkdownFile(currentArticle.github_path, currentFile.sha, 'Permanently delete article: ' + currentArticle.title);
+          githubFileDeleted = true;
+        }
+      }
+
+      stage = '删除 Cloudflare R2 文章媒体对象';
+      mediaObjectsDeleted = await deleteArticleMediaObjects(mediaAssets ?? []);
+
+      stage = '清理 Supabase 文章数据及历史';
+      const { data: cleanup, error: cleanupError } = await service.rpc('permanently_delete_article', {
+        p_article_id: id,
+        p_job_id: deletionJobId,
+        p_lease_token: deletionLeaseToken,
+      });
+      if (cleanupError) throw new Error(cleanupError.message);
+      if (!cleanup || typeof cleanup !== 'object' || cleanup.success !== true) {
+        throw new Error('数据库清理函数未确认文章已完整删除');
+      }
+
+      if (currentArticle.github_path) revalidateTag(articleMarkdownCacheTag(currentArticle.github_path), { expire: 0 });
+      return NextResponse.json({
+        success: true,
+        github_file_deleted: githubFileDeleted,
+        media_objects_deleted: mediaObjectsDeleted,
+        cleanup,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '未知错误';
+      console.error('[article-permanent-delete]', { articleId: id, stage, error: message });
+      return NextResponse.json({
+        error: '永久删除在「' + stage + '」阶段失败，请检查后重试。',
+        details: message,
+        github_file_deleted: githubFileDeleted,
+        media_objects_deleted: mediaObjectsDeleted,
+      }, { status: 502 });
+    } finally {
+      if (deletionLockAcquired) {
+        try {
+          await releaseArticleSyncLock(service, id, deletionJobId, deletionLeaseToken);
+        } catch (releaseError) {
+          console.error('[article-permanent-delete-lock-release]', releaseError);
+        }
+      }
+    }  } else {
     return NextResponse.json({ error: '不支持的文章管理操作。' }, { status: 400 });
   }
 

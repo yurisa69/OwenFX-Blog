@@ -7,6 +7,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { validateArticleWriteInput } from '@/lib/article-input';
 import { ensureArticleAuditLog, upsertArticleRevision } from '@/lib/article-records';
 import { getArticleNumberingPublishError } from '@/lib/article-numbering';
+import { associateArticleMediaAssets } from '@/lib/r2-media';
 
 
 export async function GET() {
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
       github_path: path, github_sha: commitSha, content_hash: contentHash, sync_job_id: job.id,
     };
     await upsertArticleRevision(service, revisionValues);
+    await associateArticleMediaAssets(service, data.id, content);
     await ensureArticleAuditLog(service, {
       actor_id: auth.user.id, action: status === 'published' ? 'article.publish' : 'article.create', entity_type: 'article', entity_id: data.id,
       details: { sync_job_id: job.id, storage: 'github', github_path: path, github_sha: commitSha },
