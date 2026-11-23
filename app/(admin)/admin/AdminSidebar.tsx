@@ -207,7 +207,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
           <div className="flex items-center gap-2">
           <button
             type="button"
-            className="admin-nav-icon-btn md:hidden"
+            className="admin-nav-icon-btn lg:hidden"
             aria-label={mobileOpen ? '关闭管理菜单' : '打开管理菜单'}
             aria-expanded={mobileOpen}
             aria-controls="admin-mobile-navigation"
@@ -238,7 +238,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
         </header>
       </div>
 
-      <aside className={`admin-sidebar admin-sidebar-desktop hidden md:flex ${collapsed ? 'admin-sidebar-collapsed' : ''}`}>
+      <aside className={`admin-sidebar admin-sidebar-desktop hidden lg:flex ${collapsed ? 'admin-sidebar-collapsed' : ''}`}>
         <div className="admin-sidebar-brand-row">
           {renderBrand()}
           <button
@@ -256,7 +256,7 @@ export default function AdminSidebar({ initialTheme }: { initialTheme: 'dark' | 
       </aside>
 
       {mobileOpen && (
-        <div className="admin-sidebar-mobile-overlay md:hidden">
+        <div className="admin-sidebar-mobile-overlay lg:hidden">
           <button
             type="button"
             className="admin-sidebar-mobile-backdrop"

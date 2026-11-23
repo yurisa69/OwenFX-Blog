@@ -78,7 +78,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch {}
 
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable', scrollBehavior: 'smooth' }} suppressHydrationWarning>
       <head><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
       <body style={{ margin: 0 }}>
         <div id="site-root" className={`site-css-scope ${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable}`} data-theme="dark" suppressHydrationWarning>

@@ -9,8 +9,8 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
   const initialTheme = cookieStore.get('admin-theme')?.value === 'light' ? 'light' : 'dark';
 
   return (
-    <section className="mx-auto min-h-[calc(100vh-72px)] w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
-      <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 md:flex-row md:gap-6">
+    <section className="admin-dashboard-layout mx-auto min-h-screen w-full max-w-[1440px] px-3 pb-4 sm:px-5 sm:pb-6 lg:px-7">
+      <div className="flex min-h-[calc(100vh-120px)] flex-col gap-4 lg:flex-row lg:gap-6">
         <AdminSidebar initialTheme={initialTheme} />
 
         <main className="min-w-0 flex-1">

@@ -299,7 +299,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: P
                 {(selectedCountry || selectedCity) && <Link href={'/admin/analytics?period=' + days} className="px-2 py-2 text-xs opacity-70">重置</Link>}
               </form>
             </div>
-            <div className="grid gap-4 xl:grid-cols-3">
+            <div className="grid gap-4 2xl:grid-cols-3">
               <div className="min-w-0"><h3 className="mb-2 text-sm font-medium">国家 / 地区排行</h3>
                 {!filteredCountries.length ? <p className="text-sm opacity-60">暂无国家数据。</p> : <div className="space-y-2">{filteredCountries.map(item => (
                   <div key={item.country_code} className="flex items-center justify-between gap-3 text-sm">

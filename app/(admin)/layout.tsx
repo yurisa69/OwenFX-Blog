@@ -34,7 +34,7 @@ export default async function AdminRootLayout({ children }: { children: React.Re
   const initialTheme = cookieStore.get('admin-theme')?.value === 'light' ? 'light' : 'dark';
 
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} suppressHydrationWarning>
       <body style={{ margin: 0 }}>
         <div id="admin-css-root" className={`admin-css-scope ${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable}`}>
           <div id="admin-root" className="admin-theme-root min-h-screen antialiased" data-admin-theme={initialTheme} suppressHydrationWarning>
