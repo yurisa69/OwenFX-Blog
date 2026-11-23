@@ -99,9 +99,6 @@ export default async function AdminArticlesPage({
             管理文章发布、归档与回收站状态。
           </p>
         </div>
-        <Link className="admin-nav-link" href="/admin/articles/new">
-          新建文章
-        </Link>
       </div>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
