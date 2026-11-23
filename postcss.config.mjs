@@ -1,6 +1,7 @@
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    '@tailwindcss/postcss': {},
+    [process.cwd() + '/scripts/postcss-css-scope.cjs']: {},
   },
 };
 

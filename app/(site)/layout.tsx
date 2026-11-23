@@ -32,15 +32,17 @@ export const metadata: Metadata = {
 const themeInitScript = `(() => {
   try {
     const theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.style.colorScheme = theme;
+    const root = document.getElementById('site-root');
+    if (!root) return;
+    root.setAttribute('data-theme', theme);
+    root.style.colorScheme = theme;
   } catch {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.documentElement.style.colorScheme = 'dark';
+    const root = document.getElementById('site-root');
+    if (root) { root.setAttribute('data-theme', 'dark'); root.style.colorScheme = 'dark'; }
   }
 })();`;
 
-const criticalLayoutStyle = `html{overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable}body{margin:0;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}`;
+const criticalLayoutStyle = `#site-root{min-height:100vh;box-sizing:border-box;background:var(--bg-primary,#0b0f1a);color:var(--text-primary,#f1f5f9)}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let initialUser: { id: string; name: string; email?: string | null; avatar_url: string | null } | null = null;
@@ -76,20 +78,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch {}
 
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable} h-full antialiased`} style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }} data-theme="dark" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
-      <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-        <ThemeProvider>
-          <Navbar initialUser={initialUser} />
-          <PageViewTracker />
-          <main style={{ paddingTop: '56px', overflowX: 'hidden' }}>
-            <div className="max-w-6xl mx-auto min-h-[calc(100vh-3.5rem)] pb-[5.5rem] md:pb-0" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-              {children}
-            </div>
-          </main>
-          <BackToTop />
-          <ScrollToTop />
-        </ThemeProvider>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head><style dangerouslySetInnerHTML={{ __html: criticalLayoutStyle }} /></head>
+      <body style={{ margin: 0 }}>
+        <div id="site-root" className={`site-css-scope ${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable}`} data-theme="dark" suppressHydrationWarning>
+          <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+          <div className="min-h-screen antialiased">
+            <ThemeProvider>
+              <Navbar initialUser={initialUser} />
+              <PageViewTracker />
+              <main style={{ paddingTop: '56px', overflowX: 'hidden' }}>
+                <div className="max-w-6xl mx-auto min-h-[calc(100vh-3.5rem)] pb-[5.5rem] md:pb-0" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+                  {children}
+                </div>
+              </main>
+              <BackToTop />
+              <ScrollToTop />
+            </ThemeProvider>
+          </div>
+        </div>
       </body>
     </html>
   );

@@ -17,7 +17,8 @@ const getStoredTheme = (): Theme => {
 };
 
 const applyTheme = (next: Theme) => {
-  const root = document.documentElement;
+  const root = document.getElementById('site-root');
+  if (!root) return;
   root.classList.add('theme-switching');
   root.setAttribute('data-theme', next);
   root.style.colorScheme = next;
@@ -31,8 +32,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = getStoredTheme();
     setTheme(saved);
-    if (document.documentElement.getAttribute('data-theme') === saved) {
-      document.documentElement.style.colorScheme = saved;
+    if (document.getElementById('site-root')?.getAttribute('data-theme') === saved) {
+      document.getElementById('site-root')?.style.setProperty('color-scheme', saved);
     } else {
       applyTheme(saved);
     }

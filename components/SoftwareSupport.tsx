@@ -57,7 +57,8 @@ export default function SoftwareSupport({ className = '', placement = 'software'
     usdt: 'USDT',
   };
   const enabledMethods = methods.filter(key => config?.methods?.[key]?.enabled);
-  const dialog = open && typeof document !== 'undefined' ? createPortal(
+  const siteRoot = typeof document !== 'undefined' ? document.getElementById('site-root') : null;
+  const dialog = open && siteRoot ? createPortal(
     <div className="support-modal-overlay" role="presentation" onClick={() => setOpen(false)}>
       <div className="support-modal-card" role="dialog" aria-modal="true" aria-labelledby="support-modal-title"
         onClick={event => event.stopPropagation()}>
@@ -97,7 +98,7 @@ export default function SoftwareSupport({ className = '', placement = 'software'
         </p>
       </div>
     </div>,
-    document.body
+    siteRoot
   ) : null;
 
   if (!config?.enabled) return null;

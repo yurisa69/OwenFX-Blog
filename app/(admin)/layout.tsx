@@ -19,8 +19,6 @@ const adminThemeInitScript = `(() => {
     const match = document.cookie.match(/(?:^|; )admin-theme=(dark|light)(?:;|$)/);
     const stored = localStorage.getItem('admin-theme');
     const theme = match ? match[1] : stored === 'light' || stored === 'dark' ? stored : 'dark';
-    document.documentElement.setAttribute('data-admin-theme', theme);
-    document.documentElement.style.colorScheme = theme;
     if (root) {
       root.setAttribute('data-admin-theme', theme);
       root.style.colorScheme = theme;
@@ -36,22 +34,13 @@ export default async function AdminRootLayout({ children }: { children: React.Re
   const initialTheme = cookieStore.get('admin-theme')?.value === 'light' ? 'light' : 'dark';
 
   return (
-    <html
-      lang="zh-CN"
-      className={`${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable} h-full antialiased`}
-      data-admin-theme={initialTheme}
-      style={{ overflowY: 'scroll', overflowX: 'hidden', scrollbarGutter: 'stable' }}
-      suppressHydrationWarning
-    >
-      <body style={{ margin: 0, background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-        <div
-          id="admin-root"
-          className="admin-theme-root min-h-screen"
-          data-admin-theme={initialTheme}
-          suppressHydrationWarning
-        >
-          <script dangerouslySetInnerHTML={{ __html: adminThemeInitScript }} />
-          {children}
+    <html lang="zh-CN" suppressHydrationWarning>
+      <body style={{ margin: 0 }}>
+        <div id="admin-css-root" className={`admin-css-scope ${geistSans.variable} ${geistMono.variable} ${splash.variable} ${caramel.variable}`}>
+          <div id="admin-root" className="admin-theme-root min-h-screen antialiased" data-admin-theme={initialTheme} suppressHydrationWarning>
+            <script dangerouslySetInnerHTML={{ __html: adminThemeInitScript }} />
+            {children}
+          </div>
         </div>
       </body>
     </html>
